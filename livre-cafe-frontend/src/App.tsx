@@ -6,7 +6,13 @@ import InventoryScreen from '@app/screens/InventoryScreen';
 import SideNav from '@app/components/SideNav';
 import { Box } from '@mui/material';
 import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
-import { CART_CHECKOUT_PATH, INVENTORY_PATH } from '@app/constants';
+import {
+  CART_CHECKOUT_PATH,
+  CUSTOMERS_PATH,
+  INVENTORY_PATH,
+} from '@app/constants';
+import '@app/styles/main.scss';
+import CustomersScreen from '@app/screens/CustomersScreen';
 
 function App() {
   const { pathname } = useLocation();
@@ -23,6 +29,8 @@ function App() {
           <Route path="/" element={<InventoryScreen />} />
           <Route path={INVENTORY_PATH} element={<InventoryScreen />} />
           <Route path={CART_CHECKOUT_PATH} element={<CartCheckoutScreen />} />
+          <Route path={CUSTOMERS_PATH} element={<CustomersScreen />} />
+
           {/* <Route path="/products/:slug" element={<ProductScreen />} />
           <Route path="/cart" element={<CartScreen />} />
           <Route path="/signin" element={<SigninScreen />} /> */}
