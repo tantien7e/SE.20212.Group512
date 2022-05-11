@@ -4,12 +4,13 @@ import './App.css';
 import { Route, Routes } from 'react-router-dom';
 import InventoryScreen from '@app/screens/InventoryScreen';
 import SideNav from '@app/components/SideNav';
+import { Box } from '@mui/material';
 
 function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <div className="app-container">
+    <Box className="app-container" display="flex">
       <SideNav />
       <main>
         <Routes>
@@ -19,7 +20,7 @@ function App() {
           <Route path="/signin" element={<SigninScreen />} /> */}
         </Routes>
       </main>
-    </div>
+    </Box>
   );
 }
 
