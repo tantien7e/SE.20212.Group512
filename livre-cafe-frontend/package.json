@@ -1,0 +1,29 @@
+{
+  "name": "livre-cafe-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.3.0",
+    "sass": "^1.51.0",
+    "@reduxjs/toolkit": "^1.8.1",
+    "axios": "^0.27.2",
+    "react-helmet-async": "^1.3.0",
+    "react-redux": "^8.0.1",
+    "react-toastify": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.29",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@vitejs/plugin-react": "^1.3.0",
+    "typescript": "^4.6.3",
+    "vite": "^2.9.7"
+  }
+}
