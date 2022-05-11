@@ -1,4 +1,7 @@
-import React, { useRef, useState } from 'react';
+import navList from '@app/components/navListItems';
+import { Store } from '@app/context/Store';
+import MenuIcon from '@mui/icons-material/Menu';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import {
   Avatar,
   Badge,
@@ -7,7 +10,6 @@ import {
   Chip,
   Divider,
   Drawer,
-  InputBase,
   List,
   ListItemButton,
   ListItemIcon,
@@ -17,10 +19,9 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import navList from '@app/components/navListItems';
 import { useTheme } from '@mui/material/styles';
-import { Logo } from '@app/assets/images/index';
+import React, { useContext, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const drawerWidth = 240;
 const drawerWidthOpen = 240;
@@ -80,18 +81,24 @@ const closedMixin = (theme: Theme) => ({
 function SideNav() {
   const matchsMD = useMediaQuery('(max-width: 768px)');
   const theme = useTheme();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(!matchsMD);
   const refFocus = useRef<any>(null);
   const handleDrawerClose = () => {
     setOpen(!open);
   };
 
-  function toogleOpenSearch() {
-    setOpen(false);
-    setTimeout(() => {
-      if (refFocus?.current) refFocus.current.focus();
-    }, 500);
-  }
+  // function toogleOpenSearch() {
+  //   setOpen(false);
+  //   setTimeout(() => {
+  //     if (refFocus?.current) refFocus.current.focus();
+  //   }, 500);
+  // }
+  const location = useLocation();
+  const handleChangePath = (target: string) => {
+    navigate(target, { replace: true });
+  };
+
   const drawerContent = (
     <>
       <Box
@@ -111,10 +118,12 @@ function SideNav() {
           sx={{
             flexShrink: 0,
             display: open ? 'none' : { xs: 'none', sm: 'initial' },
-            marginBottom: '9px',
+            marginBottom: '8px',
           }}
         >
-          <Logo width={24} height={24} color="white" />
+          <StorefrontIcon
+            sx={{ fontSize: '20px', color: theme.palette.primary.main }}
+          />
         </Box>
         <Typography
           variant="h1"
@@ -124,13 +133,13 @@ function SideNav() {
             display: { xs: 'none', sm: 'initial' },
             fontSize: '18px',
             fontWeight: 600,
-            color: 'lightgray',
+            color: theme.palette.primary.main,
             width: '154px',
             marginLeft: open ? '0px' : '8px',
             paddingBottom: '3px',
           }}
         >
-          MuiMakeStyles
+          Lirve Café
         </Typography>
 
         <Button
@@ -142,82 +151,26 @@ function SideNav() {
             borderRadius: '8px',
             backgroundColor: open ? 'transparent' : 'transparent',
             '&:hover': {
-              backgroundColor: '#26284687',
+              backgroundColor: theme.palette.secondary.light,
             },
           }}
         >
           <MenuIcon
-            sx={{ fontSize: '20px', color: open ? 'lightgray' : 'lightGray' }}
+            sx={{
+              fontSize: '20px',
+              color: open
+                ? theme.palette.primary.main
+                : theme.palette.primary.main,
+            }}
           ></MenuIcon>
         </Button>
       </Box>
 
-      <List dense={true}>
-        {navList.map((key, index) => (
-          <div key={`list-item-${index}`}>
-            {index === 0 ? (
-              <div>
-                <Tooltip
-                  title={open ? key.desc : ''}
-                  placement={'right'}
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: 'gray',
-                        color: 'white',
-                        marginLeft: '22px !important',
-                        boxShadow: '0px 0px 22px -2px rgba(0,0,0,0.20)',
-                      },
-                    },
-                  }}
-                >
-                  <ListItemButton
-                    onClick={toogleOpenSearch}
-                    sx={{
-                      margin: '6px 14px',
-                      padding: '10px',
-                      borderRadius: '8px',
-                      backgroundColor: '#26284687',
-                    }}
-                  >
-                    <ListItemIcon sx={{ minWidth: '46px' }}>
-                      <Badge
-                        badgeContent={key.badge}
-                        color="secondary"
-                        variant="dot"
-                      >
-                        <key.icon
-                          sx={{ fontSize: '20px', color: 'lightgray' }}
-                        />
-                      </Badge>
-                    </ListItemIcon>
-
-                    <InputBase
-                      inputRef={refFocus}
-                      margin="dense"
-                      fullWidth={true}
-                      placeholder="Search"
-                      sx={{
-                        fontSize: '0.875rem',
-                        lineHeight: '1.43em',
-                        '& .MuiInputBase-input': {
-                          color: 'lightgray',
-                          padding: 0,
-                        },
-                      }}
-                      componentsProps={{
-                        input: {
-                          style: {
-                            padding: 0,
-                          },
-                        },
-                      }}
-                    ></InputBase>
-                  </ListItemButton>
-                </Tooltip>
-                <Divider variant="middle" light={true} />
-              </div>
-            ) : (
+      <List dense={true} sx={{ flex: 1 }}>
+        {navList.map((key, index) => {
+          const isActive = location?.pathname === key?.to;
+          return (
+            <div key={`list-item-${index}`}>
               <Tooltip
                 title={open ? key.desc : ''}
                 key={index}
@@ -239,8 +192,12 @@ function SideNav() {
                     padding: '10px',
                     borderRadius: '8px',
                     '&:hover': {
-                      backgroundColor: '#26284687',
+                      backgroundColor: theme.palette.secondary.light,
                     },
+                  }}
+                  onClick={() => {
+                    if (!key.to) return;
+                    handleChangePath(key.to);
                   }}
                 >
                   <ListItemIcon sx={{ minWidth: '46px' }}>
@@ -249,7 +206,14 @@ function SideNav() {
                       color="secondary"
                       variant="dot"
                     >
-                      <key.icon sx={{ fontSize: '20px', color: 'lightgray' }} />
+                      <key.icon
+                        sx={{
+                          fontSize: '20px',
+                          color: isActive
+                            ? theme.palette.primary.main
+                            : theme.palette.primary.contrastText,
+                        }}
+                      />
                     </Badge>
                   </ListItemIcon>
 
@@ -262,7 +226,10 @@ function SideNav() {
                       display: 'inline',
                       margin: '0px',
                       overflowX: 'hidden',
-                      color: 'lightgray',
+                      color: isActive
+                        ? theme.palette.primary.main
+                        : theme.palette.primary.contrastText,
+                      '& span': { fontWeight: isActive ? 600 : 400 },
                       whiteSpace: 'nowrap',
                       minWidth: '126px',
                     }}
@@ -277,10 +244,9 @@ function SideNav() {
                   )}
                 </ListItemButton>
               </Tooltip>
-            )}
-          </div>
-        ))}
-        <Divider variant="middle" light={true} />
+            </div>
+          );
+        })}
       </List>
 
       <Box
@@ -315,7 +281,7 @@ function SideNav() {
               whiteSpace: 'nowrap',
               lineHeight: 'inherit',
               fontWeight: 500,
-              color: 'lightgray',
+              color: theme.palette.primary.contrastText,
             }}
           >
             Arrofi Reza S.
@@ -327,7 +293,7 @@ function SideNav() {
               display: 'block',
               whiteSpace: 'nowrap',
               lineHeight: 'inherit',
-              color: 'lightgray',
+              color: theme.palette.primary.contrastText,
             }}
           >
             Web Designer
@@ -361,9 +327,11 @@ function SideNav() {
               ? { xs: '0px', sm: drawerWidthClose }
               : { xs: drawerWidthClose, sm: drawerWidthOpen },
             borderRight: '0px',
-            borderRadius: '0px 16px 16px 0px',
+            borderRadius: '0px 8px 8px 0px',
             boxShadow: theme.shadows[8],
-            backgroundColor: open ? '#11101D' : '#11101D',
+            backgroundColor: open
+              ? theme.palette.secondary.main
+              : theme.palette.secondary.main,
             transition: theme.transitions.create('width', {
               easing: theme.transitions.easing.sharp,
               duration: open
