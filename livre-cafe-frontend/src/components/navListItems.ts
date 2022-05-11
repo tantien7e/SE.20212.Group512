@@ -17,7 +17,7 @@ const navbarList = [
   },
   {
     icon: DashboardOutlined,
-    desc: 'Dashboard',
+    desc: 'Inventory',
     secondDesc: '',
     badge: 0,
     subList: [],
@@ -33,9 +33,9 @@ const navbarList = [
   },
   {
     icon: Forum,
-    desc: 'Forum',
+    desc: 'Cart Checkout',
     secondDesc: 'Message from andi',
-    badge: 2,
+    badge: 0,
     subList: [
       {
         desc: 'chat',

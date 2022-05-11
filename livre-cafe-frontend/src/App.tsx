@@ -5,6 +5,7 @@ import { Route, Routes } from 'react-router-dom';
 import InventoryScreen from '@app/screens/InventoryScreen';
 import SideNav from '@app/components/SideNav';
 import { Box } from '@mui/material';
+import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -15,6 +16,7 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<InventoryScreen />} />
+          <Route path="/cart-checkout" element={<CartCheckoutScreen />} />
           {/* <Route path="/products/:slug" element={<ProductScreen />} />
           <Route path="/cart" element={<CartScreen />} />
           <Route path="/signin" element={<SigninScreen />} /> */}
