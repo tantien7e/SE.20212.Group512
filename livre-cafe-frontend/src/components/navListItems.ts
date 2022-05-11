@@ -5,73 +5,72 @@ import Analytics from '@mui/icons-material/Analytics';
 import FolderOpen from '@mui/icons-material/FolderOpen';
 import BorderColor from '@mui/icons-material/BorderColor';
 import Search from '@mui/icons-material/Search';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import PaidIcon from '@mui/icons-material/Paid';
+import PriceCheckIcon from '@mui/icons-material/PriceCheck';
+import {
+  CART_CHECKOUT_PATH,
+  CUSTOMERS_PATH,
+  INVENTORY_PATH,
+} from '@app/constants';
 
 const navbarList = [
+  // {
+  //   icon: Search,
+  //   desc: 'Search',
+  //   secondDesc: '',
+  //   badge: 0,
+  //   subList: [],
+  //   to: '/',
+  // },
   {
-    icon: Search,
-    desc: 'Search',
-    secondDesc: '',
-    badge: 0,
-    subList: [],
-    to: '/',
-  },
-  {
-    icon: DashboardOutlined,
+    icon: InventoryIcon,
     desc: 'Inventory',
     secondDesc: '',
     badge: 0,
     subList: [],
-    to: '/',
+    to: INVENTORY_PATH,
   },
   {
     icon: Person,
-    desc: 'User',
+    desc: 'Customers Details',
     secondDesc: '',
     badge: 0,
     subList: [],
-    to: '/',
+    to: CUSTOMERS_PATH,
   },
   {
-    icon: Forum,
+    icon: PriceCheckIcon,
     desc: 'Cart Checkout',
-    secondDesc: 'Message from andi',
-    badge: 0,
-    subList: [
-      {
-        desc: 'chat',
-        badge: 2,
-      },
-      {
-        desc: 'reminder',
-        badge: 0,
-      },
-    ],
-    to: '/',
-  },
-  {
-    icon: Analytics,
-    desc: 'Analytics',
     secondDesc: '',
     badge: 0,
     subList: [],
-    to: '/',
+    to: CART_CHECKOUT_PATH,
   },
-  {
-    icon: FolderOpen,
-    desc: 'Folder',
-    secondDesc: '',
-    badge: 0,
-    subList: [],
-    to: '/',
-  },
-  {
-    icon: BorderColor,
-    desc: 'Edit',
-    secondDesc: '',
-    badge: 0,
-    subList: [],
-    to: '/',
-  },
+  // {
+  //   icon: Analytics,
+  //   desc: 'Analytics',
+  //   secondDesc: '',
+  //   badge: 0,
+  //   subList: [],
+  //   to: '/',
+  // },
+  // {
+  //   icon: FolderOpen,
+  //   desc: 'Folder',
+  //   secondDesc: '',
+  //   badge: 0,
+  //   subList: [],
+  //   to: '/',
+  // },
+  // {
+  //   icon: BorderColor,
+  //   desc: 'Edit',
+  //   secondDesc: '',
+  //   badge: 0,
+  //   subList: [],
+  //   to: '/',
+  // },
 ];
 
 export default navbarList;

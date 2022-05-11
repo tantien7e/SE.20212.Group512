@@ -1,14 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import InventoryScreen from '@app/screens/InventoryScreen';
 import SideNav from '@app/components/SideNav';
 import { Box } from '@mui/material';
 import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
+import { CART_CHECKOUT_PATH, INVENTORY_PATH } from '@app/constants';
 
 function App() {
-  const [count, setCount] = useState(0);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (pathname === '/') navigate('/inventory');
+  }, []);
 
   return (
     <Box className="app-container" display="flex">
@@ -16,7 +21,8 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<InventoryScreen />} />
-          <Route path="/cart-checkout" element={<CartCheckoutScreen />} />
+          <Route path={INVENTORY_PATH} element={<InventoryScreen />} />
+          <Route path={CART_CHECKOUT_PATH} element={<CartCheckoutScreen />} />
           {/* <Route path="/products/:slug" element={<ProductScreen />} />
           <Route path="/cart" element={<CartScreen />} />
           <Route path="/signin" element={<SigninScreen />} /> */}
