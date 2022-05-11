@@ -118,7 +118,8 @@ function SideNav() {
           sx={{
             flexShrink: 0,
             display: open ? 'none' : { xs: 'none', sm: 'initial' },
-            marginBottom: '8px',
+            marginBottom: '7px',
+
           }}
         >
           <StorefrontIcon
