@@ -4,17 +4,41 @@ const lightPurple = '#7c69ef';
 const lightGray = '#f1f4f8';
 const hoverButton = 'rgba(0, 0, 0, 0.04)';
 const textGray = '#495057';
+const darkBlue = '#506690';
+
+declare module '@mui/material/styles' {
+  interface Theme {
+    status: {
+      inActive: string;
+    };
+  }
+  // allow configuration using `createTheme`
+  interface ThemeOptions {
+    status?: {
+      inActive?: string;
+    };
+  }
+}
 
 const theme = createTheme({
+  status: {
+    inActive: textGray,
+  },
+
   palette: {
     primary: {
       main: lightPurple,
-      contrastText: textGray,
+      // contrastText: 'white',
+      // dark: textGray,
     },
     secondary: {
       main: lightGray,
       light: hoverButton,
+      contrastText: darkBlue,
     },
+    // common: {
+    //   white: textGray,
+    // },
   },
   typography: {
     fontFamily: [
@@ -30,6 +54,9 @@ const theme = createTheme({
       '"Segoe UI Emoji"',
       '"Segoe UI Symbol"',
     ].join(','),
+    h4: {
+      fontWeight: 600,
+    },
   },
 });
 
