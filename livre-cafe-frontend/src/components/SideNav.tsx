@@ -82,7 +82,7 @@ function SideNav() {
   const matchsMD = useMediaQuery('(max-width: 768px)');
   const theme = useTheme();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(!matchsMD);
+  const [open, setOpen] = useState<boolean>(true);
   const refFocus = useRef<any>(null);
   const handleDrawerClose = () => {
     setOpen(!open);
@@ -119,7 +119,6 @@ function SideNav() {
             flexShrink: 0,
             display: open ? 'none' : { xs: 'none', sm: 'initial' },
             marginBottom: '7px',
-
           }}
         >
           <StorefrontIcon
@@ -212,7 +211,7 @@ function SideNav() {
                           fontSize: '20px',
                           color: isActive
                             ? theme.palette.primary.main
-                            : theme.palette.primary.contrastText,
+                            : theme.status.inActive,
                         }}
                       />
                     </Badge>
@@ -229,7 +228,7 @@ function SideNav() {
                       overflowX: 'hidden',
                       color: isActive
                         ? theme.palette.primary.main
-                        : theme.palette.primary.contrastText,
+                        : theme.status.inActive,
                       '& span': { fontWeight: isActive ? 600 : 400 },
                       whiteSpace: 'nowrap',
                       minWidth: '126px',
@@ -282,7 +281,7 @@ function SideNav() {
               whiteSpace: 'nowrap',
               lineHeight: 'inherit',
               fontWeight: 500,
-              color: theme.palette.primary.contrastText,
+              color: theme.status.inActive,
             }}
           >
             Arrofi Reza S.
@@ -294,7 +293,7 @@ function SideNav() {
               display: 'block',
               whiteSpace: 'nowrap',
               lineHeight: 'inherit',
-              color: theme.palette.primary.contrastText,
+              color: theme.status.inActive,
             }}
           >
             Web Designer

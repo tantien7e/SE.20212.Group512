@@ -5,6 +5,7 @@ import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import InventoryScreen from '@app/screens/InventoryScreen';
 import SideNav from '@app/components/SideNav';
 import { Box } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
 import {
   CART_CHECKOUT_PATH,
@@ -20,11 +21,17 @@ function App() {
   useEffect(() => {
     if (pathname === '/') navigate('/inventory');
   }, []);
+  const theme = useTheme();
 
   return (
     <Box className="app-container" display="flex">
       <SideNav />
-      <main>
+      <main
+        style={{
+          minHeight: '100vh',
+          backgroundColor: theme.palette.secondary.main,
+        }}
+      >
         <Routes>
           <Route path="/" element={<InventoryScreen />} />
           <Route path={INVENTORY_PATH} element={<InventoryScreen />} />
