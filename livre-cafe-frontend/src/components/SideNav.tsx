@@ -8,7 +8,6 @@ import {
   Box,
   Button,
   Chip,
-  Divider,
   Drawer,
   List,
   ListItemButton,
@@ -88,12 +87,7 @@ function SideNav() {
     setOpen(!open);
   };
 
-  // function toogleOpenSearch() {
-  //   setOpen(false);
-  //   setTimeout(() => {
-  //     if (refFocus?.current) refFocus.current.focus();
-  //   }, 500);
-  // }
+  const { state, dispatch } = useContext(Store);
   const location = useLocation();
   const handleChangePath = (target: string) => {
     navigate(target, { replace: true });
@@ -169,6 +163,10 @@ function SideNav() {
       <List dense={true} sx={{ flex: 1 }}>
         {navList.map((key, index) => {
           const isActive = location?.pathname === key?.to;
+          const { cart } = state;
+          const totalQuantity = key.badge
+            ? cart?.cartItems?.reduce((a, c) => a + c.quantity, 0)
+            : 0;
           return (
             <div key={`list-item-${index}`}>
               <Tooltip
@@ -202,8 +200,8 @@ function SideNav() {
                 >
                   <ListItemIcon sx={{ minWidth: '46px' }}>
                     <Badge
-                      badgeContent={key.badge}
-                      color="secondary"
+                      badgeContent={totalQuantity}
+                      color="primary"
                       variant="dot"
                     >
                       <key.icon
@@ -234,10 +232,10 @@ function SideNav() {
                       minWidth: '126px',
                     }}
                   />
-                  {key.badge !== 0 && (
+                  {totalQuantity !== 0 && (
                     <Chip
-                      label={key.badge}
-                      color={'secondary'}
+                      label={totalQuantity}
+                      color={'primary'}
                       size="small"
                       sx={{ height: 'auto' }}
                     />

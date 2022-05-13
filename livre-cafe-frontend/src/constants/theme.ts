@@ -16,6 +16,7 @@ declare module '@mui/material/styles' {
   interface ThemeOptions {
     status?: {
       inActive?: string;
+      badgeActive?: string;
     };
   }
 }

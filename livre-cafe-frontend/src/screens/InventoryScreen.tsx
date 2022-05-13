@@ -4,6 +4,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CoffeeIcon from '@mui/icons-material/Coffee';
 import DataTable from '@app/components/DataTable';
 import { useTheme } from '@mui/material/styles';
+import { Helmet } from 'react-helmet-async';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -49,6 +50,9 @@ function InventoryScreen() {
       sx={{ maxWidth: '100%' }}
       className="screen-container inventory-screen-container"
     >
+      <Helmet>
+        <title>Inventory</title>
+      </Helmet>
       <Box sx={{ marginBottom: '1rem' }}>
         <Typography variant="h4" color={theme.palette.secondary.contrastText}>
           Inventory

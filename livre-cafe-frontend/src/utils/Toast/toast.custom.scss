@@ -1,0 +1,49 @@
+.toast-custom {
+  display: flex;
+  align-items: center;
+  .toast-custom-text {
+    padding-left: 17px;
+    font-size: 19px;
+    color: #000000 !important;
+  }
+}
+
+.Toastify__toast-container {
+  max-width: 312px !important;
+  height: fit-content;
+}
+
+.Toastify__toast-body {
+  margin: 8px 0 !important;
+  div {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+  }
+  min-height: 0px;
+  height: fit-content;
+  color: white !important;
+}
+
+.Toastify__close-button {
+}
+
+.Toastify__toast {
+  height: fit-content;
+  min-height: 0px !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  .Toastify__close-button {
+    color: white !important;
+    margin-top: auto;
+    margin-bottom: auto;
+    opacity: 0.8;
+  }
+}
+
+.Toastify__toast--error {
+  background-color: rgb(185, 0, 0)!important;
+}
+
+.styled-success-on-switch-status {
+  background-color: #067e30 !important;
+}

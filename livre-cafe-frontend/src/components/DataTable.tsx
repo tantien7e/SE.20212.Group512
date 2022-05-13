@@ -1,5 +1,15 @@
+import { Store } from '@app/context/Store';
+import { ProductInterface } from '@app/types/product.interface';
+import { toastError, toastInformSuccess, toastWarning } from '@app/utils/toast';
+import { Search } from '@mui/icons-material';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import { Avatar, Button, FormControl, OutlinedInput } from '@mui/material';
+import {
+  Avatar,
+  Button,
+  FormControl,
+  InputAdornment,
+  OutlinedInput,
+} from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
@@ -17,43 +27,40 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
-interface Data {
-  picture: string;
-  stock: number;
-  name: string;
-  price: number;
-}
+interface Data extends ProductInterface {}
 
 function createData(
   name: string,
   stock: number,
   price: number,
   picture: string,
+  _id: string,
 ): Data {
   return {
     picture,
     stock,
     name,
     price,
+    _id,
   };
 }
 
 const rows = [
-  createData('Cupcake', 305, 3.7, 'url'),
-  createData('Donut', 452, 25.0, 'url'),
-  createData('Eclair', 262, 16.0, 'url'),
-  createData('Frozen yoghurt', 159, 6.0, 'url'),
-  createData('Gingerbread', 356, 16.0, 'url'),
-  createData('Honeycomb', 408, 3.2, 'url'),
-  createData('Ice cream sandwich', 237, 9.0, 'url'),
-  createData('Jelly Bean', 375, 0.0, 'url'),
-  createData('KitKat', 518, 26.0, 'url'),
-  createData('Lollipop', 392, 0.2, 'url'),
-  createData('Marshmallow', 318, 0, 'url'),
-  createData('Nougat', 360, 19.0, 'url'),
-  createData('Oreo', 437, 18.0, 'url'),
+  createData('Cupcake', 5, 3.7, 'url', '1'),
+  createData('Donut', 10, 25.0, 'url', '2'),
+  createData('Eclair', 2, 16.0, 'url', '3'),
+  createData('Frozen yoghurt', 4, 6.0, 'url', '4'),
+  createData('Gingerbread', 20, 16.0, 'url', '5'),
+  createData('Honeycomb', 100, 3.2, 'url', '6'),
+  createData('Ice cream sandwich', 105, 9.0, 'url', '7'),
+  createData('Jelly Bean', 10, 0.0, 'url', '8'),
+  createData('KitKat', 2, 26.0, 'url', '9'),
+  createData('Lollipop', 3, 0.2, 'url', '10'),
+  createData('Marshmallow', 5, 0, 'url', '11'),
+  createData('Nougat', 1, 19.0, 'url', '12'),
+  createData('Oreo', 0, 18.0, 'url', '13'),
 ];
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -135,10 +142,14 @@ interface EnhancedTableProps {
   order: Order;
   orderBy: string;
   rowCount: number;
+  onSearchChange: (
+    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => void;
+  filterText: string;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
-  const { order, orderBy, onRequestSort } = props;
+  const { order, orderBy, onRequestSort, onSearchChange, filterText } = props;
   const createSortHandler =
     (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
@@ -184,7 +195,16 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         >
           <Box component="form" noValidate autoComplete="off">
             <FormControl>
-              <OutlinedInput placeholder="Search by name" />
+              <OutlinedInput
+                startAdornment={
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                }
+                placeholder="Search by name"
+                onChange={onSearchChange}
+                value={filterText}
+              />
             </FormControl>
           </Box>
         </TableCell>
@@ -231,6 +251,8 @@ export default function EnhancedTable() {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [filterText, setFilterText] = useState('');
+  const [filteredRows, setFilteredRows] = useState<Data[]>(rows);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -271,6 +293,45 @@ export default function EnhancedTable() {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
+  const handleSearch = (
+    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
+    const text = e.target.value.toLowerCase();
+    setFilterText(text);
+    const newRows = rows.filter((row) => {
+      const { name } = row;
+      return name.toLowerCase().includes(text);
+    });
+    console.log(newRows);
+    setFilteredRows(newRows);
+  };
+
+  const { state, dispatch } = useContext(Store);
+  // console.log(state);
+  const { cart } = state;
+
+  const handleAddToCart = (product: ProductInterface) => {
+    console.log(state);
+    const existItem = cart?.cartItems?.find(
+      (item: ProductInterface) => item._id === product?._id,
+    );
+    const quantity = existItem ? existItem.quantity + 1 : 1;
+
+    dispatch({
+      type: 'CART_UPDATE_ITEM_QUANTITY',
+      payload: {
+        ...product,
+        quantity,
+      },
+    });
+    if (quantity > product.stock) {
+      console.log('Bigger');
+      toastError('Out of stock!');
+      return;
+    }
+    toastInformSuccess('Successfully added!');
+  };
+
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
@@ -288,11 +349,13 @@ export default function EnhancedTable() {
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
+              onSearchChange={handleSearch}
+              filterText={filterText}
             />
             <TableBody>
               {/* if you don't need to support IE11, you can replace the `stableSort` call with:
               rows.slice().sort(getComparator(order, orderBy)) */}
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(filteredRows, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.name as string);
@@ -329,7 +392,11 @@ export default function EnhancedTable() {
                       <TableCell align="right">{row.stock}</TableCell>
                       <TableCell align="right">${row.price}</TableCell>
                       <TableCell align="right">
-                        <Button variant="contained" sx={{ marginRight: 2 }}>
+                        <Button
+                          variant="contained"
+                          sx={{ marginRight: 2 }}
+                          onClick={() => handleAddToCart(row)}
+                        >
                           Add To Cart
                         </Button>
                         <Button variant="outlined">Edit</Button>
@@ -352,7 +419,7 @@ export default function EnhancedTable() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.length}
+          count={filteredRows.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

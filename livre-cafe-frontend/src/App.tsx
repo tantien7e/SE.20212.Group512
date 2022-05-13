@@ -14,6 +14,7 @@ import {
 } from '@app/constants';
 import '@app/styles/main.scss';
 import CustomersScreen from '@app/screens/CustomersScreen';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   const { pathname } = useLocation();
