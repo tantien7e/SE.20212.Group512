@@ -1,23 +1,35 @@
+import { ProductInterface } from '@app/types/product.interface';
+import { toastInformSuccess } from '@app/utils/toast';
 import React, { createContext, useReducer } from 'react';
 
-interface PathStateInterface {
-  activePath: string;
+export interface CartItemInterface extends ProductInterface {
+  quantity: number;
 }
-interface PathContextActionInterface {
-  type: string;
-  payload: PathStateInterface;
+interface CartStateInterface {
+  cart: {
+    cartItems: (ProductInterface & { quantity: number })[];
+  };
 }
 
-const initialState = {
-  activePath: 'inventory',
+interface CartContextActionInterface {
+  type: string;
+  payload: ProductInterface & { quantity: number };
+}
+
+const initialState: CartStateInterface = {
+  cart: {
+    cartItems: localStorage.getItem('cartItems')
+      ? JSON.parse(localStorage.getItem('cartItems') || '')
+      : [],
+  },
 };
 
 export const Store = createContext<{
-  state: PathStateInterface;
+  state: CartStateInterface;
   dispatch: React.Dispatch<any>;
 }>({
   state: initialState,
-  dispatch: (action: PathContextActionInterface) => {
+  dispatch: (action: CartContextActionInterface) => {
     return reducer(initialState, action);
   },
 });
@@ -26,17 +38,46 @@ interface StorePropsInterface {
 }
 
 function reducer(
-  state: PathStateInterface,
-  action: PathContextActionInterface,
+  state: CartStateInterface,
+  action: CartContextActionInterface,
 ) {
+  const selectedItem = action.payload;
+  const existItem = state.cart?.cartItems?.find(
+    (item: ProductInterface) => item._id === selectedItem._id,
+  );
+
   switch (action.type) {
-    case 'CHANGE_ACTIVE_PATH': {
-      const activePath = action.payload.activePath;
+    case 'CART_ADD_ITEM': {
+      const cartItems = existItem
+        ? state.cart?.cartItems?.map((item) =>
+            item._id === existItem._id ? selectedItem : item,
+          )
+        : [...state.cart.cartItems, action.payload];
       return {
-        activePath,
+        ...state,
+        cart: {
+          cartItems,
+        },
       };
     }
-
+    case 'CART_UPDATE_ITEM_QUANTITY': {
+      const cartItems = existItem
+        ? state.cart?.cartItems?.map((item) =>
+            item._id === existItem._id &&
+            selectedItem?.quantity <= selectedItem.stock
+              ? selectedItem
+              : item,
+          )
+        : [...state.cart.cartItems, action.payload];
+      const filteredCartItems = cartItems.filter((item) => item.quantity > 0);
+      localStorage.setItem('cartItems', JSON.stringify(filteredCartItems));
+      return {
+        ...state,
+        cart: {
+          cartItems: filteredCartItems,
+        },
+      };
+    }
     default:
       return state;
   }
