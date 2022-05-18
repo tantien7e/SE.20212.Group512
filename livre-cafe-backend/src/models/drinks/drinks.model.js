@@ -13,7 +13,7 @@ const DrinksSchema = new Schema({
         required: true
     },
 
-    count: {
+    stock: {
         type: Number,
         required: true
     },
