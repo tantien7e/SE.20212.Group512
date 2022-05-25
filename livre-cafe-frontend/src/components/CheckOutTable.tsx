@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
 import { Store } from '@app/context/Store';
+import { relative } from 'node:path/win32';
 
 const columns: GridColDef[] = [
   { field: 'id', headerName: 'ID', width: 70 },
@@ -21,7 +22,7 @@ const columns: GridColDef[] = [
     field: 'additionalRequirements',
     headerName: 'Additional Requirements',
     sortable: false,
-    width: 300,
+    flex: 1,
   },
 ];
 
@@ -44,12 +45,13 @@ export default function CheckOutTable() {
   });
 
   return (
-    <div style={{ height: 400, width: '100%' }}>
+    <div style={{ height: 400, width: '100%', backgroundColor: 'white' }}>
       <DataGrid
         rows={rows}
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5]}
+        isRowSelectable={() => false}
       />
     </div>
   );
