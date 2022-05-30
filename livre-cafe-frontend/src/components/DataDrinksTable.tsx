@@ -1,4 +1,5 @@
-import { Store } from '@app/context/Store';
+import EditInventoryModal from '@app/components/EditInventoryModal';
+import { CartItemInterface, Store } from '@app/context/Store';
 import { DrinkInterface, ProductInterface } from '@app/types/product.interface';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { Search } from '@mui/icons-material';
@@ -231,6 +232,14 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const [filterText, setFilterText] = useState('');
   const [filteredRows, setFilteredRows] = useState<Data[]>(rows);
 
+  const [open, setOpen] = useState(false);
+  const [currentCartItem, setCurrentCartItem] = useState<DrinkInterface>();
+  const handleOpenEditModal = (item: DrinkInterface) => {
+    setOpen(true);
+    setCurrentCartItem(item);
+  };
+  const handleClose = () => setOpen(false);
+
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
     property: keyof Data,
@@ -301,6 +310,13 @@ export default function EnhancedTable(props: EnhancedTableProps) {
 
   return (
     <Box sx={{ width: '100%' }}>
+      {open && (
+        <EditInventoryModal
+          open={open}
+          handleClose={handleClose}
+          item={currentCartItem}
+        />
+      )}
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar numSelected={selected.length} />
         <TableContainer>
@@ -326,7 +342,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
-
                   return (
                     <TableRow
                       hover
@@ -365,7 +380,12 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                         >
                           Add To Cart
                         </Button>
-                        <Button variant="outlined">Edit</Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleOpenEditModal(row)}
+                        >
+                          Edit
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
