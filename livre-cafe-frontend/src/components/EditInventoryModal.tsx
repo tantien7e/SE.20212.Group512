@@ -97,15 +97,20 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
             id="modal-modal-title"
             variant="h5"
             component="h2"
+            color={theme.palette.secondary.contrastText}
             style={{ padding: ` ${theme.spacing(1)} 0` }}
           >
             <strong> Edit Product</strong>
           </Typography>
           <Divider />
-          <Box sx={{ padding: `${theme.spacing(2)} 0` }}>
-            <Typography variant="body1">
-              <strong>Gain more impression with a clean image</strong>
-            </Typography>
+          <Box
+            sx={{
+              padding: `${theme.spacing(2)} 0`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
             {productState.imageUrl && (
               <img
                 src={productState.imageUrl}
@@ -136,6 +141,8 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
           <Typography
             variant="h6"
             style={{ padding: ` ${theme.spacing(1)} 0` }}
+            color={theme.palette.secondary.contrastText}
+
           >
             <strong> Product Info</strong>
           </Typography>

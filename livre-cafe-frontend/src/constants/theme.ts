@@ -57,7 +57,7 @@ const theme = createTheme({
     ].join(','),
     h4: {
       fontWeight: 600,
-    },
+    }
   },
 });
 

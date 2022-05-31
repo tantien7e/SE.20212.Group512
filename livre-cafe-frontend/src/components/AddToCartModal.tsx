@@ -142,7 +142,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
             <strong> Add To Cart</strong>
           </Typography>
           <Divider />
-          <Box sx={{ padding: `${theme.spacing(2)} 0` }}>
+          <Box sx={{ padding: `${theme.spacing(2)} 0`, display: 'flex' }}>
             {/* <Typography variant="body1">
               <strong>Product Image</strong>
             </Typography> */}
@@ -154,7 +154,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
                   height: '256px',
                   maxHeight: '50vh',
                   borderRadius: '8px',
-                  margin: `${theme.spacing(2)} 0`,
+                  margin: `${theme.spacing(2)} auto`,
                 }}
               />
             )}
