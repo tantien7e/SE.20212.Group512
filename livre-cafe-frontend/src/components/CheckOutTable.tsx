@@ -86,14 +86,23 @@ export default function CheckOutTable() {
   });
 
   return (
-    <div style={{ height: 400, width: '100%', backgroundColor: 'white' }}>
+    <div
+      style={{
+        height: 400,
+        width: '100%',
+        backgroundColor: 'white',
+      }}
+    >
       <DataGrid
-        // onRowClick={(params) => console.log(params)}
         rows={rows}
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5]}
         isRowSelectable={() => false}
+        sx={{
+          padding: '1rem',
+          paddingTop: '0',
+        }}
       />
     </div>
   );
