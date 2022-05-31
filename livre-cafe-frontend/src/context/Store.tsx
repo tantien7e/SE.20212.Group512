@@ -79,6 +79,19 @@ function reducer(
         },
       };
     }
+    case 'DELETE_ITEM': {
+      const afterDeletedItems = state.cart?.cartItems?.filter((item) => {
+        return item._id !== selectedItem._id;
+      });
+
+      localStorage.setItem('cartItems', JSON.stringify(afterDeletedItems));
+      return {
+        ...state,
+        cart: {
+          cartItems: afterDeletedItems,
+        },
+      };
+    }
     default:
       return state;
   }
