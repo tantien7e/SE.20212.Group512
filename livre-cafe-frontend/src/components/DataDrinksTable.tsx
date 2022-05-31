@@ -1,3 +1,4 @@
+import AddToCartModal from '@app/components/AddToCartModal';
 import EditInventoryModal from '@app/components/EditInventoryModal';
 import { CartItemInterface, Store } from '@app/context/Store';
 import { DrinkInterface, ProductInterface } from '@app/types/product.interface';
@@ -232,13 +233,22 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const [filterText, setFilterText] = useState('');
   const [filteredRows, setFilteredRows] = useState<Data[]>(rows);
 
-  const [open, setOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
+
   const [currentCartItem, setCurrentCartItem] = useState<DrinkInterface>();
   const handleOpenEditModal = (item: DrinkInterface) => {
-    setOpen(true);
+    setEditModalOpen(true);
     setCurrentCartItem(item);
   };
-  const handleClose = () => setOpen(false);
+
+  const handleOpenAddToCartModal = (item: DrinkInterface) => {
+    setAddToCartModalOpen(true);
+    setCurrentCartItem(item);
+  };
+  const handleEditModalClose = () => setEditModalOpen(false);
+
+  const handleAddToCartModalClose = () => setAddToCartModalOpen(false);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -285,35 +295,20 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   // console.log(state);
   const { cart } = state;
 
-  const handleAddToCart = (product: DrinkInterface) => {
-    console.log(state);
-    const existItem = cart?.cartItems?.find(
-      (item: DrinkInterface & { quantity: number }) =>
-        item._id === product?._id,
-    );
-    const quantity = existItem ? existItem.quantity + 1 : 1;
-
-    dispatch({
-      type: 'CART_UPDATE_ITEM_QUANTITY',
-      payload: {
-        ...product,
-        quantity,
-      },
-    });
-    if (quantity > product.stock) {
-      console.log('Bigger');
-      toastError('Out of stock!');
-      return;
-    }
-    toastInformSuccess('Successfully added!');
-  };
-
   return (
     <Box sx={{ width: '100%' }}>
-      {open && (
+      {editModalOpen && (
         <EditInventoryModal
-          open={open}
-          handleClose={handleClose}
+          open={editModalOpen}
+          handleClose={handleEditModalClose}
+          item={currentCartItem}
+        />
+      )}
+
+      {addToCartModalOpen && (
+        <AddToCartModal
+          open={addToCartModalOpen}
+          handleClose={handleAddToCartModalClose}
           item={currentCartItem}
         />
       )}
@@ -376,7 +371,10 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                         <Button
                           variant="contained"
                           sx={{ marginRight: 2 }}
-                          onClick={() => handleAddToCart(row)}
+                          onClick={() => {
+                            // handleAddToCart(row);
+                            handleOpenAddToCartModal(row);
+                          }}
                         >
                           Add To Cart
                         </Button>
