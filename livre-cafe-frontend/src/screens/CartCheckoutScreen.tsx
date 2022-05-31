@@ -38,7 +38,11 @@ function CartCheckoutScreen() {
             fontSize: '1.4rem',
           }}
         >
-          <Typography variant="h4" color={theme.palette.secondary.contrastText}>
+          <Typography
+            variant="h5"
+            fontWeight="700"
+            color={theme.palette.secondary.contrastText}
+          >
             Total Cost: ${getTotal()}
           </Typography>{' '}
         </div>
