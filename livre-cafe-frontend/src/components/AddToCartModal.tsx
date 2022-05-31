@@ -65,6 +65,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
   const handleAddToCart = (
     product?: DrinkInterface | BookInterface,
     addedQuantity = 1,
+    additionalRequirement = '',
   ) => {
     if (!product) return;
     const existItem = state?.cart?.cartItems?.find(
@@ -81,6 +82,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
       payload: {
         ...product,
         quantity,
+        additionalRequirement,
       },
     });
     if (quantity > product?.stock) {
@@ -91,7 +93,11 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
     toastInformSuccess('Successfully added!');
   };
   const handleAdd = () => {
-    handleAddToCart(item, productState.quantity);
+    handleAddToCart(
+      item,
+      productState.quantity,
+      productState.additionalRequirement,
+    );
     handleClose();
   };
 

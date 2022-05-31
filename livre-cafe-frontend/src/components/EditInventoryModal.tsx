@@ -44,7 +44,7 @@ interface ProductStateInterface {
   stockQuantity: number;
 }
 
-export default function EditCartModal(props: EditCartModalPropsInterface) {
+export default function EditInventoryModal(props: EditCartModalPropsInterface) {
   const { open, handleClose, item } = props;
 
   const [productState, setProductState] = useState<ProductStateInterface>({

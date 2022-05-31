@@ -31,6 +31,8 @@ import { visuallyHidden } from '@mui/utils';
 import React, { useContext, useEffect, useState } from 'react';
 import { ClipLoader } from 'react-spinners';
 import { css } from '@emotion/react';
+import AddToCartModal from '@app/components/AddToCartModal';
+import EditInventoryModal from '@app/components/EditInventoryModal';
 
 interface Data extends BookInterface {}
 
@@ -243,6 +245,23 @@ export default function DataBooksTable(props: EnhancedTableProps) {
   const prefixUrl =
     'https://raw.githubusercontent.com/benoitvallon/100-best-books/master/static/';
 
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
+
+  const [currentCartItem, setCurrentCartItem] = useState<BookInterface>();
+  const handleOpenEditModal = (item: BookInterface) => {
+    setEditModalOpen(true);
+    setCurrentCartItem(item);
+  };
+
+  const handleOpenAddToCartModal = (item: BookInterface) => {
+    setAddToCartModalOpen(true);
+    setCurrentCartItem(item);
+  };
+  const handleEditModalClose = () => setEditModalOpen(false);
+
+  const handleAddToCartModalClose = () => setAddToCartModalOpen(false);
+
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
     property: keyof Data,
@@ -319,6 +338,21 @@ export default function DataBooksTable(props: EnhancedTableProps) {
 
   return (
     <Box sx={{ width: '100%' }}>
+      {editModalOpen && (
+        <EditInventoryModal
+          open={editModalOpen}
+          handleClose={handleEditModalClose}
+          item={currentCartItem}
+        />
+      )}
+
+      {addToCartModalOpen && (
+        <AddToCartModal
+          open={addToCartModalOpen}
+          handleClose={handleAddToCartModalClose}
+          item={currentCartItem}
+        />
+      )}
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar />
         <TableContainer>
@@ -411,11 +445,19 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                           <Button
                             variant="contained"
                             sx={{ marginRight: 2 }}
-                            onClick={() => handleAddToCart(row)}
+                            onClick={() => {
+                              // handleAddToCart(row);
+                              handleOpenAddToCartModal(row);
+                            }}
                           >
                             Add To Cart
                           </Button>
-                          <Button variant="outlined">Edit</Button>
+                          <Button
+                            variant="outlined"
+                            onClick={() => handleOpenEditModal(row)}
+                          >
+                            Edit
+                          </Button>
                         </TableCell>
                       </TableRow>
                     );
