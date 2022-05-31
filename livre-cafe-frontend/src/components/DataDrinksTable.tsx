@@ -1,4 +1,6 @@
-import { Store } from '@app/context/Store';
+import AddToCartModal from '@app/components/AddToCartModal';
+import EditInventoryModal from '@app/components/EditInventoryModal';
+import { CartItemInterface, Store } from '@app/context/Store';
 import { DrinkInterface, ProductInterface } from '@app/types/product.interface';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { Search } from '@mui/icons-material';
@@ -231,6 +233,23 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const [filterText, setFilterText] = useState('');
   const [filteredRows, setFilteredRows] = useState<Data[]>(rows);
 
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
+
+  const [currentCartItem, setCurrentCartItem] = useState<DrinkInterface>();
+  const handleOpenEditModal = (item: DrinkInterface) => {
+    setEditModalOpen(true);
+    setCurrentCartItem(item);
+  };
+
+  const handleOpenAddToCartModal = (item: DrinkInterface) => {
+    setAddToCartModalOpen(true);
+    setCurrentCartItem(item);
+  };
+  const handleEditModalClose = () => setEditModalOpen(false);
+
+  const handleAddToCartModalClose = () => setAddToCartModalOpen(false);
+
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
     property: keyof Data,
@@ -276,31 +295,23 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   // console.log(state);
   const { cart } = state;
 
-  const handleAddToCart = (product: DrinkInterface) => {
-    console.log(state);
-    const existItem = cart?.cartItems?.find(
-      (item: DrinkInterface & { quantity: number }) =>
-        item._id === product?._id,
-    );
-    const quantity = existItem ? existItem.quantity + 1 : 1;
-
-    dispatch({
-      type: 'CART_UPDATE_ITEM_QUANTITY',
-      payload: {
-        ...product,
-        quantity,
-      },
-    });
-    if (quantity > product.stock) {
-      console.log('Bigger');
-      toastError('Out of stock!');
-      return;
-    }
-    toastInformSuccess('Successfully added!');
-  };
-
   return (
     <Box sx={{ width: '100%' }}>
+      {editModalOpen && (
+        <EditInventoryModal
+          open={editModalOpen}
+          handleClose={handleEditModalClose}
+          item={currentCartItem}
+        />
+      )}
+
+      {addToCartModalOpen && (
+        <AddToCartModal
+          open={addToCartModalOpen}
+          handleClose={handleAddToCartModalClose}
+          item={currentCartItem}
+        />
+      )}
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar numSelected={selected.length} />
         <TableContainer>
@@ -326,7 +337,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
-
                   return (
                     <TableRow
                       hover
@@ -361,11 +371,19 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                         <Button
                           variant="contained"
                           sx={{ marginRight: 2 }}
-                          onClick={() => handleAddToCart(row)}
+                          onClick={() => {
+                            // handleAddToCart(row);
+                            handleOpenAddToCartModal(row);
+                          }}
                         >
                           Add To Cart
                         </Button>
-                        <Button variant="outlined">Edit</Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleOpenEditModal(row)}
+                        >
+                          Edit
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );

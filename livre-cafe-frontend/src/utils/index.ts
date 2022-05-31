@@ -12,3 +12,7 @@ export function stableSort<T>(
   });
   return stabilizedThis.map((el) => el[0]);
 }
+
+export const round2 = (num: number): string => {
+  return (Math.round(num * 100 + Number.EPSILON) / 100).toFixed(2);
+};

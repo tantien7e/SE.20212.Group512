@@ -4,16 +4,17 @@ import React, { createContext, useReducer } from 'react';
 
 export interface CartItemInterface extends ProductInterface {
   quantity: number;
+  additionalRequirement?: string;
 }
-interface CartStateInterface {
+export interface CartStateInterface {
   cart: {
-    cartItems: (ProductInterface & { quantity: number })[];
+    cartItems: CartItemInterface[];
   };
 }
 
 interface CartContextActionInterface {
   type: string;
-  payload: ProductInterface & { quantity: number };
+  payload: CartItemInterface;
 }
 
 const initialState: CartStateInterface = {
