@@ -1,3 +1,4 @@
+import { PREFIX_URL } from '@app/constants';
 import { BookInterface, DrinkInterface } from '@app/types/product.interface';
 import { round2 } from '@app/utils';
 import { Button, Container, Divider, Grid, TextField } from '@mui/material';
@@ -33,7 +34,7 @@ const Input = styled('input')({
 interface EditCartModalPropsInterface {
   open: boolean;
   handleClose: () => void;
-  item?: DrinkInterface | BookInterface;
+  item?: DrinkInterface & BookInterface;
 }
 
 interface ProductStateInterface {
@@ -42,17 +43,19 @@ interface ProductStateInterface {
   productName: string;
   price: number;
   stockQuantity: number;
+  author?: string;
 }
 
 export default function EditInventoryModal(props: EditCartModalPropsInterface) {
   const { open, handleClose, item } = props;
 
   const [productState, setProductState] = useState<ProductStateInterface>({
-    imageUrl: item?.picture || item?.imageLink,
+    imageUrl: item?.imageUrl || PREFIX_URL + item?.imageLink,
     productId: item?._id || '',
     productName: item?.name || item?.title || '',
     price: item?.price || 0,
     stockQuantity: item?.stock || 0,
+    author: item?.author,
   });
   const theme = useTheme();
   const headerPadding = `${theme.spacing(2)} 0`;
@@ -142,7 +145,6 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
             variant="h6"
             style={{ padding: ` ${theme.spacing(1)} 0` }}
             color={theme.palette.secondary.contrastText}
-
           >
             <strong> Product Info</strong>
           </Typography>
@@ -181,6 +183,24 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
                   />
                 </Grid>
               </Grid>
+
+              {productState?.author && (
+                <Grid container item alignItems="center">
+                  <Grid xs={3}>
+                    <label htmlFor="product-author">Author</label>
+                  </Grid>
+                  <Grid xs sx={{ maxWidth: 400 }}>
+                    <TextField
+                      variant="outlined"
+                      id="product-author"
+                      aria-describedby="my-helper-text"
+                      fullWidth
+                      value={productState?.author}
+                      onChange={(e) => handleChangeText(e, 'author')}
+                    />
+                  </Grid>
+                </Grid>
+              )}
 
               <Grid container item alignItems="center">
                 <Grid xs={3}>

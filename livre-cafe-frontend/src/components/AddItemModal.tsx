@@ -1,8 +1,9 @@
-import { PREFIX_URL } from '@app/constants';
-import { CartStateInterface, Store } from '@app/context/Store';
+import { useAddDrinkMutation } from '@app/app/services/drinks/drinks-api-slice';
+import { InventoryType } from '@app/constants';
 import { BookInterface, DrinkInterface } from '@app/types/product.interface';
-import { numberWithCommasRound2, round2 } from '@app/utils';
-import { toastError, toastInformSuccess } from '@app/utils/toast';
+import { round2 } from '@app/utils';
+import AddIcon from '@mui/icons-material/Add';
+import LoadingButton from '@mui/lab/LoadingButton';
 import { Button, Container, Divider, Grid, TextField } from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -11,6 +12,7 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useState } from 'react';
 import NumberFormat from 'react-number-format';
+import { toastError, toastInformSuccess, toastSuccess } from '@app/utils/toast';
 
 const style = {
   // position: 'absolute' as 'absolute',
@@ -36,89 +38,100 @@ const Input = styled('input')({
 interface EditCartModalPropsInterface {
   open: boolean;
   handleClose: () => void;
-  item?: DrinkInterface & BookInterface;
+  item?: DrinkInterface | BookInterface;
+  type: InventoryType;
 }
 
-interface ProductCartStateInterface {
+interface ProductStateInterface {
   imageUrl: string;
   productId: string;
   productName: string;
   price: number;
-  quantity: number;
-  additionalRequirement: string;
+  stockQuantity: number;
   author?: string;
 }
 
-export default function AddToCartModal(props: EditCartModalPropsInterface) {
-  const { open, handleClose, item } = props;
-  const { state, dispatch: ctxDispatch } = React.useContext(Store);
+export default function AddItemModal(props: EditCartModalPropsInterface) {
+  const { open, handleClose, type } = props;
 
-  const findCartItem = (
-    currentState: CartStateInterface,
-    newItem?: DrinkInterface | BookInterface,
-  ) =>
-    currentState.cart.cartItems.find(
-      (cartItem) => newItem?._id === cartItem._id,
-    );
-  const handleAddToCart = (
-    product?: DrinkInterface | BookInterface,
-    addedQuantity = 1,
-    additionalRequirement = '',
-  ) => {
-    if (!product) return;
-    const existItem = state?.cart?.cartItems?.find(
-      (cartItem: DrinkInterface & { quantity: number }) =>
-        cartItem._id === product?._id,
-    );
-    const quantity = existItem
-      ? Number(existItem.quantity) + Number(addedQuantity)
-      : addedQuantity;
-
-    ctxDispatch({
-      type: 'CART_UPDATE_ITEM_QUANTITY',
-      payload: {
-        ...product,
-        quantity,
-        additionalRequirement,
-      },
-    });
-    if (quantity > product?.stock) {
-      console.log('Bigger', quantity, product.stock);
-      toastError('Out of stock!');
-      return;
-    }
-    toastInformSuccess('Successfully added!');
-  };
-  const handleAdd = () => {
-    handleAddToCart(
-      item,
-      productState.quantity,
-      productState.additionalRequirement,
-    );
-    handleClose();
-  };
-
-  const [productState, setProductState] = useState<ProductCartStateInterface>({
-    imageUrl: item?.imageUrl || PREFIX_URL + item?.imageLink || '',
-    productId: item?._id || '',
-    productName: item?.name || item?.title || '',
-    price: item?.price || 0,
-    quantity: 1,
-    additionalRequirement:
-      findCartItem(state, item)?.additionalRequirement || '',
-    author: item?.author,
+  const [productState, setProductState] = useState<ProductStateInterface>({
+    imageUrl: '',
+    productId: '',
+    productName: '',
+    price: 0,
+    stockQuantity: 0,
+    author: '',
   });
   const theme = useTheme();
   const headerPadding = `${theme.spacing(2)} 0`;
 
+  const handleChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const reader = new FileReader();
+    const file = e.target.files?.[0];
+    reader.onloadend = () => {
+      setProductState((state) => ({
+        ...state,
+        imageUrl: reader.result as string,
+      }));
+    };
+    if (!file) {
+      return;
+    }
+    reader.readAsDataURL(file);
+  };
+
   const handleChangeText = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
-    field: keyof ProductCartStateInterface,
+    field: keyof ProductStateInterface,
   ) => {
     setProductState((prevState) => {
       return { ...prevState, [field]: e.target.value };
     });
   };
+
+  const generatePostData = (body: ProductStateInterface) => {
+    const { productName, price, stockQuantity, author, imageUrl } = body;
+    if (type === InventoryType.DRINK) {
+      return {
+        name: productName,
+        price,
+        stock: stockQuantity,
+        imageUrl,
+      };
+    } else if (type === InventoryType.BOOK) {
+      return {
+        title: productName,
+        author: author || '',
+        stock: stockQuantity,
+        price,
+      };
+    }
+    return {};
+  };
+
+  const [addDrink, { isLoading }] = useAddDrinkMutation();
+  const handleAdd = async () => {
+    const data = generatePostData(productState);
+    if (type === InventoryType.DRINK) {
+      try {
+        const response = await addDrink(data);
+        console.log(response);
+        const { data: drinkData, error } = response;
+        if (error) {
+          toastError(error.message);
+          return;
+        }
+        toastSuccess('Item was added successfully!');
+      } catch (err) {
+        toastError(err.message);
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    console.log(isLoading);
+  }, [isLoading]);
 
   return (
     <div>
@@ -135,16 +148,22 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
             id="modal-modal-title"
             variant="h5"
             component="h2"
-            style={{ padding: ` ${theme.spacing(1)} 0` }}
             color={theme.palette.secondary.contrastText}
+            style={{ padding: ` ${theme.spacing(1)} 0` }}
           >
-            <strong> Add To Cart</strong>
+            <strong style={{ textTransform: 'capitalize' }}>
+              Add {type.toLowerCase()}
+            </strong>
           </Typography>
           <Divider />
-          <Box sx={{ padding: `${theme.spacing(2)} 0`, display: 'flex' }}>
-            {/* <Typography variant="body1">
-              <strong>Product Image</strong>
-            </Typography> */}
+          <Box
+            sx={{
+              padding: `${theme.spacing(2)} 0`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
             {productState.imageUrl && (
               <img
                 src={productState.imageUrl}
@@ -153,11 +172,23 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
                   height: '256px',
                   maxHeight: '50vh',
                   borderRadius: '8px',
-                  margin: `${theme.spacing(2)} auto`,
+                  margin: `${theme.spacing(2)} 0`,
                 }}
               />
             )}
             <br />
+            <label htmlFor="contained-button-file">
+              <Input
+                accept="image/*"
+                id="contained-button-file"
+                multiple
+                type="file"
+                onChange={handleChangeImage}
+              />
+              <Button variant="contained" component="span">
+                Upload New Image
+              </Button>
+            </label>
           </Box>
           <Divider />
           <Typography
@@ -168,24 +199,9 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
             <strong> Product Info</strong>
           </Typography>
           <Divider />
+
           <Container sx={{ padding: headerPadding }} maxWidth="lg">
             <Grid container spacing={2}>
-              <Grid container item alignItems="center">
-                <Grid xs={3}>
-                  <label htmlFor="product-id">Product ID</label>
-                </Grid>
-                <Grid xs sx={{ maxWidth: 400 }}>
-                  <TextField
-                    variant="outlined"
-                    id="product-id"
-                    aria-describedby="my-helper-text"
-                    fullWidth
-                    value={productState?.productId}
-                    disabled
-                  />
-                </Grid>
-              </Grid>
-
               <Grid container item alignItems="center">
                 <Grid xs={3}>
                   <label htmlFor="product-name">Product Name</label>
@@ -197,12 +213,12 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
                     aria-describedby="my-helper-text"
                     fullWidth
                     value={productState?.productName}
-                    disabled
+                    onChange={(e) => handleChangeText(e, 'productName')}
                   />
                 </Grid>
               </Grid>
 
-              {productState?.author && (
+              {type === InventoryType.BOOK && (
                 <Grid container item alignItems="center">
                   <Grid xs={3}>
                     <label htmlFor="product-author">Author</label>
@@ -214,7 +230,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
                       aria-describedby="my-helper-text"
                       fullWidth
                       value={productState?.author}
-                      disabled
+                      onChange={(e) => handleChangeText(e, 'author')}
                     />
                   </Grid>
                 </Grid>
@@ -235,13 +251,13 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
                       startAdornment: '$',
                       inputComponent: NumberFormatCustom as any,
                     }}
-                    disabled
+                    onChange={(e) => handleChangeText(e, 'price')}
                   />
                 </Grid>
               </Grid>
               <Grid container item alignItems="center">
                 <Grid xs={3}>
-                  <label htmlFor="product-stock">Quantity</label>
+                  <label htmlFor="product-stock">Stock Quantity</label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
                   <TextField
@@ -249,8 +265,8 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
                     id="product-stock"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={productState?.quantity}
-                    onChange={(e) => handleChangeText(e, 'quantity')}
+                    value={productState?.stockQuantity}
+                    onChange={(e) => handleChangeText(e, 'stockQuantity')}
                     InputProps={{
                       // inputMode: 'numeric',
                       inputComponent: NumberFormatCustom as any,
@@ -258,48 +274,9 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
                   />
                 </Grid>
               </Grid>
-              <Grid container item alignItems="center">
-                <Grid xs={3}>
-                  <label htmlFor="product-requirement">
-                    Additional Requirements
-                  </label>
-                </Grid>
-                <Grid xs sx={{ maxWidth: 400 }}>
-                  <TextField
-                    variant="outlined"
-                    id="product-requirement"
-                    aria-describedby="my-helper-text"
-                    fullWidth
-                    value={productState?.additionalRequirement}
-                    onChange={(e) =>
-                      handleChangeText(e, 'additionalRequirement')
-                    }
-                    // disabled
-                  />
-                </Grid>
-              </Grid>
             </Grid>
           </Container>
-          <Divider />
 
-          <Grid container justifyContent={'space-between'}>
-            <Typography
-              variant="h6"
-              style={{ padding: ` ${theme.spacing(1)} 0` }}
-              color={theme.palette.secondary.contrastText}
-            >
-              <strong> Cost: </strong>
-            </Typography>
-            <Typography
-              variant="h6"
-              style={{ padding: ` ${theme.spacing(1)} 0` }}
-            >
-              {' $'}
-              {numberWithCommasRound2(
-                productState.quantity * productState.price,
-              )}
-            </Typography>
-          </Grid>
           <Divider />
           <Grid
             container
@@ -317,9 +294,15 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
             </Grid>
             <Grid>
               {' '}
-              <Button variant="contained" onClick={() => handleAdd()}>
-                Add To Cart
-              </Button>
+              <LoadingButton
+                variant="contained"
+                loading={isLoading}
+                loadingPosition="end"
+                onClick={() => handleAdd()}
+                endIcon={<AddIcon />}
+              >
+                Add{' '}
+              </LoadingButton>
             </Grid>
           </Grid>
         </Box>

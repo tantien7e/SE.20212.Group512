@@ -1,20 +1,26 @@
+import AddItemModal from '@app/components/AddItemModal';
+import AddToCartModal from '@app/components/AddToCartModal';
+import EditInventoryModal from '@app/components/EditInventoryModal';
+import { InventoryType, ModalType } from '@app/constants';
 import { Store } from '@app/context/Store';
-import { BookInterface, ProductInterface } from '@app/types/product.interface';
-import { toastError, toastInformSuccess, toastWarning } from '@app/utils/toast';
+import { BookInterface, DrinkInterface } from '@app/types/product.interface';
+import { numberWithCommasRound2 } from '@app/utils';
+import { toastError, toastInformSuccess } from '@app/utils/toast';
+import { css } from '@emotion/react';
 import { Search } from '@mui/icons-material';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import AddIcon from '@mui/icons-material/Add';
 import {
   Avatar,
   Button,
+  CircularProgress,
   FormControl,
   InputAdornment,
   OutlinedInput,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
+import { useTheme } from '@mui/material/styles';
 import Switch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -29,10 +35,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import React, { useContext, useEffect, useState } from 'react';
-import { ClipLoader } from 'react-spinners';
-import { css } from '@emotion/react';
-import AddToCartModal from '@app/components/AddToCartModal';
-import EditInventoryModal from '@app/components/EditInventoryModal';
 
 interface Data extends BookInterface {}
 
@@ -194,9 +196,11 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
 
 interface EnhancedTableToolbarProps {
   //   numSelected: number;
+  handleOpenModal: (type: ModalType, item?: BookInterface) => void;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
+  const { handleOpenModal } = props;
   return (
     <Toolbar
       sx={{
@@ -213,10 +217,14 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         Drinks
       </Typography>
 
-      <Tooltip title="Filter list">
-        <IconButton>
-          <FilterListIcon />
-        </IconButton>
+      <Tooltip title="New Product">
+        <Button
+          endIcon={<AddIcon />}
+          variant="contained"
+          onClick={() => handleOpenModal(ModalType.ADD_PRODUCT)}
+        >
+          Add
+        </Button>
       </Tooltip>
     </Toolbar>
   );
@@ -247,20 +255,43 @@ export default function DataBooksTable(props: EnhancedTableProps) {
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
+  const [addProductModalOpen, setAddProductModalOpen] = useState(false);
 
   const [currentCartItem, setCurrentCartItem] = useState<BookInterface>();
-  const handleOpenEditModal = (item: BookInterface) => {
-    setEditModalOpen(true);
-    setCurrentCartItem(item);
+  const handleOpenModal = (type: ModalType, item?: BookInterface) => {
+    switch (type) {
+      case ModalType.ADD_TO_CART:
+        setAddToCartModalOpen(true);
+        setCurrentCartItem(item);
+        break;
+      case ModalType.EDIT_INVENTORY:
+        setEditModalOpen(true);
+        setCurrentCartItem(item);
+        break;
+      case ModalType.ADD_PRODUCT:
+        setAddProductModalOpen(true);
+        setCurrentCartItem(undefined);
+        break;
+      default:
+        return;
+    }
   };
-
-  const handleOpenAddToCartModal = (item: BookInterface) => {
-    setAddToCartModalOpen(true);
-    setCurrentCartItem(item);
+  const handleCloseModal = (type: ModalType) => {
+    switch (type) {
+      case ModalType.ADD_TO_CART:
+        setAddToCartModalOpen(false);
+        break;
+      case ModalType.EDIT_INVENTORY:
+        setEditModalOpen(false);
+        break;
+      case ModalType.ADD_PRODUCT:
+        setAddProductModalOpen(false);
+        break;
+      default:
+        return;
+    }
+    setCurrentCartItem(undefined);
   };
-  const handleEditModalClose = () => setEditModalOpen(false);
-
-  const handleAddToCartModalClose = () => setAddToCartModalOpen(false);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -336,25 +367,38 @@ export default function DataBooksTable(props: EnhancedTableProps) {
     border-color: ${theme.palette.primary.main};
   `;
 
+  useEffect(() => {
+    if (rows) {
+      setFilteredRows(rows);
+    }
+  }, [rows]);
+
   return (
     <Box sx={{ width: '100%' }}>
-      {editModalOpen && (
+      {addProductModalOpen && (
+        <AddItemModal
+          open={addProductModalOpen}
+          handleClose={() => handleCloseModal(ModalType.ADD_PRODUCT)}
+          type={InventoryType.BOOK}
+        />
+      )}
+      {editModalOpen && currentCartItem && (
         <EditInventoryModal
           open={editModalOpen}
-          handleClose={handleEditModalClose}
-          item={currentCartItem}
+          handleClose={() => handleCloseModal(ModalType.EDIT_INVENTORY)}
+          item={currentCartItem as DrinkInterface & BookInterface}
         />
       )}
 
-      {addToCartModalOpen && (
+      {addToCartModalOpen && currentCartItem && (
         <AddToCartModal
           open={addToCartModalOpen}
-          handleClose={handleAddToCartModalClose}
-          item={currentCartItem}
+          handleClose={() => handleCloseModal(ModalType.ADD_TO_CART)}
+          item={currentCartItem as DrinkInterface & BookInterface}
         />
       )}
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar />
+        <EnhancedTableToolbar handleOpenModal={handleOpenModal} />
         <TableContainer>
           <Table
             sx={{ minWidth: 688 }}
@@ -382,16 +426,16 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                   margin: 'auto',
                 }}
               >
-                <td
-                  colSpan={'100%' as number}
-                  style={{ verticalAlign: 'middle' }}
-                >
-                  <ClipLoader
-                    color={theme.palette.primary.main}
-                    loading={isLoading}
-                    css={override}
-                    size={64}
-                  />
+                <td colSpan={100} style={{ verticalAlign: 'middle' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      width: '100%',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <CircularProgress />
+                  </Box>
                 </td>
               </div>
             ) : (
@@ -440,21 +484,25 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                           {row.author}
                         </TableCell>
                         <TableCell align="right">{row.stock}</TableCell>
-                        <TableCell align="right">${row.price}</TableCell>
+                        <TableCell align="right">
+                          ${numberWithCommasRound2(row.price)}
+                        </TableCell>
                         <TableCell align="right" width={250}>
                           <Button
                             variant="contained"
                             sx={{ marginRight: 2 }}
                             onClick={() => {
                               // handleAddToCart(row);
-                              handleOpenAddToCartModal(row);
+                              handleOpenModal(ModalType.ADD_TO_CART, row);
                             }}
                           >
                             Add To Cart
                           </Button>
                           <Button
                             variant="outlined"
-                            onClick={() => handleOpenEditModal(row)}
+                            onClick={() =>
+                              handleOpenModal(ModalType.EDIT_INVENTORY, row)
+                            }
                           >
                             Edit
                           </Button>

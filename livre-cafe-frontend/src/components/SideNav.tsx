@@ -165,7 +165,10 @@ function SideNav() {
           const isActive = location?.pathname === key?.to;
           const { cart } = state;
           const totalQuantity = key.badge
-            ? cart?.cartItems?.reduce((a, c) => a + c.quantity, 0)
+            ? cart?.cartItems?.reduce(
+                (a, c) => Number(a) + Number(c.quantity),
+                0,
+              )
             : 0;
           return (
             <div key={`list-item-${index}`}>

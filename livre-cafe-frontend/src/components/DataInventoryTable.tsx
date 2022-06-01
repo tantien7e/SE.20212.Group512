@@ -1,10 +1,12 @@
-import AddItemModal from '@app/components/AddItemModal';
 import AddToCartModal from '@app/components/AddToCartModal';
 import EditInventoryModal from '@app/components/EditInventoryModal';
-import { InventoryType, ModalType } from '@app/constants';
+import { ModalType, PREFIX_URL } from '@app/constants';
 import { Store } from '@app/context/Store';
-import { BookInterface, DrinkInterface } from '@app/types/product.interface';
-import { numberWithCommasRound2 } from '@app/utils';
+import {
+  BookInterface,
+  DrinkInterface,
+  ProductInterface,
+} from '@app/types/product.interface';
 import { css } from '@emotion/react';
 import { Search } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
@@ -35,7 +37,7 @@ import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import React, { useContext, useEffect, useState } from 'react';
 
-interface Data extends DrinkInterface {}
+type Data = DrinkInterface & ProductInterface;
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -232,7 +234,7 @@ interface EnhancedTableProps {
   isLoading?: boolean;
 }
 
-export default function EnhancedTable(props: EnhancedTableProps) {
+export default function DataInventoryTable(props: EnhancedTableProps) {
   const { rows, stableSort, isLoading } = props;
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] =
@@ -268,22 +270,10 @@ export default function EnhancedTable(props: EnhancedTableProps) {
         return;
     }
   };
-  const handleCloseModal = (type: ModalType) => {
-    switch (type) {
-      case ModalType.ADD_TO_CART:
-        setAddToCartModalOpen(false);
-        break;
-      case ModalType.EDIT_INVENTORY:
-        setEditModalOpen(false);
-        break;
-      case ModalType.ADD_PRODUCT:
-        setAddProductModalOpen(false);
-        break;
-      default:
-        return;
-    }
-    setCurrentCartItem(undefined);
-  };
+
+  const handleEditModalClose = () => setEditModalOpen(false);
+
+  const handleAddToCartModalClose = () => setAddToCartModalOpen(false);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -319,8 +309,8 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     const text = e.target.value.toLowerCase();
     setFilterText(text);
     const newRows = rows.filter((row) => {
-      const { name } = row;
-      return name.toLowerCase().includes(text);
+      const { name, title } = row;
+      return (name || title).toLowerCase().includes(text);
     });
     setFilteredRows(newRows);
   };
@@ -343,18 +333,10 @@ export default function EnhancedTable(props: EnhancedTableProps) {
 
   return (
     <Box sx={{ width: '100%' }}>
-      {addProductModalOpen && (
-        <AddItemModal
-          open={addProductModalOpen}
-          handleClose={() => handleCloseModal(ModalType.ADD_PRODUCT)}
-          type={InventoryType.DRINK}
-        />
-      )}
-
       {editModalOpen && currentCartItem && (
         <EditInventoryModal
           open={editModalOpen}
-          handleClose={() => handleCloseModal(ModalType.EDIT_INVENTORY)}
+          handleClose={handleEditModalClose}
           item={currentCartItem as DrinkInterface & BookInterface}
         />
       )}
@@ -362,7 +344,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
       {addToCartModalOpen && currentCartItem && (
         <AddToCartModal
           open={addToCartModalOpen}
-          handleClose={() => handleCloseModal(ModalType.ADD_TO_CART)}
+          handleClose={handleAddToCartModalClose}
           item={currentCartItem as DrinkInterface & BookInterface}
         />
       )}
@@ -422,20 +404,20 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                       <TableRow
                         hover
                         // onClick={(event) =>
-                        //   handleClick(event, row.name as string)
+                        //   handleClick(event, row.name || row.title as string)
                         // }
                         role="checkbox"
                         // aria-checked={isItemSelected}
                         tabIndex={-1}
-                        key={row.name}
+                        key={row.name || row.title}
                         // selected={isItemSelected}
                       >
                         <TableCell align="left">
                           <Avatar
-                            alt={row.name}
+                            alt={row.name || row.title}
                             // sx={{ margin }}
                             variant="rounded"
-                            src={row.imageUrl}
+                            src={row.imageUrl || PREFIX_URL + row.imageLink}
                           ></Avatar>
                         </TableCell>
                         <TableCell
@@ -444,12 +426,20 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                           scope="row"
                           padding="none"
                         >
-                          {row.name}
+                          {row.name || row.title}
                         </TableCell>
+                        {row.author && (
+                          <TableCell
+                            component="th"
+                            id={labelId}
+                            scope="row"
+                            padding="none"
+                          >
+                            {row.author}
+                          </TableCell>
+                        )}
                         <TableCell align="right">{row.stock}</TableCell>
-                        <TableCell align="right">
-                          ${numberWithCommasRound2(row.price)}
-                        </TableCell>
+                        <TableCell align="right">${row.price}</TableCell>
                         <TableCell align="right" width={250}>
                           <Button
                             variant="contained"
