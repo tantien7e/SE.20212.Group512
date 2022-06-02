@@ -70,7 +70,9 @@ function reducer(
               : item,
           )
         : [...state.cart.cartItems, action.payload];
-      const filteredCartItems = cartItems.filter((item) => item.quantity > 0);
+      const filteredCartItems = cartItems.filter(
+        (item) => item.quantity > 0 && item.quantity <= item.stock,
+      );
       localStorage.setItem('cartItems', JSON.stringify(filteredCartItems));
       return {
         ...state,

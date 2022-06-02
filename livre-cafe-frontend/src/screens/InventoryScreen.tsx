@@ -1,5 +1,6 @@
 import DataBooksTable from '@app/components/DataBooksTable';
 import DataDrinksTable from '@app/components/DataDrinksTable';
+import { useFetchDrinksQuery } from '@app/app/services/drinks/drinks-api-slice';
 import useFetchBooks from '@app/hooks/useFetchBooks';
 import { BookInterface, DrinkInterface } from '@app/types/product.interface';
 import { stableSort } from '@app/utils';
@@ -9,6 +10,7 @@ import { Box, Tab, Tabs, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { toast } from 'react-toastify';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -20,11 +22,11 @@ function createDrinksData(
   name: string,
   stock: number,
   price: number,
-  picture: string,
+  imageUrl: string,
   _id: string,
 ): DrinkInterface {
   return {
-    picture,
+    imageUrl,
     stock,
     name,
     price,
@@ -130,6 +132,11 @@ function InventoryScreen() {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+  const {
+    data: drinksData,
+    error: drinksError,
+    isLoading: isDrinksLoading,
+  } = useFetchDrinksQuery();
   const [books, setBooks] = useState<BookInterface[]>([]);
   const theme = useTheme();
   const fetchBooks = async (url: string) => {
@@ -139,7 +146,7 @@ function InventoryScreen() {
       (book: Exclude<BookInterface, '_id'>, index: number) => ({
         ...book,
         _id: String(index),
-        price: ((Math.random()) * 100).toPrecision(2),
+        price: (Math.random() * 100).toPrecision(2),
         stock: Math.round(Math.random() * 100),
       }),
     );
@@ -148,6 +155,13 @@ function InventoryScreen() {
   const bookUrl =
     'https://raw.githubusercontent.com/benoitvallon/100-best-books/master/books.json';
   const { data, isLoading, error } = useFetchBooks(bookUrl);
+
+  useEffect(() => {
+    if (drinksError) {
+      toast.error('Something happened!');
+    }
+    console.log(drinksData);
+  }, [drinksError, drinksData]);
 
   return (
     <Box
@@ -186,7 +200,11 @@ function InventoryScreen() {
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
-        <DataDrinksTable rows={drinks} stableSort={stableSort} />
+        <DataDrinksTable
+          isLoading={isDrinksLoading}
+          rows={drinksData || []}
+          stableSort={stableSort}
+        />
       </TabPanel>
       <TabPanel value={value} index={1}>
         <DataBooksTable

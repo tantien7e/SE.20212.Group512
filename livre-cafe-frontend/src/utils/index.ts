@@ -12,7 +12,13 @@ export function stableSort<T>(
   });
   return stabilizedThis.map((el) => el[0]);
 }
-
 export const round2 = (num: number): string => {
   return (Math.round(num * 100 + Number.EPSILON) / 100).toFixed(2);
 };
+
+export const numberWithCommas = (x: number | string): string => {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+export const numberWithCommasRound2 = (x: number): string =>
+  numberWithCommas(round2(x));

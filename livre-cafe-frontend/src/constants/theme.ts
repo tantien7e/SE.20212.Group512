@@ -58,6 +58,12 @@ const theme = createTheme({
     h4: {
       fontWeight: 600,
     },
+    // h5: {
+    //   color: darkBlue,
+    // },
+    // h6: {
+    //   color: darkBlue,
+    // },
   },
 });
 

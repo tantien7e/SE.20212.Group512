@@ -1,5 +1,5 @@
 export interface DrinkInterface {
-  picture: string;
+  imageUrl: string;
   stock: number;
   name: string;
   price: number;
