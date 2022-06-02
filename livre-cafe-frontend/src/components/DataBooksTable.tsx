@@ -14,6 +14,7 @@ import {
   Button,
   CircularProgress,
   FormControl,
+  IconButton,
   InputAdornment,
   OutlinedInput,
 } from '@mui/material';
@@ -35,6 +36,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import React, { useContext, useEffect, useState } from 'react';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
 interface Data extends BookInterface {}
 
@@ -456,7 +458,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                         role="checkbox"
                         // aria-checked={isItemSelected}
                         tabIndex={-1}
-                        key={row.title}
+                        key={row._id + index}
                         // selected={isItemSelected}
                       >
                         <TableCell align="left">
@@ -487,7 +489,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                         <TableCell align="right">
                           ${numberWithCommasRound2(row.price)}
                         </TableCell>
-                        <TableCell align="right" width={250}>
+                        <TableCell align="right" width={280}>
                           <Button
                             variant="contained"
                             sx={{ marginRight: 2 }}
@@ -506,6 +508,9 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                           >
                             Edit
                           </Button>
+                          <IconButton color="error">
+                            <DeleteOutlineOutlinedIcon />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     );
