@@ -9,12 +9,18 @@ export interface DrinksData {
 
 export interface DrinksState {
   loading: boolean;
+  addLoading: boolean;
+  updateLoading: boolean;
+  deleteLoading: boolean;
   drinks: DrinkInterface[];
   error?: string;
 }
 
 const initialState: DrinksState = {
   loading: false,
+  addLoading: false,
+  updateLoading: false,
+  deleteLoading: false,
   drinks: [],
 };
 
@@ -22,6 +28,7 @@ const drinksSlice = createSlice({
   name: 'drinks',
   initialState,
   reducers: {
+    //fetch
     fetchDrinks(state) {
       state.error = '';
       state.loading = true;
@@ -34,16 +41,43 @@ const drinksSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    // Add
     addDrink(state, action: PayloadAction<DrinkInterface>) {
-      state.loading = true;
+      state.addLoading = true;
     },
     addDrinkSucceeded(state, action: PayloadAction<DrinkInterface>) {
-      state.loading = false;
+      state.addLoading = false;
       state.drinks.push(action.payload);
-      toastInformSuccess('Added Successfully');
+      toastInformSuccess('Item was added successfully');
     },
     addDrinkFailed(state, action: PayloadAction<string>) {
-      state.loading = false;
+      state.addLoading = false;
+      state.error = action.payload;
+      toastError(action.payload);
+    },
+    //Update
+    updateDrink(state, action: PayloadAction<DrinkInterface>) {
+      state.updateLoading = true;
+    },
+    updateDrinkSucceeded(state) {
+      state.updateLoading = false;
+      toastInformSuccess('Item was updated successfully');
+    },
+    updateDrinkFailed(state, action: PayloadAction<string>) {
+      state.updateLoading = false;
+      state.error = action.payload;
+      toastError(action.payload);
+    },
+    //Delete
+    deleteDrink(state, action: PayloadAction<DrinkInterface>) {
+      state.deleteLoading = true;
+    },
+    deleteDrinkSucceeded(state, action: PayloadAction<string>) {
+      state.deleteLoading = false;
+      toastInformSuccess('Item was deleted successfully');
+    },
+    deleteDrinkFailed(state, action: PayloadAction<string>) {
+      state.deleteLoading = false;
       state.error = action.payload;
       toastError(action.payload);
     },
@@ -58,11 +92,24 @@ export const {
   addDrink,
   addDrinkSucceeded,
   addDrinkFailed,
+  updateDrink,
+  updateDrinkSucceeded,
+  updateDrinkFailed,
+  deleteDrink,
+  deleteDrinkSucceeded,
+  deleteDrinkFailed,
 } = drinksSlice.actions;
 
 //Selectors
 export const selectDrinks = (state: RootState) => state.drinks;
 export const selectDrinksLoading = (state: RootState) => state.drinks.loading;
+export const selectDrinksAddLoading = (state: RootState) =>
+  state.drinks.addLoading;
+export const selectDrinksUpdateLoading = (state: RootState) =>
+  state.drinks.updateLoading;
+export const selectDrinksDeleteLoading = (state: RootState) =>
+  state.drinks.deleteLoading;
+
 export const selectDrinksError = (state: RootState) => state.drinks.error;
 export const selectDrinksData = (state: RootState) => state.drinks.drinks;
 //Reducer

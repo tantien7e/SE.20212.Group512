@@ -1,8 +1,19 @@
-import { PREFIX_URL } from '@app/constants';
+import {
+  selectDrinksUpdateLoading,
+  updateDrink,
+} from '@app/app/features/drinks/drinks-slice';
+import { InventoryType, PREFIX_URL } from '@app/constants';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { round2 } from '@app/utils';
 import { toastInformSuccess } from '@app/utils/toast';
-import { Button, Container, Divider, Grid, TextField } from '@mui/material';
+import {
+  Button,
+  Container,
+  Divider,
+  FormHelperText,
+  Grid,
+  TextField,
+} from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
@@ -10,6 +21,10 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useState } from 'react';
 import NumberFormat from 'react-number-format';
+import { useDispatch, useSelector } from 'react-redux';
+import SaveIcon from '@mui/icons-material/Save';
+import { LoadingButton } from '@mui/lab';
+import { ErrorStateInterface } from '@app/components/AddItemModal';
 
 const style = {
   // position: 'absolute' as 'absolute',
@@ -36,9 +51,11 @@ interface EditCartModalPropsInterface {
   open: boolean;
   handleClose: () => void;
   item?: DrinkInterface & BookInterface;
+  type: string;
 }
 
 interface ProductStateInterface {
+  _id: string;
   imageUrl: string;
   productId: string;
   productName: string;
@@ -48,15 +65,28 @@ interface ProductStateInterface {
 }
 
 export default function EditInventoryModal(props: EditCartModalPropsInterface) {
-  const { open, handleClose, item } = props;
+  const { open, handleClose, item, type } = props;
+  const dispatch = useDispatch();
+  const updateLoading = useSelector(selectDrinksUpdateLoading);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
   const [productState, setProductState] = useState<ProductStateInterface>({
+    _id: item?._id || '',
     imageUrl: item?.imageUrl || PREFIX_URL + item?.imageLink,
     productId: item?._id || '',
     productName: item?.name || item?.title || '',
     price: item?.price || 0,
     stockQuantity: item?.stock || 0,
     author: item?.author,
+  });
+
+  const [errorState, setErrorState] = useState<ErrorStateInterface>({
+    imageUrl: false,
+    productId: false,
+    productName: false,
+    price: false,
+    stockQuantity: false,
+    author: false,
   });
   const theme = useTheme();
   const headerPadding = `${theme.spacing(2)} 0`;
@@ -70,6 +100,10 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
         ...state,
         imageUrl: reader.result as string,
       }));
+      setErrorState((state) => ({
+        ...state,
+        imageUrl: !reader.result,
+      }));
     };
     if (!file) {
       return;
@@ -81,15 +115,71 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
     field: keyof ProductStateInterface,
   ) => {
+    const isNumberField = field === 'price' || field === 'stockQuantity';
     setProductState((prevState) => {
       return { ...prevState, [field]: e.target.value };
     });
+    setErrorState((prevState) => {
+      return {
+        ...prevState,
+        [field]: !isNumberField ? !e.target.value : !Number(e.target.value),
+      };
+    });
+  };
+
+  const generatePostData = (body: ProductStateInterface) => {
+    const { productName, price, stockQuantity, author, imageUrl, _id } = body;
+    if (type === InventoryType.DRINK) {
+      return {
+        _id,
+        name: productName,
+        price,
+        stock: stockQuantity,
+        imageUrl,
+      };
+    } else if (type === InventoryType.BOOK) {
+      return {
+        _id,
+        title: productName,
+        author: author || '',
+        stock: stockQuantity,
+        price,
+      };
+    }
+    return {};
   };
 
   const handleSave = () => {
-    handleClose();
-    toastInformSuccess('Changes Saved!');
+    const { imageUrl, productId, productName, price, stockQuantity, author } =
+      productState;
+    const error = {
+      imageUrl: !imageUrl,
+      productId: !productId,
+      productName: !productName,
+      price: price <= 0,
+      stockQuantity: stockQuantity <= 0,
+      author: type === InventoryType.BOOK ? !author : false,
+    };
+    setErrorState(error);
+    const passable = !(Object.values(error).findIndex((item) => item) > -1);
+    console.log(error, passable);
+
+    if (!passable) return;
+    const data = generatePostData(productState);
+    if (type === InventoryType.DRINK) {
+      dispatch(updateDrink(data as DrinkInterface));
+    }
+    if (type === InventoryType.BOOK) {
+      // dispatch(addDrink(data));
+    }
+    setUpdateSuccess(true);
   };
+
+  React.useEffect(() => {
+    if (updateSuccess && !updateLoading) {
+      handleClose();
+    }
+  }, [updateSuccess, updateLoading]);
 
   return (
     <div>
@@ -144,6 +234,11 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
               <Button variant="contained" component="span">
                 Upload New Image
               </Button>
+              {errorState.imageUrl && (
+                <FormHelperText error={errorState.imageUrl}>
+                  Image must no be empty
+                </FormHelperText>
+              )}
             </label>
           </Box>
           <Divider />
@@ -186,6 +281,10 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
                     fullWidth
                     value={productState?.productName}
                     onChange={(e) => handleChangeText(e, 'productName')}
+                    error={errorState.productName}
+                    helperText={
+                      errorState.productName && 'Product Name must not be empty'
+                    }
                   />
                 </Grid>
               </Grid>
@@ -203,6 +302,10 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
                       fullWidth
                       value={productState?.author}
                       onChange={(e) => handleChangeText(e, 'author')}
+                      error={errorState.author}
+                      helperText={
+                        errorState.author && 'Author must not be empty'
+                      }
                     />
                   </Grid>
                 </Grid>
@@ -224,6 +327,11 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
                       inputComponent: NumberFormatCustom as any,
                     }}
                     onChange={(e) => handleChangeText(e, 'price')}
+                    error={errorState.price}
+                    helperText={
+                      errorState.price &&
+                      'Price must not be less than or equal to 0'
+                    }
                   />
                 </Grid>
               </Grid>
@@ -243,6 +351,11 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
                       // inputMode: 'numeric',
                       inputComponent: NumberFormatCustom as any,
                     }}
+                    error={errorState.stockQuantity}
+                    helperText={
+                      errorState.stockQuantity &&
+                      'Stock must not be less than or equal to 0'
+                    }
                   />
                 </Grid>
               </Grid>
@@ -265,10 +378,15 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
               </Button>
             </Grid>
             <Grid>
-              {' '}
-              <Button variant="contained" onClick={() => handleSave()}>
-                Save Changes
-              </Button>
+              <LoadingButton
+                variant="contained"
+                loading={updateLoading}
+                loadingPosition="end"
+                onClick={() => handleSave()}
+                endIcon={<SaveIcon />}
+              >
+                Save Changes{' '}
+              </LoadingButton>
             </Grid>
           </Grid>
         </Box>

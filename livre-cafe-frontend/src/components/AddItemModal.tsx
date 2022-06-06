@@ -1,10 +1,20 @@
-import { useAddDrinkMutation } from '@app/app/services/drinks/drinks-api-slice';
+import {
+  addDrink,
+  selectDrinksAddLoading,
+} from '@app/app/features/drinks/drinks-slice';
 import { InventoryType } from '@app/constants';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { round2 } from '@app/utils';
 import AddIcon from '@mui/icons-material/Add';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { Button, Container, Divider, Grid, TextField } from '@mui/material';
+import {
+  Button,
+  Container,
+  Divider,
+  FormHelperText,
+  Grid,
+  TextField,
+} from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
@@ -12,14 +22,7 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useState } from 'react';
 import NumberFormat from 'react-number-format';
-import { toastError, toastInformSuccess, toastSuccess } from '@app/utils/toast';
-import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  addDrink,
-  selectDrinksError,
-  selectDrinksLoading,
-} from '@app/app/features/drinks/drinks-slice';
 
 const style = {
   // position: 'absolute' as 'absolute',
@@ -58,9 +61,18 @@ interface ProductStateInterface {
   author?: string;
 }
 
+export interface ErrorStateInterface {
+  imageUrl: boolean;
+  productId: boolean;
+  productName: boolean;
+  price: boolean;
+  stockQuantity: boolean;
+  author?: boolean;
+}
+
 export default function AddItemModal(props: EditCartModalPropsInterface) {
   const dispatch = useDispatch();
-  const drinksLoading = useSelector(selectDrinksLoading);
+  const drinksLoading = useSelector(selectDrinksAddLoading);
   const [addSuccess, setAddSuccess] = useState(false);
   const { open, handleClose, type } = props;
 
@@ -71,6 +83,15 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
     price: 0,
     stockQuantity: 0,
     author: '',
+  });
+
+  const [errorState, setErrorState] = useState<ErrorStateInterface>({
+    imageUrl: false,
+    productId: false,
+    productName: false,
+    price: false,
+    stockQuantity: false,
+    author: false,
   });
   const theme = useTheme();
   const headerPadding = `${theme.spacing(2)} 0`;
@@ -84,6 +105,11 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
         ...state,
         imageUrl: reader.result as string,
       }));
+
+      setErrorState((state) => ({
+        ...state,
+        imageUrl: !reader.result,
+      }));
     };
     if (!file) {
       return;
@@ -95,8 +121,16 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
     field: keyof ProductStateInterface,
   ) => {
+    const isNumberField = field === 'price' || field === 'stockQuantity';
+
     setProductState((prevState) => {
       return { ...prevState, [field]: e.target.value };
+    });
+    setErrorState((prevState) => {
+      return {
+        ...prevState,
+        [field]: !isNumberField ? !e.target.value : !Number(e.target.value),
+      };
     });
   };
 
@@ -121,6 +155,19 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
   };
 
   const handleAdd = () => {
+    const { imageUrl, productId, productName, price, stockQuantity, author } =
+      productState;
+    const error = {
+      imageUrl: !imageUrl,
+      productId: !productId,
+      productName: !productName,
+      price: price <= 0,
+      stockQuantity: stockQuantity <= 0,
+      author: type === InventoryType.BOOK ? !author : false,
+    };
+    setErrorState(error);
+    const passable = !(Object.values(error).findIndex((item) => !item) > -1);
+    if (!passable) return;
     const data = generatePostData(productState);
     if (type === InventoryType.DRINK) {
       dispatch(addDrink(data as DrinkInterface));
@@ -192,6 +239,11 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
               <Button variant="contained" component="span">
                 Upload New Image
               </Button>
+              {errorState.imageUrl && (
+                <FormHelperText error={errorState.imageUrl}>
+                  Image must no be empty
+                </FormHelperText>
+              )}
             </label>
           </Box>
           <Divider />
@@ -218,6 +270,10 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                     fullWidth
                     value={productState?.productName}
                     onChange={(e) => handleChangeText(e, 'productName')}
+                    error={errorState.productName}
+                    helperText={
+                      errorState.productName && 'Product Name must not be empty'
+                    }
                   />
                 </Grid>
               </Grid>
@@ -235,6 +291,10 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                       fullWidth
                       value={productState?.author}
                       onChange={(e) => handleChangeText(e, 'author')}
+                      error={errorState.author}
+                      helperText={
+                        errorState.author && 'Author must not be empty'
+                      }
                     />
                   </Grid>
                 </Grid>
@@ -256,6 +316,11 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                       inputComponent: NumberFormatCustom as any,
                     }}
                     onChange={(e) => handleChangeText(e, 'price')}
+                    error={errorState.price}
+                    helperText={
+                      errorState.price &&
+                      'Price must not be less than or equal to 0'
+                    }
                   />
                 </Grid>
               </Grid>
@@ -275,6 +340,11 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                       // inputMode: 'numeric',
                       inputComponent: NumberFormatCustom as any,
                     }}
+                    error={errorState.stockQuantity}
+                    helperText={
+                      errorState.stockQuantity &&
+                      'Stock must not be less than or equal to 0'
+                    }
                   />
                 </Grid>
               </Grid>

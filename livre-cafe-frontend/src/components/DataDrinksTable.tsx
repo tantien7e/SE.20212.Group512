@@ -351,6 +351,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
           open={editModalOpen}
           handleClose={() => handleCloseModal(ModalType.EDIT_INVENTORY)}
           item={currentCartItem as DrinkInterface & BookInterface}
+          type={InventoryType.DRINK}
         />
       )}
 

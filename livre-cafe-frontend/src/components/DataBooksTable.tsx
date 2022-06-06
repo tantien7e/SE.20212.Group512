@@ -66,20 +66,20 @@ function getComparator<Key extends keyof any>(
 
 // This method is created for cross-browser compatibility, if you don't
 // need to support IE11, you can use Array.prototype.sort() directly
-function stableSort<T>(
-  array: readonly T[],
-  comparator: (a: Omit<T, 'actions'>, b: Omit<T, 'actions'>) => number,
-) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
+// function stableSort<T>(
+//   array: readonly T[],
+//   comparator: (a: Omit<T, 'actions'>, b: Omit<T, 'actions'>) => number,
+// ) {
+//   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
+//   stabilizedThis.sort((a, b) => {
+//     const order = comparator(a[0], b[0]);
+//     if (order !== 0) {
+//       return order;
+//     }
+//     return a[1] - b[1];
+//   });
+//   return stabilizedThis.map((el) => el[0]);
+// }
 
 interface HeadCell {
   disablePadding: boolean;
@@ -389,6 +389,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
           open={editModalOpen}
           handleClose={() => handleCloseModal(ModalType.EDIT_INVENTORY)}
           item={currentCartItem as DrinkInterface & BookInterface}
+          type={InventoryType.BOOK}
         />
       )}
 

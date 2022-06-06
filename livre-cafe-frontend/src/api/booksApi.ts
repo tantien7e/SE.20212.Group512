@@ -1,28 +1,28 @@
 import axiosClient from '@app/api/axiosClient';
 import { BOOKS_URL } from '@app/constants';
-import { DrinkInterface } from '@app/models';
+import { BookInterface } from '@app/models';
 import { GetParams } from '@app/models/common';
 
 const booksApi = {
-  getAll(params?: GetParams): Promise<DrinkInterface[]> {
+  getAll(params?: GetParams): Promise<BookInterface[]> {
     const url = BOOKS_URL;
     return axiosClient.get(url, { params });
   },
 
-  getById(id: string): Promise<DrinkInterface> {
+  getById(id: string): Promise<BookInterface> {
     const url = `${BOOKS_URL}/${id}`;
     return axiosClient.get(url);
   },
 
-  add(data: DrinkInterface): Promise<DrinkInterface> {
+  add(data: BookInterface): Promise<BookInterface> {
     const url = BOOKS_URL;
     return axiosClient.post(url, data);
   },
-  update(data: DrinkInterface, id: string): Promise<DrinkInterface> {
+  update(data: BookInterface, id: string): Promise<BookInterface> {
     const url = `${BOOKS_URL}/${id}`;
     return axiosClient.put(url, data);
   },
-  remove(id: string): Promise<DrinkInterface> {
+  remove(id: string): Promise<BookInterface> {
     const url = `${BOOKS_URL}/${id}`;
     return axiosClient.delete(url);
   },
