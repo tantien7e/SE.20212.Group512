@@ -1,4 +1,4 @@
-import { ProductInterface } from '@app/types/product.interface';
+import { ProductInterface } from '@app/models/product.interface';
 import { toastInformSuccess } from '@app/utils/toast';
 import React, { createContext, useReducer } from 'react';
 

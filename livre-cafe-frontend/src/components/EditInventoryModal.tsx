@@ -1,6 +1,7 @@
 import { PREFIX_URL } from '@app/constants';
-import { BookInterface, DrinkInterface } from '@app/types/product.interface';
+import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { round2 } from '@app/utils';
+import { toastInformSuccess } from '@app/utils/toast';
 import { Button, Container, Divider, Grid, TextField } from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -83,6 +84,11 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
     setProductState((prevState) => {
       return { ...prevState, [field]: e.target.value };
     });
+  };
+
+  const handleSave = () => {
+    handleClose();
+    toastInformSuccess('Changes Saved!');
   };
 
   return (
@@ -260,7 +266,7 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
             </Grid>
             <Grid>
               {' '}
-              <Button variant="contained" onClick={() => handleClose()}>
+              <Button variant="contained" onClick={() => handleSave()}>
                 Save Changes
               </Button>
             </Grid>

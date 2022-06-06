@@ -1,6 +1,6 @@
 import { useAddDrinkMutation } from '@app/app/services/drinks/drinks-api-slice';
 import { InventoryType } from '@app/constants';
-import { BookInterface, DrinkInterface } from '@app/types/product.interface';
+import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { round2 } from '@app/utils';
 import AddIcon from '@mui/icons-material/Add';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -13,6 +13,13 @@ import * as React from 'react';
 import { useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { toastError, toastInformSuccess, toastSuccess } from '@app/utils/toast';
+import { toast } from 'react-toastify';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  addDrink,
+  selectDrinksError,
+  selectDrinksLoading,
+} from '@app/app/features/drinks/drinks-slice';
 
 const style = {
   // position: 'absolute' as 'absolute',
@@ -52,6 +59,9 @@ interface ProductStateInterface {
 }
 
 export default function AddItemModal(props: EditCartModalPropsInterface) {
+  const dispatch = useDispatch();
+  const drinksLoading = useSelector(selectDrinksLoading);
+  const [addSuccess, setAddSuccess] = useState(false);
   const { open, handleClose, type } = props;
 
   const [productState, setProductState] = useState<ProductStateInterface>({
@@ -110,28 +120,22 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
     return {};
   };
 
-  const [addDrink, { isLoading }] = useAddDrinkMutation();
-  const handleAdd = async () => {
+  const handleAdd = () => {
     const data = generatePostData(productState);
     if (type === InventoryType.DRINK) {
-      try {
-        const response = await addDrink(data);
-        console.log(response);
-        const { data: drinkData, error } = response;
-        if (error) {
-          toastError(error.message);
-          return;
-        }
-        toastSuccess('Item was added successfully!');
-      } catch (err) {
-        toastError(err.message);
-      }
+      dispatch(addDrink(data as DrinkInterface));
     }
+    if (type === InventoryType.BOOK) {
+      // dispatch(addDrink(data));
+    }
+    setAddSuccess(true);
   };
 
   React.useEffect(() => {
-    console.log(isLoading);
-  }, [isLoading]);
+    if (addSuccess && !drinksLoading) {
+      handleClose();
+    }
+  }, [addSuccess, drinksLoading]);
 
   return (
     <div>
@@ -296,7 +300,7 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
               {' '}
               <LoadingButton
                 variant="contained"
-                loading={isLoading}
+                loading={drinksLoading}
                 loadingPosition="end"
                 onClick={() => handleAdd()}
                 endIcon={<AddIcon />}

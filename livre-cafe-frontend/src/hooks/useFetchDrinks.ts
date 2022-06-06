@@ -1,4 +1,4 @@
-import { BookInterface } from '@app/types/product.interface';
+import { BookInterface } from '@app/models/product.interface';
 import React, { useEffect, useState } from 'react';
 
 function useFetchBooks(bookUrl: string) {

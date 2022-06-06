@@ -1,6 +1,6 @@
 // f298aa2d-cf5b-40dd-8dba-081285b7a489
 import { BASE_URL } from '@app/constants';
-import { BookInterface, DrinkInterface } from '@app/types/product.interface';
+import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const DOGS_API_KEY = 'f298aa2d-cf5b-40dd-8dba-081285b7a489';

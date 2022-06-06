@@ -1,8 +1,11 @@
+import {
+  fetchDrinks,
+  selectDrinks,
+} from '@app/app/features/drinks/drinks-slice';
 import DataBooksTable from '@app/components/DataBooksTable';
 import DataDrinksTable from '@app/components/DataDrinksTable';
-import { useFetchDrinksQuery } from '@app/app/services/drinks/drinks-api-slice';
 import useFetchBooks from '@app/hooks/useFetchBooks';
-import { BookInterface, DrinkInterface } from '@app/types/product.interface';
+import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { stableSort } from '@app/utils';
 import CoffeeIcon from '@mui/icons-material/Coffee';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
@@ -10,95 +13,13 @@ import { Box, Tab, Tabs, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { toast } from 'react-toastify';
+import { useDispatch, useSelector } from 'react-redux';
 
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
 }
-
-function createDrinksData(
-  name: string,
-  stock: number,
-  price: number,
-  imageUrl: string,
-  _id: string,
-): DrinkInterface {
-  return {
-    imageUrl,
-    stock,
-    name,
-    price,
-    _id,
-  };
-}
-
-function createBooksData(
-  title: string,
-  stock: number,
-  price: number,
-  _id: string,
-  author: string,
-  country: string,
-  imageLink: string,
-  language: string,
-  link: string,
-  pages: number,
-  year: number,
-): BookInterface {
-  return {
-    stock,
-    title,
-    price,
-    author,
-    _id,
-    year,
-    pages,
-    link,
-    language,
-    imageLink,
-    country,
-  };
-}
-
-const drinks = [
-  createDrinksData(
-    'Bac xiu',
-    5,
-    3.7,
-    'https://cdn.tgdd.vn/2021/03/CookProduct/Bac-xiu-la-gi-nguon-goc-va-cach-lam-bac-xiu-thom-ngon-don-gian-tai-nha-0-1200x676.jpg',
-    '1',
-  ),
-  createDrinksData('Donut', 10, 25.0, 'url', '2'),
-  createDrinksData('Eclair', 2, 16.0, 'url', '3'),
-  createDrinksData('Frozen yoghurt', 4, 6.0, 'url', '4'),
-  createDrinksData('Gingerbread', 20, 16.0, 'url', '5'),
-  createDrinksData('Honeycomb', 100, 3.2, 'url', '6'),
-  createDrinksData('Ice cream sandwich', 105, 9.0, 'url', '7'),
-  createDrinksData('Jelly Bean', 10, 0.0, 'url', '8'),
-  createDrinksData('KitKat', 2, 26.0, 'url', '9'),
-  createDrinksData('Lollipop', 3, 0.2, 'url', '10'),
-  createDrinksData('Marshmallow', 5, 0, 'url', '11'),
-  createDrinksData('Nougat', 1, 19.0, 'url', '12'),
-  createDrinksData('Oreo', 0, 18.0, 'url', '13'),
-];
-
-// const books = [
-//   createBooksData('Cupcake', 5, 3.7, 'url', '1', 'James',),
-//   createBooksData('Donut', 10, 25.0, 'url', '2', 'Hank'),
-//   createBooksData('Eclair', 2, 16.0, 'url', '3', 'John'),
-//   createBooksData('Frozen yoghurt', 4, 6.0, 'url', '4', 'Andy Dang'),
-//   createBooksData('Gingerbread', 20, 16.0, 'url', '5', 'Mark'),
-//   createBooksData('Honeycomb', 100, 3.2, 'url', '6', 'Hi Mark'),
-//   createBooksData('Ice cream sandwich', 105, 9.0, 'url', '7', 'NTT'),
-//   createBooksData('Jelly Bean', 10, 0.0, 'url', '8', 'NXB'),
-//   createBooksData('KitKat', 2, 26.0, 'url', '9', 'Hay lam'),
-//   createBooksData('Lollipop', 3, 0.2, 'url', '10', 'Kay James'),
-//   createBooksData('Marshmallow', 5, 0, 'url', '11', 'Dang James'),
-//   createBooksData('Nougat', 1, 19.0, 'url', '12', 'Liu James'),
-//   createBooksData('Oreo', 0, 18.0, 'url', '13', 'Laspers James'),
-// ];
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -132,14 +53,13 @@ function InventoryScreen() {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
-  const {
-    data: drinksData,
-    error: drinksError,
-    isLoading: isDrinksLoading,
-  } = useFetchDrinksQuery();
+  const dispatch = useDispatch();
+  const drinksSelector = useSelector(selectDrinks);
+  const { drinks, loading: drinksLoading } = drinksSelector;
   const [books, setBooks] = useState<BookInterface[]>([]);
   const theme = useTheme();
   const fetchBooks = async (url: string) => {
+    drinksLoading;
     const response = await fetch(url);
     const booksData = await response.json();
     const generatedBooks = booksData.map(
@@ -157,11 +77,8 @@ function InventoryScreen() {
   const { data, isLoading, error } = useFetchBooks(bookUrl);
 
   useEffect(() => {
-    if (drinksError) {
-      toast.error('Something happened!');
-    }
-    console.log(drinksData);
-  }, [drinksError, drinksData]);
+    dispatch(fetchDrinks());
+  }, [dispatch]);
 
   return (
     <Box
@@ -201,8 +118,8 @@ function InventoryScreen() {
       </Box>
       <TabPanel value={value} index={0}>
         <DataDrinksTable
-          isLoading={isDrinksLoading}
-          rows={drinksData || []}
+          isLoading={drinksLoading}
+          rows={drinks || []}
           stableSort={stableSort}
         />
       </TabPanel>

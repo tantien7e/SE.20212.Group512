@@ -3,7 +3,7 @@ import AddToCartModal from '@app/components/AddToCartModal';
 import EditInventoryModal from '@app/components/EditInventoryModal';
 import { InventoryType, ModalType } from '@app/constants';
 import { Store } from '@app/context/Store';
-import { BookInterface, DrinkInterface } from '@app/types/product.interface';
+import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { numberWithCommasRound2 } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { css } from '@emotion/react';
