@@ -16,6 +16,10 @@ import {
   deleteDrink,
   selectDrinksDeleteLoading,
 } from '@app/app/features/drinks/drinks-slice';
+import {
+  deleteBook,
+  selectBooksDeleteLoading,
+} from '@app/app/features/books/books-slice';
 
 interface ModalPropsInterface {
   open: boolean;
@@ -27,7 +31,8 @@ interface ModalPropsInterface {
 export default function DeleteConfirmModal(props: ModalPropsInterface) {
   const { open, handleClose, item, type } = props;
   const theme = useTheme();
-  const deleteLoading = useSelector(selectDrinksDeleteLoading);
+  const deleteDrinkLoading = useSelector(selectDrinksDeleteLoading);
+  const deleteBookLoading = useSelector(selectBooksDeleteLoading);
   const dispatch = useDispatch();
   const [confirmText, setConfirmText] = React.useState('');
   const [deleteError, setDeleteError] = React.useState(false);
@@ -46,15 +51,17 @@ export default function DeleteConfirmModal(props: ModalPropsInterface) {
       dispatch(deleteDrink(item as DrinkInterface));
     } else if (type === InventoryType.BOOK) {
       //Delete books here
+      dispatch(deleteBook(item as BookInterface));
     }
     setDeleteSuccess(true);
   };
 
   React.useEffect(() => {
+    const deleteLoading = deleteBookLoading || deleteDrinkLoading;
     if (deleteSuccess && !deleteLoading) {
       handleClose();
     }
-  }, [deleteSuccess, deleteLoading]);
+  }, [deleteSuccess, deleteBookLoading, deleteDrinkLoading]);
   return (
     <div>
       <Dialog
@@ -106,7 +113,7 @@ export default function DeleteConfirmModal(props: ModalPropsInterface) {
             <Grid>
               <LoadingButton
                 variant="contained"
-                loading={deleteLoading}
+                loading={deleteBookLoading || deleteDrinkLoading}
                 loadingPosition="end"
                 onClick={() => handleDelete()}
                 endIcon={<DeleteIcon />}

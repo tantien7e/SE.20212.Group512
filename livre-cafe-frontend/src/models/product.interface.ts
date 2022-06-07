@@ -10,7 +10,7 @@ export interface DrinkInterface {
 export interface BookInterface {
   author: string;
   country: string;
-  imageLink: string;
+  imageUrl: string;
   language: string;
   link: string;
   pages: number;

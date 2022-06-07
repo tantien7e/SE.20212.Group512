@@ -3,18 +3,24 @@ import { BookInterface } from '@app/models/product.interface';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface DrinksData {
-  //   drinks: BookInterface[];
+export interface BooksData {
+  //   Books: BookInterface[];
 }
 
 export interface BookState {
   loading: boolean;
+  addLoading: boolean;
+  updateLoading: boolean;
+  deleteLoading: boolean;
   books: BookInterface[];
   error?: string;
 }
 
 const initialState: BookState = {
   loading: false,
+  addLoading: false,
+  updateLoading: false,
+  deleteLoading: false,
   books: [],
 };
 
@@ -47,6 +53,32 @@ const booksSlice = createSlice({
       state.error = action.payload;
       toastError(action.payload);
     },
+    //Update
+    updateBook(state, action: PayloadAction<BookInterface>) {
+      state.updateLoading = true;
+    },
+    updateBookSucceeded(state) {
+      state.updateLoading = false;
+      toastInformSuccess('Item was updated successfully');
+    },
+    updateBookFailed(state, action: PayloadAction<string>) {
+      state.updateLoading = false;
+      state.error = action.payload;
+      toastError(action.payload);
+    },
+    //Delete
+    deleteBook(state, action: PayloadAction<BookInterface>) {
+      state.deleteLoading = true;
+    },
+    deleteBookSucceeded(state) {
+      state.deleteLoading = false;
+      toastInformSuccess('Item was deleted successfully');
+    },
+    deleteBookFailed(state, action: PayloadAction<string>) {
+      state.deleteLoading = false;
+      state.error = action.payload;
+      toastError(action.payload);
+    },
   },
 });
 
@@ -58,6 +90,12 @@ export const {
   addBook,
   addBookSucceeded,
   addBookFailed,
+  updateBook,
+  updateBookFailed,
+  updateBookSucceeded,
+  deleteBook,
+  deleteBookFailed,
+  deleteBookSucceeded,
 } = booksSlice.actions;
 
 //Selectors
@@ -65,7 +103,10 @@ export const selectBooks = (state: RootState) => state.books;
 export const selectBooksLoading = (state: RootState) => state.books.loading;
 export const selectBooksError = (state: RootState) => state.books.error;
 export const selectBooksData = (state: RootState) => state.books.books;
-//Reducer
+export const selectBooksUpdateLoading = (state: RootState) =>
+  state.books.updateLoading;
+export const selectBooksDeleteLoading = (state: RootState) =>
+  state.books.deleteLoading;
 
 const booksReducer = booksSlice.reducer;
 export default booksReducer;
