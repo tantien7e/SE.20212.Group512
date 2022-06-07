@@ -3,7 +3,7 @@ import AddToCartModal from '@app/components/AddToCartModal';
 import EditInventoryModal from '@app/components/EditInventoryModal';
 import { InventoryType, ModalType } from '@app/constants';
 import { Store } from '@app/context/Store';
-import { BookInterface, DrinkInterface } from '@app/types/product.interface';
+import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { numberWithCommasRound2 } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { css } from '@emotion/react';
@@ -14,6 +14,7 @@ import {
   Button,
   CircularProgress,
   FormControl,
+  IconButton,
   InputAdornment,
   OutlinedInput,
 } from '@mui/material';
@@ -35,6 +36,8 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import React, { useContext, useEffect, useState } from 'react';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
 
 interface Data extends BookInterface {}
 
@@ -64,20 +67,20 @@ function getComparator<Key extends keyof any>(
 
 // This method is created for cross-browser compatibility, if you don't
 // need to support IE11, you can use Array.prototype.sort() directly
-function stableSort<T>(
-  array: readonly T[],
-  comparator: (a: Omit<T, 'actions'>, b: Omit<T, 'actions'>) => number,
-) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
+// function stableSort<T>(
+//   array: readonly T[],
+//   comparator: (a: Omit<T, 'actions'>, b: Omit<T, 'actions'>) => number,
+// ) {
+//   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
+//   stabilizedThis.sort((a, b) => {
+//     const order = comparator(a[0], b[0]);
+//     if (order !== 0) {
+//       return order;
+//     }
+//     return a[1] - b[1];
+//   });
+//   return stabilizedThis.map((el) => el[0]);
+// }
 
 interface HeadCell {
   disablePadding: boolean;
@@ -256,6 +259,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
   const [addProductModalOpen, setAddProductModalOpen] = useState(false);
+  const [deleteProductModalOpen, setDeleteProductModalOpen] = useState(false);
 
   const [currentCartItem, setCurrentCartItem] = useState<BookInterface>();
   const handleOpenModal = (type: ModalType, item?: BookInterface) => {
@@ -272,6 +276,10 @@ export default function DataBooksTable(props: EnhancedTableProps) {
         setAddProductModalOpen(true);
         setCurrentCartItem(undefined);
         break;
+      case ModalType.DELETE_PRODUCT:
+        setDeleteProductModalOpen(true);
+        setCurrentCartItem(item);
+        break;
       default:
         return;
     }
@@ -286,6 +294,9 @@ export default function DataBooksTable(props: EnhancedTableProps) {
         break;
       case ModalType.ADD_PRODUCT:
         setAddProductModalOpen(false);
+        break;
+      case ModalType.DELETE_PRODUCT:
+        setDeleteProductModalOpen(false);
         break;
       default:
         return;
@@ -361,20 +372,26 @@ export default function DataBooksTable(props: EnhancedTableProps) {
     toastInformSuccess('Successfully added!');
   };
 
-  const override = css`
-    display: block;
-    margin: 0 auto;
-    border-color: ${theme.palette.primary.main};
-  `;
-
   useEffect(() => {
     if (rows) {
-      setFilteredRows(rows);
+      const newRows = rows.filter((row) => {
+        const { title } = row;
+        return title.toLowerCase().includes(filterText);
+      });
+      setFilteredRows(newRows);
     }
   }, [rows]);
 
   return (
     <Box sx={{ width: '100%' }}>
+      {deleteProductModalOpen && (
+        <DeleteConfirmModal
+          open={deleteProductModalOpen}
+          handleClose={() => handleCloseModal(ModalType.DELETE_PRODUCT)}
+          item={currentCartItem as DrinkInterface & BookInterface}
+          type={InventoryType.DRINK}
+        />
+      )}
       {addProductModalOpen && (
         <AddItemModal
           open={addProductModalOpen}
@@ -387,6 +404,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
           open={editModalOpen}
           handleClose={() => handleCloseModal(ModalType.EDIT_INVENTORY)}
           item={currentCartItem as DrinkInterface & BookInterface}
+          type={InventoryType.BOOK}
         />
       )}
 
@@ -456,7 +474,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                         role="checkbox"
                         // aria-checked={isItemSelected}
                         tabIndex={-1}
-                        key={row.title}
+                        key={row._id + index}
                         // selected={isItemSelected}
                       >
                         <TableCell align="left">
@@ -487,7 +505,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                         <TableCell align="right">
                           ${numberWithCommasRound2(row.price)}
                         </TableCell>
-                        <TableCell align="right" width={250}>
+                        <TableCell align="right" width={280}>
                           <Button
                             variant="contained"
                             sx={{ marginRight: 2 }}
@@ -506,6 +524,14 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                           >
                             Edit
                           </Button>
+                          <IconButton
+                            color="error"
+                            onClick={() =>
+                              handleOpenModal(ModalType.DELETE_PRODUCT, row)
+                            }
+                          >
+                            <DeleteOutlineOutlinedIcon />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     );

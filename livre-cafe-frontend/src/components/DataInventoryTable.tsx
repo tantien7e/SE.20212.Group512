@@ -6,7 +6,7 @@ import {
   BookInterface,
   DrinkInterface,
   ProductInterface,
-} from '@app/types/product.interface';
+} from '@app/models/product.interface';
 import { css } from '@emotion/react';
 import { Search } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';

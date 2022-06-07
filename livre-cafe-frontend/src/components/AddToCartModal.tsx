@@ -1,6 +1,6 @@
 import { PREFIX_URL } from '@app/constants';
 import { CartStateInterface, Store } from '@app/context/Store';
-import { BookInterface, DrinkInterface } from '@app/types/product.interface';
+import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { numberWithCommasRound2, round2 } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { Button, Container, Divider, Grid, TextField } from '@mui/material';
@@ -70,9 +70,13 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
       (cartItem: DrinkInterface & { quantity: number }) =>
         cartItem._id === product?._id,
     );
+    if (addedQuantity < 1) {
+      toastError('Quantity must be more than 0!');
+      return;
+    }
     const quantity = existItem
       ? Number(existItem.quantity) + Number(addedQuantity)
-      : addedQuantity;
+      : Number(addedQuantity);
 
     ctxDispatch({
       type: 'CART_UPDATE_ITEM_QUANTITY',
@@ -87,6 +91,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
       toastError('Out of stock!');
       return;
     }
+
     toastInformSuccess('Successfully added!');
   };
   const handleAdd = () => {
