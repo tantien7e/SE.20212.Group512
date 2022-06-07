@@ -185,7 +185,7 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
                     <Search />
                   </InputAdornment>
                 }
-                placeholder="Search by name"
+                placeholder="Search by title"
                 onChange={onSearchChange}
                 value={filterText}
               />
@@ -253,9 +253,6 @@ export default function DataBooksTable(props: EnhancedTableProps) {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [filterText, setFilterText] = useState('');
   const [filteredRows, setFilteredRows] = useState<Data[]>(rows);
-  const prefixUrl =
-    'https://raw.githubusercontent.com/benoitvallon/100-best-books/master/static/';
-
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
   const [addProductModalOpen, setAddProductModalOpen] = useState(false);
@@ -389,7 +386,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
           open={deleteProductModalOpen}
           handleClose={() => handleCloseModal(ModalType.DELETE_PRODUCT)}
           item={currentCartItem as DrinkInterface & BookInterface}
-          type={InventoryType.DRINK}
+          type={InventoryType.BOOK}
         />
       )}
       {addProductModalOpen && (
@@ -482,7 +479,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                             alt={row.title}
                             // sx={{ margin }}
                             variant="rounded"
-                            src={prefixUrl + row.imageLink}
+                            src={row.imageUrl}
                           ></Avatar>
                         </TableCell>
                         <TableCell

@@ -1,4 +1,8 @@
 import {
+  addBook,
+  selectBooksLoading,
+} from '@app/app/features/books/books-slice';
+import {
   addDrink,
   selectDrinksAddLoading,
 } from '@app/app/features/drinks/drinks-slice';
@@ -73,6 +77,7 @@ export interface ErrorStateInterface {
 export default function AddItemModal(props: EditCartModalPropsInterface) {
   const dispatch = useDispatch();
   const drinksLoading = useSelector(selectDrinksAddLoading);
+  const booksLoading = useSelector(selectBooksLoading);
   const [addSuccess, setAddSuccess] = useState(false);
   const { open, handleClose, type } = props;
 
@@ -148,13 +153,14 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
         author: author || '',
         stock: stockQuantity,
         price,
+        imageUrl
       };
     }
     return {};
   };
 
   const handleAdd = () => {
-    const { imageUrl, productId, productName, price, stockQuantity, author } =
+    const { imageUrl, productName, price, stockQuantity, author } =
       productState;
     const error = {
       imageUrl: !imageUrl,
@@ -171,16 +177,17 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
       dispatch(addDrink(data as DrinkInterface));
     }
     if (type === InventoryType.BOOK) {
-      // dispatch(addDrink(data));
+      dispatch(addBook(data as BookInterface));
     }
     setAddSuccess(true);
   };
 
   React.useEffect(() => {
-    if (addSuccess && !drinksLoading) {
+    const loading = drinksLoading || booksLoading;
+    if (addSuccess && !loading) {
       handleClose();
     }
-  }, [addSuccess, drinksLoading]);
+  }, [addSuccess, drinksLoading, booksLoading]);
 
   return (
     <div>
@@ -368,7 +375,7 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
               {' '}
               <LoadingButton
                 variant="contained"
-                loading={drinksLoading}
+                loading={drinksLoading || booksLoading}
                 loadingPosition="end"
                 onClick={() => handleAdd()}
                 endIcon={<AddIcon />}

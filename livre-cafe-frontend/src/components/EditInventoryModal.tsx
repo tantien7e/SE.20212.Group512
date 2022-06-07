@@ -1,18 +1,24 @@
 import {
+  selectBooksUpdateLoading,
+  updateBook
+} from '@app/app/features/books/books-slice';
+import {
   selectDrinksUpdateLoading,
-  updateDrink,
+  updateDrink
 } from '@app/app/features/drinks/drinks-slice';
+import { ErrorStateInterface } from '@app/components/AddItemModal';
 import { InventoryType, PREFIX_URL } from '@app/constants';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { round2 } from '@app/utils';
-import { toastInformSuccess } from '@app/utils/toast';
+import SaveIcon from '@mui/icons-material/Save';
+import { LoadingButton } from '@mui/lab';
 import {
   Button,
   Container,
   Divider,
   FormHelperText,
   Grid,
-  TextField,
+  TextField
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -22,9 +28,6 @@ import * as React from 'react';
 import { useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector } from 'react-redux';
-import SaveIcon from '@mui/icons-material/Save';
-import { LoadingButton } from '@mui/lab';
-import { ErrorStateInterface } from '@app/components/AddItemModal';
 
 const style = {
   // position: 'absolute' as 'absolute',
@@ -67,12 +70,13 @@ interface ProductStateInterface {
 export default function EditInventoryModal(props: EditCartModalPropsInterface) {
   const { open, handleClose, item, type } = props;
   const dispatch = useDispatch();
-  const updateLoading = useSelector(selectDrinksUpdateLoading);
+  const updateDrinkLoading = useSelector(selectDrinksUpdateLoading);
+  const updateBookLoading = useSelector(selectBooksUpdateLoading);
   const [updateSuccess, setUpdateSuccess] = useState(false);
 
   const [productState, setProductState] = useState<ProductStateInterface>({
     _id: item?._id || '',
-    imageUrl: item?.imageUrl || PREFIX_URL + item?.imageLink,
+    imageUrl: item?.imageUrl || PREFIX_URL + item?.imageUrl,
     productId: item?._id || '',
     productName: item?.name || item?.title || '',
     price: item?.price || 0,
@@ -144,6 +148,7 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
         author: author || '',
         stock: stockQuantity,
         price,
+        imageUrl,
       };
     }
     return {};
@@ -170,16 +175,17 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
       dispatch(updateDrink(data as DrinkInterface));
     }
     if (type === InventoryType.BOOK) {
-      // dispatch(addDrink(data));
+      dispatch(updateBook(data as BookInterface));
     }
     setUpdateSuccess(true);
   };
 
   React.useEffect(() => {
+    const updateLoading = updateDrinkLoading || updateBookLoading;
     if (updateSuccess && !updateLoading) {
       handleClose();
     }
-  }, [updateSuccess, updateLoading]);
+  }, [updateSuccess, updateDrinkLoading, updateBookLoading]);
 
   return (
     <div>
@@ -380,7 +386,7 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
             <Grid>
               <LoadingButton
                 variant="contained"
-                loading={updateLoading}
+                loading={updateDrinkLoading || updateBookLoading}
                 loadingPosition="end"
                 onClick={() => handleSave()}
                 endIcon={<SaveIcon />}
