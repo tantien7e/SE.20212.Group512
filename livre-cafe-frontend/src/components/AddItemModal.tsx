@@ -63,7 +63,7 @@ interface ProductStateInterface {
 
 export interface ErrorStateInterface {
   imageUrl: boolean;
-  productId: boolean;
+  productId?: boolean;
   productName: boolean;
   price: boolean;
   stockQuantity: boolean;
@@ -87,7 +87,6 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
 
   const [errorState, setErrorState] = useState<ErrorStateInterface>({
     imageUrl: false,
-    productId: false,
     productName: false,
     price: false,
     stockQuantity: false,
@@ -159,14 +158,13 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
       productState;
     const error = {
       imageUrl: !imageUrl,
-      productId: !productId,
       productName: !productName,
       price: price <= 0,
       stockQuantity: stockQuantity <= 0,
       author: type === InventoryType.BOOK ? !author : false,
     };
     setErrorState(error);
-    const passable = !(Object.values(error).findIndex((item) => !item) > -1);
+    const passable = !(Object.values(error).findIndex((item) => item) > -1);
     if (!passable) return;
     const data = generatePostData(productState);
     if (type === InventoryType.DRINK) {

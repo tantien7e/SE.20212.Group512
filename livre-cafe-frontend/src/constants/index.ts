@@ -13,6 +13,7 @@ export enum ModalType {
   ADD_TO_CART = 'ADD_TO_CART',
   EDIT_INVENTORY = 'EDIT_INVENTORY',
   ADD_PRODUCT = 'ADD_PRODUCT',
+  DELETE_PRODUCT = 'DELETE_PRODUCT',
 }
 
 export enum InventoryType {

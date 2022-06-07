@@ -1,5 +1,6 @@
 import AddItemModal from '@app/components/AddItemModal';
 import AddToCartModal from '@app/components/AddToCartModal';
+import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
 import EditInventoryModal from '@app/components/EditInventoryModal';
 import { InventoryType, ModalType } from '@app/constants';
 import { Store } from '@app/context/Store';
@@ -246,6 +247,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const [filteredRows, setFilteredRows] = useState<Data[]>(rows);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addProductModalOpen, setAddProductModalOpen] = useState(false);
+  const [deleteProductModalOpen, setDeleteProductModalOpen] = useState(false);
 
   const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
   const [currentCartItem, setCurrentCartItem] = useState<DrinkInterface>();
@@ -265,6 +267,10 @@ export default function EnhancedTable(props: EnhancedTableProps) {
         setAddProductModalOpen(true);
         setCurrentCartItem(undefined);
         break;
+      case ModalType.DELETE_PRODUCT:
+        setDeleteProductModalOpen(true);
+        setCurrentCartItem(item);
+        break;
       default:
         return;
     }
@@ -279,6 +285,9 @@ export default function EnhancedTable(props: EnhancedTableProps) {
         break;
       case ModalType.ADD_PRODUCT:
         setAddProductModalOpen(false);
+        break;
+      case ModalType.DELETE_PRODUCT:
+        setDeleteProductModalOpen(false);
         break;
       default:
         return;
@@ -328,16 +337,28 @@ export default function EnhancedTable(props: EnhancedTableProps) {
 
   const { state, dispatch } = useContext(Store);
   // console.log(state);
-  const { cart } = state;
+
 
   useEffect(() => {
     if (rows) {
-      setFilteredRows(rows);
+      const newRows = rows.filter((row) => {
+        const { name } = row;
+        return name.toLowerCase().includes(filterText);
+      });
+      setFilteredRows(newRows);
     }
   }, [rows]);
 
   return (
     <Box sx={{ width: '100%' }}>
+      {deleteProductModalOpen && (
+        <DeleteConfirmModal
+          open={deleteProductModalOpen}
+          handleClose={() => handleCloseModal(ModalType.DELETE_PRODUCT)}
+          item={currentCartItem as DrinkInterface & BookInterface}
+          type={InventoryType.DRINK}
+        />
+      )}
       {addProductModalOpen && (
         <AddItemModal
           open={addProductModalOpen}
@@ -466,7 +487,12 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                           >
                             Edit
                           </Button>
-                          <IconButton color="error">
+                          <IconButton
+                            color="error"
+                            onClick={() =>
+                              handleOpenModal(ModalType.DELETE_PRODUCT, row)
+                            }
+                          >
                             <DeleteOutlineOutlinedIcon />
                           </IconButton>
                         </TableCell>

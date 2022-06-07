@@ -9,7 +9,7 @@ import { DrinkInterface } from '@app/models/drinks';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
-function* addNewDrink(action: PayloadAction<DrinkInterface>) {
+function* updateDrinkData(action: PayloadAction<DrinkInterface>) {
   //   const token = localStorage.getItem('token');
   try {
     yield call(drinksApi.update, action.payload, action.payload?._id);
@@ -23,5 +23,5 @@ function* addNewDrink(action: PayloadAction<DrinkInterface>) {
 
 export default function* updateDrinkSaga(): Generator {
   //   console.log('updateDrink.arguments', updateDrink?.arguments);
-  yield takeEvery(updateDrink.toString(), addNewDrink);
+  yield takeEvery(updateDrink.toString(), updateDrinkData);
 }

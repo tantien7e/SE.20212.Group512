@@ -37,6 +37,7 @@ import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import React, { useContext, useEffect, useState } from 'react';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
 
 interface Data extends BookInterface {}
 
@@ -258,6 +259,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
   const [addProductModalOpen, setAddProductModalOpen] = useState(false);
+  const [deleteProductModalOpen, setDeleteProductModalOpen] = useState(false);
 
   const [currentCartItem, setCurrentCartItem] = useState<BookInterface>();
   const handleOpenModal = (type: ModalType, item?: BookInterface) => {
@@ -274,6 +276,10 @@ export default function DataBooksTable(props: EnhancedTableProps) {
         setAddProductModalOpen(true);
         setCurrentCartItem(undefined);
         break;
+      case ModalType.DELETE_PRODUCT:
+        setDeleteProductModalOpen(true);
+        setCurrentCartItem(item);
+        break;
       default:
         return;
     }
@@ -288,6 +294,9 @@ export default function DataBooksTable(props: EnhancedTableProps) {
         break;
       case ModalType.ADD_PRODUCT:
         setAddProductModalOpen(false);
+        break;
+      case ModalType.DELETE_PRODUCT:
+        setDeleteProductModalOpen(false);
         break;
       default:
         return;
@@ -363,20 +372,26 @@ export default function DataBooksTable(props: EnhancedTableProps) {
     toastInformSuccess('Successfully added!');
   };
 
-  const override = css`
-    display: block;
-    margin: 0 auto;
-    border-color: ${theme.palette.primary.main};
-  `;
-
   useEffect(() => {
     if (rows) {
-      setFilteredRows(rows);
+      const newRows = rows.filter((row) => {
+        const { title } = row;
+        return title.toLowerCase().includes(filterText);
+      });
+      setFilteredRows(newRows);
     }
   }, [rows]);
 
   return (
     <Box sx={{ width: '100%' }}>
+      {deleteProductModalOpen && (
+        <DeleteConfirmModal
+          open={deleteProductModalOpen}
+          handleClose={() => handleCloseModal(ModalType.DELETE_PRODUCT)}
+          item={currentCartItem as DrinkInterface & BookInterface}
+          type={InventoryType.DRINK}
+        />
+      )}
       {addProductModalOpen && (
         <AddItemModal
           open={addProductModalOpen}
@@ -509,7 +524,12 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                           >
                             Edit
                           </Button>
-                          <IconButton color="error">
+                          <IconButton
+                            color="error"
+                            onClick={() =>
+                              handleOpenModal(ModalType.DELETE_PRODUCT, row)
+                            }
+                          >
                             <DeleteOutlineOutlinedIcon />
                           </IconButton>
                         </TableCell>
