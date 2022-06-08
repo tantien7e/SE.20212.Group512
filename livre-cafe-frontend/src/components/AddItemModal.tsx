@@ -246,7 +246,7 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
               </Button>
               {errorState.imageUrl && (
                 <FormHelperText error={errorState.imageUrl}>
-                  Image must no be empty
+                  Image must not be empty
                 </FormHelperText>
               )}
             </label>
