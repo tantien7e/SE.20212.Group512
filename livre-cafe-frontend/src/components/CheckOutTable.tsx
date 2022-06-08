@@ -8,10 +8,11 @@ import {
 import { Store } from '@app/context/Store';
 import { relative } from 'node:path/win32';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import { Button } from '@mui/material';
+import { Box, Button, Grid, Typography } from '@mui/material';
 import { idID } from '@mui/material/locale';
 import { parseClassName } from 'react-toastify/dist/utils';
 import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
+import { useNavigate } from 'react-router-dom';
 
 export default function CheckOutTable() {
   const { state, dispatch } = useContext(Store);
@@ -102,8 +103,40 @@ export default function CheckOutTable() {
         sx={{
           padding: '1rem',
           paddingTop: '0',
+          '& .MuiDataGrid-main > div:first-child': {
+            zIndex: rows.length === 0 ? 100 : 0,
+          },
+        }}
+        components={{
+          NoRowsOverlay: () => <NoRowsComponent />,
         }}
       />
     </div>
   );
 }
+
+const NoRowsComponent = () => {
+  const navigate = useNavigate();
+  return (
+    <Box width={'100%'} height="100%" zIndex={5}>
+      <Grid
+        container
+        width="100%"
+        height="100%"
+        alignItems="center"
+        justifyContent="center"
+        flexDirection="column"
+        rowGap={2}
+      >
+        <Grid item>
+          <Typography variant="body1">Cart is empty </Typography>
+        </Grid>
+        <Grid item>
+          <Button variant="text" onClick={() => navigate('/inventory')}>
+            <Typography variant="body1"> Add Some</Typography>
+          </Button>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};

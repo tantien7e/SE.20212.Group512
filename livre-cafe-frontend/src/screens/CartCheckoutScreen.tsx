@@ -14,7 +14,7 @@ function CartCheckoutScreen() {
   const { state } = useContext(Store);
   const { cart } = state;
   const [printOrderModalOpen, setPrintOrderModalOpen] = useState(false);
-  
+
   const theme = useTheme();
 
   return (
@@ -40,6 +40,7 @@ function CartCheckoutScreen() {
           },
           { content: 'Normal Checkout', icon: <ShoppingCartCheckoutIcon /> },
         ]}
+        disabled={!cart.cartItems?.length}
       >
         Checkout
       </MenuDropdownButton>
@@ -61,7 +62,7 @@ function CartCheckoutScreen() {
             fontWeight="700"
             color={theme.palette.secondary.contrastText}
           >
-            Total Cost: ${getCartTotal(cart.cartItems)}
+            Subtotal: ${getCartTotal(cart.cartItems)}
           </Typography>{' '}
         </div>
       }

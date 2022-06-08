@@ -12,6 +12,13 @@ export interface CartStateInterface {
   };
 }
 
+export enum CartAction {
+  CART_ADD_ITEM = 'CART_ADD_ITEM',
+  CART_UPDATE_ITEM_QUANTITY = 'CART_UPDATE_ITEM_QUANTITY',
+  DELETE_ITEM = 'DELETE_ITEM',
+  CART_CLEAR = 'CART_CLEAR',
+}
+
 interface CartContextActionInterface {
   type: string;
   payload: CartItemInterface;
@@ -44,11 +51,11 @@ function reducer(
 ) {
   const selectedItem = action.payload;
   const existItem = state.cart?.cartItems?.find(
-    (item: ProductInterface) => item._id === selectedItem._id,
+    (item: ProductInterface) => item?._id === selectedItem?._id,
   );
 
   switch (action.type) {
-    case 'CART_ADD_ITEM': {
+    case CartAction.CART_ADD_ITEM: {
       const cartItems = existItem
         ? state.cart?.cartItems?.map((item) =>
             item._id === existItem._id ? selectedItem : item,
@@ -61,7 +68,7 @@ function reducer(
         },
       };
     }
-    case 'CART_UPDATE_ITEM_QUANTITY': {
+    case CartAction.CART_UPDATE_ITEM_QUANTITY: {
       const cartItems = existItem
         ? state.cart?.cartItems?.map((item) =>
             item._id === existItem._id &&
@@ -81,7 +88,7 @@ function reducer(
         },
       };
     }
-    case 'DELETE_ITEM': {
+    case CartAction.DELETE_ITEM: {
       const afterDeletedItems = state.cart?.cartItems?.filter((item) => {
         return item._id !== selectedItem._id;
       });
@@ -91,6 +98,15 @@ function reducer(
         ...state,
         cart: {
           cartItems: afterDeletedItems,
+        },
+      };
+    }
+
+    case CartAction.CART_CLEAR: {
+      localStorage.removeItem('cartItems');
+      return {
+        cart: {
+          cartItems: [],
         },
       };
     }
