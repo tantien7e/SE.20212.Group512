@@ -1,20 +1,20 @@
 import CheckOutTable from '@app/components/CheckOutTable';
 import { useTheme } from '@mui/material/styles';
-import { Typography, Box } from '@mui/material';
-import React, { useContext } from 'react';
+import { Typography, Box, Button } from '@mui/material';
+import React, { useContext, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Store } from '@app/context/Store';
+import { CartItemInterface, Store } from '@app/context/Store';
+import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
+import MenuDropdownButton from '@app/components/MenuDropdownButton';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import PrintOrderModal from '@app/components/PrintOrderModal';
+import { getCartTotal } from '@app/utils';
 
 function CartCheckoutScreen() {
-  const { state, dispatch } = useContext(Store);
+  const { state } = useContext(Store);
   const { cart } = state;
-  const getTotal = () => {
-    let sum = 0;
-    cart.cartItems.forEach((item) => {
-      sum += item.quantity * item.price;
-    });
-    return sum;
-  };
+  const [printOrderModalOpen, setPrintOrderModalOpen] = useState(false);
+  
   const theme = useTheme();
 
   return (
@@ -22,12 +22,30 @@ function CartCheckoutScreen() {
       <Helmet>
         <title>Cart Checkout</title>
       </Helmet>
-      <Box sx={{ marginBottom: '1rem' }}>
+      <PrintOrderModal
+        open={printOrderModalOpen}
+        handleClose={() => setPrintOrderModalOpen(false)}
+      />
+      <Box sx={{ marginBottom: theme.spacing(5) }}>
         <Typography variant="h4" color={theme.palette.secondary.contrastText}>
           Check-out
         </Typography>{' '}
       </Box>
-      <CheckOutTable></CheckOutTable>
+      <MenuDropdownButton
+        dropdownList={[
+          {
+            content: 'Quick Checkout',
+            icon: <ElectricBoltIcon />,
+            handleClick: () => setPrintOrderModalOpen(true),
+          },
+          { content: 'Normal Checkout', icon: <ShoppingCartCheckoutIcon /> },
+        ]}
+      >
+        Checkout
+      </MenuDropdownButton>
+      <Box sx={{ margin: `${theme.spacing(2)} 0` }}>
+        <CheckOutTable />
+      </Box>
       {
         <div
           className="totalCost"
@@ -43,7 +61,7 @@ function CartCheckoutScreen() {
             fontWeight="700"
             color={theme.palette.secondary.contrastText}
           >
-            Total Cost: ${getTotal()}
+            Total Cost: ${getCartTotal(cart.cartItems)}
           </Typography>{' '}
         </div>
       }

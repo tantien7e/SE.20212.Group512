@@ -1,3 +1,5 @@
+import { CartItemInterface } from '@app/context/Store';
+
 export function stableSort<T>(
   array: readonly T[],
   comparator: (a: T, b: T) => number,
@@ -22,3 +24,7 @@ export const numberWithCommas = (x: number | string): string => {
 
 export const numberWithCommasRound2 = (x: number): string =>
   numberWithCommas(round2(x));
+
+export const getCartTotal = (items: CartItemInterface[]) => {
+  return items.reduce((a, c) => a + Number(c.price) * c.quantity, 0);
+};
