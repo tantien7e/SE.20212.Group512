@@ -39,7 +39,7 @@ export default function BasicTable(props: BasicTableProps) {
                 {numberWithCommasRound2(row.price * row.quantity)}
               </TableCell>
               <TableCell align="right">
-                {row.additionalRequirement || ''}
+                {row.additionalRequirement || 'None'}
               </TableCell>
             </TableRow>
           ))}

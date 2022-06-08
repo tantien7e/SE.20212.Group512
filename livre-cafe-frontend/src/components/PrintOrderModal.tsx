@@ -1,12 +1,18 @@
-import { selectBooksDeleteLoading } from '@app/app/features/books/books-slice';
-import { selectDrinksDeleteLoading } from '@app/app/features/drinks/drinks-slice';
 import BasicTable from '@app/components/BasicTable';
-import { Store } from '@app/context/Store';
-import { BookInterface, DrinkInterface } from '@app/models';
+import { CartAction, Store } from '@app/context/Store';
 import { getCartTotal, numberWithCommasRound2 } from '@app/utils';
-import PrintIcon from '@mui/icons-material/Print';
+import { toastError, toastInformSuccess } from '@app/utils/toast';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { LoadingButton } from '@mui/lab';
-import { Box, Divider, Grid, TableCell, Typography } from '@mui/material';
+import {
+  Box,
+  Checkbox,
+  Divider,
+  FormControlLabel,
+  Grid,
+  TableCell,
+  Typography
+} from '@mui/material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -14,9 +20,9 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/material/styles';
 import moment from 'moment';
-import React, { useContext, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import ReactToPrint, { useReactToPrint } from 'react-to-print';
+import React, { useContext, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useReactToPrint } from 'react-to-print';
 
 interface ModalPropsInterface {
   open: boolean;
@@ -26,16 +32,33 @@ interface ModalPropsInterface {
 export default function PrintOrderModal(props: ModalPropsInterface) {
   const { open, handleClose } = props;
   const theme = useTheme();
-  const deleteDrinkLoading = useSelector(selectDrinksDeleteLoading);
-  const deleteBookLoading = useSelector(selectBooksDeleteLoading);
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [printInvoice, setPrintInvoice] = useState(true);
   const dispatch = useDispatch();
   const {
     state: { cart },
+    dispatch: ctxDispatch,
   } = useContext(Store);
   const invoiceRef = useRef(null);
   const handlePrint = useReactToPrint({
     content: () => invoiceRef.current,
   });
+  function delay(time: number) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+  }
+  const handlePlaceOrder = async () => {
+    try {
+      setOrderLoading(true);
+      await delay(500);
+      ctxDispatch({ type: CartAction.CART_CLEAR });
+      toastInformSuccess('Order was placed successfully!');
+      setOrderLoading(false);
+      if (printInvoice) handlePrint();
+      handleClose();
+    } catch (err) {
+      toastError("Something's wrong");
+    }
+  };
   return (
     <div>
       <Dialog
@@ -106,7 +129,7 @@ export default function PrintOrderModal(props: ModalPropsInterface) {
                 </Grid>
                 <Divider sx={{ margin: `${theme.spacing(2)} 0` }} />
                 <Grid item container justifyContent="space-between">
-                  <Typography>Sub Total: </Typography>
+                  <Typography>Subtotal: </Typography>
                   <Typography>
                     {numberWithCommasRound2(getCartTotal(cart.cartItems))}$
                   </Typography>
@@ -142,30 +165,43 @@ export default function PrintOrderModal(props: ModalPropsInterface) {
         </DialogContent>
         <Divider />
         <DialogActions>
-          <Grid
-            container
-            justifyContent="space-between"
-            padding={`${theme.spacing(2)}`}
-          >
-            <Grid>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={() => handleClose()}
-              >
-                Cancel
-              </Button>
+          <Grid container direction="column" padding={`${theme.spacing(2)}`}>
+            <Grid item>
+              <FormControlLabel
+                label="Print Invoice"
+                control={
+                  <Checkbox
+                    checked={printInvoice}
+                    // indeterminate={checked[0] !== checked[1]}
+                    onChange={(e) => setPrintInvoice(e.target.checked)}
+                  />
+                }
+              />
             </Grid>
-            <Grid>
-              <LoadingButton
-                variant="contained"
-                loading={deleteBookLoading || deleteDrinkLoading}
-                loadingPosition="end"
-                endIcon={<PrintIcon />}
-                onClick={() => handlePrint()}
-              >
-                Print
-              </LoadingButton>
+
+            <Grid container justifyContent="space-between">
+              <Grid>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleClose()}
+                >
+                  Cancel
+                </Button>
+              </Grid>
+              <Grid>
+                <LoadingButton
+                  variant="contained"
+                  loading={orderLoading}
+                  loadingPosition="end"
+                  endIcon={<BorderColorIcon />}
+                  onClick={() => {
+                    handlePlaceOrder();
+                  }}
+                >
+                  Place An Order
+                </LoadingButton>
+              </Grid>
             </Grid>
           </Grid>
         </DialogActions>
