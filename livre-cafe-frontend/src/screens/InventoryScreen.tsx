@@ -1,3 +1,4 @@
+import { fetchBooks, selectBooks } from '@app/app/features/books/books-slice';
 import {
   fetchDrinks,
   selectDrinks,
@@ -55,29 +56,14 @@ function InventoryScreen() {
   };
   const dispatch = useDispatch();
   const drinksSelector = useSelector(selectDrinks);
+  const booksSelector = useSelector(selectBooks);
   const { drinks, loading: drinksLoading } = drinksSelector;
-  const [books, setBooks] = useState<BookInterface[]>([]);
+  const { books, loading: booksLoading } = booksSelector;
   const theme = useTheme();
-  const fetchBooks = async (url: string) => {
-    drinksLoading;
-    const response = await fetch(url);
-    const booksData = await response.json();
-    const generatedBooks = booksData.map(
-      (book: Exclude<BookInterface, '_id'>, index: number) => ({
-        ...book,
-        _id: String(index),
-        price: (Math.random() * 100).toPrecision(2),
-        stock: Math.round(Math.random() * 100),
-      }),
-    );
-    setBooks(generatedBooks);
-  };
-  const bookUrl =
-    'https://raw.githubusercontent.com/benoitvallon/100-best-books/master/books.json';
-  const { data, isLoading, error } = useFetchBooks(bookUrl);
 
   useEffect(() => {
     dispatch(fetchDrinks());
+    dispatch(fetchBooks());
   }, [dispatch]);
 
   return (
@@ -125,8 +111,8 @@ function InventoryScreen() {
       </TabPanel>
       <TabPanel value={value} index={1}>
         <DataBooksTable
-          isLoading={isLoading}
-          rows={data}
+          isLoading={booksLoading}
+          rows={books || []}
           stableSort={stableSort}
         />
       </TabPanel>

@@ -1,5 +1,7 @@
 import addBookSaga from '@app/app/sagas/books/addBook';
+import deleteBookSaga from '@app/app/sagas/books/deleteBook';
 import getListBooksSaga from '@app/app/sagas/books/getListBooks';
+import updateBookSaga from '@app/app/sagas/books/updateBook';
 import addDrinkSaga from '@app/app/sagas/drinks/addDrink';
 import deleteDrinkSaga from '@app/app/sagas/drinks/deleteDrink';
 import getListDrinksSaga from '@app/app/sagas/drinks/getListDrinks';
@@ -17,8 +19,10 @@ export default function* rootSaga() {
     getListDrinksSaga(),
     addDrinkSaga(),
     updateDrinkSaga(),
+    deleteDrinkSaga(),
     getListBooksSaga(),
     addBookSaga(),
-    deleteDrinkSaga(),
+    updateBookSaga(),
+    deleteBookSaga(),
   ]);
 }
