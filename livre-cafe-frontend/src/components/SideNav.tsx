@@ -270,7 +270,13 @@ function SideNav() {
             alignContent: 'center',
           }}
         >
-          <Avatar />
+          <Typography
+            sx={{ fontFamily: 'Caveat, cursive', fontWeight: 600 }}
+            // color="primary"
+            variant="h4"
+          >
+            S{!open && ' '}E
+          </Typography>
         </Box>
         <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
           <Typography
@@ -282,10 +288,11 @@ function SideNav() {
               whiteSpace: 'nowrap',
               lineHeight: 'inherit',
               fontWeight: 500,
-              color: theme.status.inActive,
+              // color: theme.status.inActive,
             }}
+            // color="primary"
           >
-            Arrofi Reza S.
+            Group 512
           </Typography>
           <Typography
             component="span"
@@ -294,10 +301,12 @@ function SideNav() {
               display: 'block',
               whiteSpace: 'nowrap',
               lineHeight: 'inherit',
-              color: theme.status.inActive,
+              // color: theme.status.inActive,
             }}
+            // color="primary"
+
           >
-            Web Designer
+            Software Engineering
           </Typography>
         </Box>
       </Box>
