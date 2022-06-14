@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite --port 3006",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "mock": "cd src/mockData && json-server --watch db.json --port 3001"
   },
   "dependencies": {
     "@emotion/react": "^11.9.0",

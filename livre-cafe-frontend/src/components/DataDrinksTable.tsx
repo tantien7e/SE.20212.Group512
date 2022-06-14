@@ -4,6 +4,7 @@ import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
 import EditInventoryModal from '@app/components/EditInventoryModal';
 import { InventoryType, ModalType } from '@app/constants';
 import { Store } from '@app/context/Store';
+import { CustomerInterface } from '@app/models';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { numberWithCommasRound2 } from '@app/utils';
 import { Search } from '@mui/icons-material';
@@ -338,7 +339,6 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const { state, dispatch } = useContext(Store);
   // console.log(state);
 
-
   useEffect(() => {
     if (rows) {
       const newRows = rows.filter((row) => {
@@ -355,7 +355,11 @@ export default function EnhancedTable(props: EnhancedTableProps) {
         <DeleteConfirmModal
           open={deleteProductModalOpen}
           handleClose={() => handleCloseModal(ModalType.DELETE_PRODUCT)}
-          item={currentCartItem as DrinkInterface & BookInterface}
+          item={
+            currentCartItem as DrinkInterface &
+              BookInterface &
+              CustomerInterface
+          }
           type={InventoryType.DRINK}
         />
       )}

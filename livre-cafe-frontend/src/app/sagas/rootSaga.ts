@@ -1,11 +1,19 @@
-import addBookSaga from '@app/app/sagas/books/addBook';
-import deleteBookSaga from '@app/app/sagas/books/deleteBook';
-import getListBooksSaga from '@app/app/sagas/books/getListBooks';
-import updateBookSaga from '@app/app/sagas/books/updateBook';
-import addDrinkSaga from '@app/app/sagas/drinks/addDrink';
-import deleteDrinkSaga from '@app/app/sagas/drinks/deleteDrink';
-import getListDrinksSaga from '@app/app/sagas/drinks/getListDrinks';
-import updateDrinkSaga from '@app/app/sagas/drinks/updateDrink';
+import addBookSaga from '@app/app/sagas/books/addBookSaga';
+import deleteBookSaga from '@app/app/sagas/books/deleteBookSaga';
+import getListBooksSaga from '@app/app/sagas/books/getListBooksSaga';
+import updateBookSaga from '@app/app/sagas/books/updateBookSaga';
+import addCustomerSaga from '@app/app/sagas/customers/addCustomerSaga';
+import deleteCustomerSaga from '@app/app/sagas/customers/deleteCustomerSaga';
+import getListCustomersSaga from '@app/app/sagas/customers/getListCustomersSaga';
+import updateCustomerSaga from '@app/app/sagas/customers/updateCustomerSaga';
+import addDrinkSaga from '@app/app/sagas/drinks/addDrinkSaga';
+import deleteDrinkSaga from '@app/app/sagas/drinks/deleteDrinkSaga';
+import getListDrinksSaga from '@app/app/sagas/drinks/getListDrinksSaga';
+import updateDrinkSaga from '@app/app/sagas/drinks/updateDrinkSaga';
+import addOrderSaga from '@app/app/sagas/orders/addOrderSaga';
+import deleteOrderSaga from '@app/app/sagas/orders/deleteOrderSaga';
+import getListOrdersSaga from '@app/app/sagas/orders/getListOrdersSaga';
+import updateOrderSaga from '@app/app/sagas/orders/updateOrderSaga';
 import { all } from 'redux-saga/effects';
 
 function* helloSaga() {
@@ -24,5 +32,13 @@ export default function* rootSaga() {
     addBookSaga(),
     updateBookSaga(),
     deleteBookSaga(),
+    getListCustomersSaga(),
+    addCustomerSaga(),
+    updateCustomerSaga(),
+    deleteCustomerSaga(),
+    getListOrdersSaga(),
+    addOrderSaga(),
+    updateOrderSaga(),
+    deleteOrderSaga(),
   ]);
 }
