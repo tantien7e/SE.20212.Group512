@@ -74,7 +74,7 @@ function InventoryScreen() {
       <Helmet>
         <title>Inventory</title>
       </Helmet>
-      <Box sx={{ marginBottom: '1rem' }}>
+      <Box sx={{ marginBottom: theme.spacing(2) }}>
         <Typography variant="h4" color={theme.palette.secondary.contrastText}>
           Inventory
         </Typography>{' '}

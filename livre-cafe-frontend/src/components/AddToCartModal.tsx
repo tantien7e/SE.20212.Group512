@@ -104,7 +104,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
   };
 
   const [productState, setProductState] = useState<ProductCartStateInterface>({
-    imageUrl: item?.imageUrl || PREFIX_URL + item?.imageLink || '',
+    imageUrl: item?.imageUrl || '',
     productId: item?._id || '',
     productName: item?.name || item?.title || '',
     price: item?.price || 0,
