@@ -1,22 +1,34 @@
-import AddItemModal from '@app/components/AddItemModal';
-import AddToCartModal from '@app/components/AddToCartModal';
-import EditInventoryModal from '@app/components/EditInventoryModal';
-import { InventoryType, ModalType } from '@app/constants';
+import AddCustomerModal from '@app/components/AddCustomerModal';
+import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
+import EditCustomerModal from '@app/components/EditCustomerModal';
+import ViewCustomerModal from '@app/components/ViewCustomerModal';
+import { ModalType } from '@app/constants';
 import { Store } from '@app/context/Store';
+import {
+  CUSTOMER,
+  CustomerGender,
+  CustomerInterface,
+  RankIndex,
+  RankType,
+} from '@app/models/customer.interface';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
-import { numberWithCommasRound2 } from '@app/utils';
-import { toastError, toastInformSuccess } from '@app/utils/toast';
-import { css } from '@emotion/react';
+import { a11yProps } from '@app/utils';
 import { Search } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import EditIcon from '@mui/icons-material/Edit';
+import PreviewIcon from '@mui/icons-material/Preview';
 import {
-  Avatar,
   Button,
+  Chip,
   CircularProgress,
   FormControl,
+  Grid,
   IconButton,
   InputAdornment,
   OutlinedInput,
+  Tab,
+  Tabs,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -36,11 +48,10 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import React, { useContext, useEffect, useState } from 'react';
-import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
-import { CustomerInterface } from '@app/models';
 
-interface Data extends BookInterface {}
+interface Data extends CustomerInterface {}
+
+type ExcludedKey = 'action' | 'orders';
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -56,10 +67,10 @@ type Order = 'asc' | 'desc';
 
 function getComparator<Key extends keyof any>(
   order: Order,
-  orderBy: Exclude<Key, 'actions'>,
+  orderBy: Exclude<Key, 'actions' | 'orders'>,
 ): (
-  a: { [key in Exclude<Key, 'actions'>]: number | string },
-  b: { [key in Exclude<Key, 'actions'>]: number | string },
+  a: { [key in Exclude<Key, 'actions' | 'orders'>]: number | string },
+  b: { [key in Exclude<Key, 'actions' | 'orders'>]: number | string },
 ) => number {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
@@ -85,43 +96,49 @@ function getComparator<Key extends keyof any>(
 
 interface HeadCell {
   disablePadding: boolean;
-  id: keyof Data;
+  id: keyof Omit<Data, 'orders'>;
   label: string;
   numeric: boolean;
 }
 
 const headCells: readonly HeadCell[] = [
   {
-    id: 'title',
+    id: 'firstName',
     numeric: false,
-    disablePadding: true,
-    label: 'Title',
+    disablePadding: false,
+    label: 'Name',
   },
   {
-    id: 'author',
+    id: 'phone',
     numeric: false,
-    disablePadding: true,
-    label: 'Author',
+    disablePadding: false,
+    label: 'Phone',
   },
   {
-    id: 'stock',
-    numeric: true,
+    id: 'email',
+    numeric: false,
     disablePadding: false,
-    label: 'Stock',
+    label: 'Email',
   },
   {
-    id: 'price',
-    numeric: true,
+    id: 'points',
     disablePadding: false,
-    label: 'Price',
+    label: 'Points',
+    numeric: true,
+  },
+  {
+    id: 'ranking',
+    disablePadding: false,
+    label: 'Ranking',
+    numeric: false,
   },
 ];
 
 interface EnhancedTableHeadProps {
-  //   numSelected: number;
+  numSelected: number;
   onRequestSort: (
     event: React.MouseEvent<unknown>,
-    property: keyof Data,
+    property: keyof Omit<Data, 'orders'>,
   ) => void;
   // onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void;
   order: Order;
@@ -136,21 +153,14 @@ interface EnhancedTableHeadProps {
 function EnhancedTableHead(props: EnhancedTableHeadProps) {
   const { order, orderBy, onRequestSort, onSearchChange, filterText } = props;
   const createSortHandler =
-    (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
+    (property: keyof Omit<Data, 'orders'>) =>
+    (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
     };
 
   return (
     <TableHead>
       <TableRow>
-        <TableCell
-          key="picture"
-          align="left"
-          padding="normal"
-          // sortDirection={orderBy === headCell.id ? order : false}
-        >
-          Picture
-        </TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -186,7 +196,7 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
                     <Search />
                   </InputAdornment>
                 }
-                placeholder="Search by title"
+                placeholder="Search by name"
                 onChange={onSearchChange}
                 value={filterText}
               />
@@ -199,37 +209,37 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
 }
 
 interface EnhancedTableToolbarProps {
-  //   numSelected: number;
-  handleOpenModal: (type: ModalType, item?: BookInterface) => void;
+  numSelected: number;
+  handleOpenModal: (type: ModalType, item?: CustomerInterface) => void;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const { handleOpenModal } = props;
+
   return (
     <Toolbar
       sx={{
         pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
+        pr: { xs: 2, sm: 2 },
       }}
     >
-      <Typography
-        sx={{ flex: '1 1 100%' }}
-        variant="h6"
-        id="tableTitle"
-        component="div"
-      >
-        Drinks
-      </Typography>
+      <Grid container direction="column">
+        <Grid item container justifyContent="space-between" sx={{ pt: 2 }}>
+          <Typography variant="h6" id="tableTitle" component="div">
+            Customers
+          </Typography>
 
-      <Tooltip title="New Product">
-        <Button
-          endIcon={<AddIcon />}
-          variant="contained"
-          onClick={() => handleOpenModal(ModalType.ADD_PRODUCT)}
-        >
-          Add
-        </Button>
-      </Tooltip>
+          <Tooltip title="New Customer">
+            <Button
+              endIcon={<AddIcon />}
+              variant="contained"
+              onClick={() => handleOpenModal(ModalType.ADD_CUSTOMER)}
+            >
+              Add
+            </Button>
+          </Tooltip>
+        </Grid>
+      </Grid>
     </Toolbar>
   );
 };
@@ -243,40 +253,64 @@ interface EnhancedTableProps {
   isLoading?: boolean;
 }
 
-export default function DataBooksTable(props: EnhancedTableProps) {
+export default function DataCustomersTable(props: EnhancedTableProps) {
   const { rows, stableSort, isLoading } = props;
-  const theme = useTheme();
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] =
-    React.useState<keyof Exclude<Data, 'actions'>>('title');
+    React.useState<keyof Omit<Data, 'actions' | 'orders'>>('firstName');
+  const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [filterText, setFilterText] = useState('');
   const [filteredRows, setFilteredRows] = useState<Data[]>(rows);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
-  const [addProductModalOpen, setAddProductModalOpen] = useState(false);
-  const [deleteProductModalOpen, setDeleteProductModalOpen] = useState(false);
+  const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
+  const [deleteCustomerModalOpen, setDeleteCustomerModalOpen] = useState(false);
 
-  const [currentCartItem, setCurrentCartItem] = useState<BookInterface>();
-  const handleOpenModal = (type: ModalType, item?: BookInterface) => {
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [currentCustomer, setCurrentCustomer] = useState<CustomerInterface>();
+  const theme = useTheme();
+  const [tabIndex, setTabIndex] = React.useState(0);
+
+  const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+    let newRows;
+    switch (newValue) {
+      case RankIndex.DIAMOND:
+        newRows = rows.filter((row) => row.ranking === RankType.DIAMOND);
+        break;
+      case RankIndex.PLATINUM:
+        newRows = rows.filter((row) => row.ranking === RankType.PLATINUM);
+        break;
+      case RankIndex.GOLD:
+        newRows = rows.filter((row) => row.ranking === RankType.GOLD);
+        break;
+      case RankIndex.SILVER:
+        newRows = rows.filter((row) => row.ranking === RankType.SILVER);
+        break;
+      default:
+        newRows = rows.slice();
+    }
+    setFilteredRows(newRows);
+  };
+
+  const handleOpenModal = (type: ModalType, item?: CustomerInterface) => {
     switch (type) {
-      case ModalType.ADD_TO_CART:
-        setAddToCartModalOpen(true);
-        setCurrentCartItem(item);
+      case ModalType.DELETE_CUSTOMER:
+        setDeleteCustomerModalOpen(true);
+        setCurrentCustomer(item);
         break;
-      case ModalType.EDIT_INVENTORY:
+      case ModalType.ADD_CUSTOMER:
+        setAddCustomerModalOpen(true);
+        break;
+      case ModalType.EDIT_CUSTOMER:
         setEditModalOpen(true);
-        setCurrentCartItem(item);
+        setCurrentCustomer(item);
         break;
-      case ModalType.ADD_PRODUCT:
-        setAddProductModalOpen(true);
-        setCurrentCartItem(undefined);
-        break;
-      case ModalType.DELETE_PRODUCT:
-        setDeleteProductModalOpen(true);
-        setCurrentCartItem(item);
+      case ModalType.VIEW_CUSTOMER:
+        setViewModalOpen(true);
+        setCurrentCustomer(item);
         break;
       default:
         return;
@@ -284,27 +318,27 @@ export default function DataBooksTable(props: EnhancedTableProps) {
   };
   const handleCloseModal = (type: ModalType) => {
     switch (type) {
-      case ModalType.ADD_TO_CART:
-        setAddToCartModalOpen(false);
-        break;
-      case ModalType.EDIT_INVENTORY:
+      case ModalType.EDIT_CUSTOMER:
         setEditModalOpen(false);
         break;
-      case ModalType.ADD_PRODUCT:
-        setAddProductModalOpen(false);
+      case ModalType.ADD_CUSTOMER:
+        setAddCustomerModalOpen(false);
         break;
-      case ModalType.DELETE_PRODUCT:
-        setDeleteProductModalOpen(false);
+      case ModalType.DELETE_CUSTOMER:
+        setDeleteCustomerModalOpen(false);
+        break;
+      case ModalType.VIEW_CUSTOMER:
+        setViewModalOpen(false);
         break;
       default:
         return;
     }
-    setCurrentCartItem(undefined);
+    setCurrentCustomer(undefined);
   };
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof Data,
+    property: keyof Omit<Data, 'orders'>,
   ) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -336,45 +370,48 @@ export default function DataBooksTable(props: EnhancedTableProps) {
     const text = e.target.value.toLowerCase();
     setFilterText(text);
     const newRows = rows.filter((row) => {
-      const { title } = row;
-      return title.toLowerCase().includes(text);
+      const { firstName, lastName } = row;
+      const name = firstName + lastName;
+      return name.toLowerCase().includes(text);
     });
-    console.log(newRows);
     setFilteredRows(newRows);
   };
 
   const { state, dispatch } = useContext(Store);
   // console.log(state);
-  const { cart } = state;
 
-  const handleAddToCart = (product: BookInterface) => {
-    console.log(state);
-    const existItem = cart?.cartItems?.find(
-      (item: BookInterface & { quantity: number }) =>
-        item.author === product?.author && item._id === product?._id,
-    );
-    const quantity = existItem ? existItem.quantity + 1 : 1;
-
-    dispatch({
-      type: 'CART_UPDATE_ITEM_QUANTITY',
-      payload: {
-        ...product,
-        quantity,
-      },
-    });
-    if (quantity > product.stock) {
-      console.log('Bigger');
-      toastError('Out of stock!');
-      return;
+  const getSalutation = (gender: CustomerGender) => {
+    switch (gender) {
+      case CustomerGender.MALE:
+        return 'Mr.';
+      case CustomerGender.FEMALE:
+        return 'Ms.';
+      default:
+        return '';
     }
-    toastInformSuccess('Successfully added!');
+  };
+
+  const getRankColor = (rank: RankType) => {
+    switch (rank) {
+      case RankType.DIAMOND:
+        return 'info';
+      case RankType.PLATINUM:
+        return 'success';
+      case RankType.GOLD:
+        return 'warning';
+      case RankType.SILVER:
+        return 'default';
+      default:
+        return 'default';
+    }
   };
 
   useEffect(() => {
     if (rows) {
       const newRows = rows.filter((row) => {
-        const { title } = row;
-        return title.toLowerCase().includes(filterText);
+        const { firstName, lastName } = row;
+        const name = firstName + lastName;
+        return name.toLowerCase().includes(filterText);
       });
       setFilteredRows(newRows);
     }
@@ -382,43 +419,63 @@ export default function DataBooksTable(props: EnhancedTableProps) {
 
   return (
     <Box sx={{ width: '100%' }}>
-      {deleteProductModalOpen && (
+      {deleteCustomerModalOpen && (
         <DeleteConfirmModal
-          open={deleteProductModalOpen}
-          handleClose={() => handleCloseModal(ModalType.DELETE_PRODUCT)}
+          open={deleteCustomerModalOpen}
+          handleClose={() => handleCloseModal(ModalType.DELETE_CUSTOMER)}
           item={
-            currentCartItem as DrinkInterface &
+            currentCustomer as DrinkInterface &
               BookInterface &
               CustomerInterface
           }
-          type={InventoryType.BOOK}
+          type={CUSTOMER}
         />
       )}
-      {addProductModalOpen && (
-        <AddItemModal
-          open={addProductModalOpen}
-          handleClose={() => handleCloseModal(ModalType.ADD_PRODUCT)}
-          type={InventoryType.BOOK}
-        />
-      )}
-      {editModalOpen && currentCartItem && (
-        <EditInventoryModal
-          open={editModalOpen}
-          handleClose={() => handleCloseModal(ModalType.EDIT_INVENTORY)}
-          item={currentCartItem as DrinkInterface & BookInterface}
-          type={InventoryType.BOOK}
+      {addCustomerModalOpen && (
+        <AddCustomerModal
+          open={addCustomerModalOpen}
+          handleClose={() => handleCloseModal(ModalType.ADD_CUSTOMER)}
+          type={CUSTOMER}
         />
       )}
 
-      {addToCartModalOpen && currentCartItem && (
-        <AddToCartModal
-          open={addToCartModalOpen}
-          handleClose={() => handleCloseModal(ModalType.ADD_TO_CART)}
-          item={currentCartItem as DrinkInterface & BookInterface}
+      {editModalOpen && currentCustomer && (
+        <EditCustomerModal
+          open={editModalOpen}
+          handleClose={() => handleCloseModal(ModalType.EDIT_CUSTOMER)}
+          item={currentCustomer}
+          type={CUSTOMER}
         />
       )}
+
+      {viewModalOpen && currentCustomer && (
+        <ViewCustomerModal
+          open={viewModalOpen}
+          handleClose={() => handleCloseModal(ModalType.VIEW_CUSTOMER)}
+          item={currentCustomer}
+          type={CUSTOMER}
+        />
+      )}
+      <Grid item>
+        <Box sx={{ borderColor: 'divider', width: 'auto', marginBottom: 2 }}>
+          <Tabs
+            value={tabIndex}
+            onChange={handleChangeTab}
+            aria-label="basic tabs example"
+          >
+            <Tab label="All" {...a11yProps(0)} />
+            <Tab label="Diamond" {...a11yProps(RankIndex.DIAMOND)} />
+            <Tab label="PLATINUM" {...a11yProps(RankIndex.PLATINUM)} />
+            <Tab label="GOLD" {...a11yProps(RankIndex.GOLD)} />
+            <Tab label="SILVER" {...a11yProps(RankIndex.SILVER)} />
+          </Tabs>
+        </Box>
+      </Grid>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar handleOpenModal={handleOpenModal} />
+        <EnhancedTableToolbar
+          numSelected={selected.length}
+          handleOpenModal={handleOpenModal}
+        />
         <TableContainer>
           <Table
             sx={{ minWidth: 688 }}
@@ -426,7 +483,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
             size={dense ? 'small' : 'medium'}
           >
             <EnhancedTableHead
-              //   numSelected={selected.length}
+              numSelected={selected.length}
               order={order}
               orderBy={orderBy}
               // onSelectAllClick={handleSelectAllClick}
@@ -466,7 +523,6 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
                     const labelId = `enhanced-table-checkbox-${index}`;
-
                     return (
                       <TableRow
                         hover
@@ -476,60 +532,57 @@ export default function DataBooksTable(props: EnhancedTableProps) {
                         role="checkbox"
                         // aria-checked={isItemSelected}
                         tabIndex={-1}
-                        key={row._id + index}
+                        key={row?.id + index}
                         // selected={isItemSelected}
                       >
+                        <TableCell
+                          component="th"
+                          id={labelId}
+                          scope="row"
+                          padding="normal"
+                        >
+                          {`${getSalutation(row.gender)} `}
+                          <strong>{`${row.firstName}`}</strong>
+                          {` ${row.lastName}`}
+                        </TableCell>
+                        <TableCell align="left">{row.phone}</TableCell>
+                        <TableCell align="left">{row.email}</TableCell>
+                        <TableCell align="right">{row.points}</TableCell>
                         <TableCell align="left">
-                          <Avatar
-                            alt={row.title}
-                            // sx={{ margin }}
-                            variant="rounded"
-                            src={row.imageUrl}
-                          ></Avatar>
-                        </TableCell>
-                        <TableCell
-                          component="th"
-                          id={labelId}
-                          scope="row"
-                          padding="none"
-                        >
-                          {row.title}
-                        </TableCell>
-                        <TableCell
-                          component="th"
-                          id={labelId}
-                          scope="row"
-                          padding="none"
-                        >
-                          {row.author}
-                        </TableCell>
-                        <TableCell align="right">{row.stock}</TableCell>
-                        <TableCell align="right">
-                          ${numberWithCommasRound2(row.price)}
-                        </TableCell>
-                        <TableCell align="right" width={280}>
-                          <Button
-                            variant="contained"
-                            sx={{ marginRight: 2 }}
-                            onClick={() => {
-                              // handleAddToCart(row);
-                              handleOpenModal(ModalType.ADD_TO_CART, row);
-                            }}
-                          >
-                            Add To Cart
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            onClick={() =>
-                              handleOpenModal(ModalType.EDIT_INVENTORY, row)
+                          <Chip
+                            label={
+                              <Typography variant="body2" fontWeight={600}>
+                                {row.ranking}
+                              </Typography>
                             }
+                            variant="filled"
+                            color={getRankColor(row.ranking)}
+                          />
+                        </TableCell>
+
+                        <TableCell align="right" width={280}>
+                          <IconButton
+                            color="primary"
+                            onClick={() =>
+                              handleOpenModal(ModalType.VIEW_CUSTOMER, row)
+                            }
+                            sx={{ marginRight: 2 }}
                           >
-                            Edit
-                          </Button>
+                            <PreviewIcon />
+                          </IconButton>
+                          <IconButton
+                            onClick={() =>
+                              handleOpenModal(ModalType.EDIT_CUSTOMER, row)
+                            }
+                            sx={{ marginRight: 2 }}
+                            color="info"
+                          >
+                            <EditIcon />
+                          </IconButton>
                           <IconButton
                             color="error"
                             onClick={() =>
-                              handleOpenModal(ModalType.DELETE_PRODUCT, row)
+                              handleOpenModal(ModalType.DELETE_CUSTOMER, row)
                             }
                           >
                             <DeleteOutlineOutlinedIcon />
@@ -551,17 +604,15 @@ export default function DataBooksTable(props: EnhancedTableProps) {
             )}
           </Table>
         </TableContainer>
-        {!isLoading && (
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={filteredRows.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        )}
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={filteredRows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </Paper>
       <FormControlLabel
         control={<Switch checked={dense} onChange={handleChangeDense} />}

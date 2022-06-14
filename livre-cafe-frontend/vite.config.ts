@@ -21,6 +21,14 @@ export default defineConfig({
           return newPath.replace(/^\/api/, '');
         },
       },
+      '/api-mock/': {
+        target: 'http://localhost:3001/',
+        secure: false,
+        changeOrigin: true,
+        rewrite: (newPath) => {
+          return newPath.replace(/^\/api-mock/, '');
+        },
+      },
     },
   },
 });

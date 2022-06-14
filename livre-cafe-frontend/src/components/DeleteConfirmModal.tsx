@@ -5,7 +5,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { BookInterface, DrinkInterface } from '@app/models';
+import {
+  BookInterface,
+  CUSTOMER,
+  CustomerInterface,
+  DrinkInterface,
+} from '@app/models';
 import { InventoryType } from '@app/constants';
 import { Grid, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -20,12 +25,13 @@ import {
   deleteBook,
   selectBooksDeleteLoading,
 } from '@app/app/features/books/books-slice';
+import { deleteCustomer } from '@app/app/features/customers/customers-slice';
 
 interface ModalPropsInterface {
   open: boolean;
   handleClose: () => void;
-  item?: DrinkInterface & BookInterface;
-  type: InventoryType;
+  item?: DrinkInterface & BookInterface & CustomerInterface;
+  type: InventoryType | 'CUSTOMER';
 }
 
 export default function DeleteConfirmModal(props: ModalPropsInterface) {
@@ -41,7 +47,8 @@ export default function DeleteConfirmModal(props: ModalPropsInterface) {
   const handleDelete = () => {
     if (
       (type === InventoryType.DRINK && item?.name !== confirmText) ||
-      (type === InventoryType.BOOK && item?.title !== confirmText)
+      (type === InventoryType.BOOK && item?.title !== confirmText) ||
+      (type === CUSTOMER && item?.firstName !== confirmText)
     ) {
       setDeleteError(true);
       return;
@@ -52,6 +59,8 @@ export default function DeleteConfirmModal(props: ModalPropsInterface) {
     } else if (type === InventoryType.BOOK) {
       //Delete books here
       dispatch(deleteBook(item as BookInterface));
+    } else if (type === CUSTOMER) {
+      dispatch(deleteCustomer(item as CustomerInterface));
     }
     setDeleteSuccess(true);
   };
@@ -73,7 +82,9 @@ export default function DeleteConfirmModal(props: ModalPropsInterface) {
         fullWidth
       >
         <DialogTitle id="alert-dialog-title">
-          {`Do you want to delete item ${item?.name || item?.title}?`}
+          {`Do you want to delete item ${
+            item?.name || item?.title || item?.firstName || ''
+          }?`}
         </DialogTitle>
         <DialogContent>
           <DialogContentText>

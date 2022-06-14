@@ -1,5 +1,7 @@
 import BasicTable from '@app/components/BasicTable';
 import { CartAction, Store } from '@app/context/Store';
+import { useFetchOrders } from '@app/hooks/useFetchOrders';
+import { OrderInterface, OrderStatusType } from '@app/models/order.interface';
 import { getCartTotal, numberWithCommasRound2 } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
@@ -11,7 +13,7 @@ import {
   FormControlLabel,
   Grid,
   TableCell,
-  Typography
+  Typography,
 } from '@mui/material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -20,7 +22,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/material/styles';
 import moment from 'moment';
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 
@@ -34,6 +36,12 @@ export default function PrintOrderModal(props: ModalPropsInterface) {
   const theme = useTheme();
   const [orderLoading, setOrderLoading] = useState(false);
   const [printInvoice, setPrintInvoice] = useState(true);
+  const [isPost, setIsPost] = useState(false);
+  const { postData, error, isPending, data } = useFetchOrders(
+    'http://localhost:3001/orders',
+    'POST',
+  );
+
   const dispatch = useDispatch();
   const {
     state: { cart },
@@ -43,22 +51,34 @@ export default function PrintOrderModal(props: ModalPropsInterface) {
   const handlePrint = useReactToPrint({
     content: () => invoiceRef.current,
   });
-  function delay(time: number) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-  }
-  const handlePlaceOrder = async () => {
-    try {
-      setOrderLoading(true);
-      await delay(500);
+
+  const handlePlaceOrder = () => {
+    setOrderLoading(true);
+    const postOrderData: OrderInterface = {
+      customer: 'Guest',
+      items: cart.cartItems,
+      status: OrderStatusType.COMPLETED,
+      bookedAt: new Date(),
+    };
+    postData(postOrderData);
+    setIsPost(true);
+  };
+
+  useEffect(() => {
+    if (!isPending && isPost && !error) {
       ctxDispatch({ type: CartAction.CART_CLEAR });
       toastInformSuccess('Order was placed successfully!');
       setOrderLoading(false);
       if (printInvoice) handlePrint();
       handleClose();
-    } catch (err) {
-      toastError("Something's wrong");
+      return;
     }
-  };
+    if (error) {
+      toastError(error);
+      setOrderLoading(false);
+    }
+  }, [data]);
+
   return (
     <div>
       <Dialog
