@@ -4,7 +4,6 @@ export interface DrinkInterface {
   name: string;
   price: number;
   _id: string;
-  // type?: string;
 }
 
 export interface BookInterface {
@@ -19,7 +18,6 @@ export interface BookInterface {
   stock: number;
   price: number;
   _id: string;
-  // type?: string;
 }
 
 export type ProductInterface = DrinkInterface & BookInterface;

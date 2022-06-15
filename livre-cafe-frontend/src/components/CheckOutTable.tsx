@@ -5,22 +5,43 @@ import {
   GridRenderCellParams,
   GridValueGetterParams,
 } from '@mui/x-data-grid';
-import { Store } from '@app/context/Store';
+import { CartItemInterface, Store } from '@app/context/Store';
 import { relative } from 'node:path/win32';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { Box, Button, Grid, Typography } from '@mui/material';
 import { idID } from '@mui/material/locale';
 import { parseClassName } from 'react-toastify/dist/utils';
 import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
-import { useNavigate } from 'react-router-dom';
+import { Params, useNavigate } from 'react-router-dom';
+import EditCartModal from './EditCartModal';
+import {
+  BookInterface,
+  DrinkInterface,
+  ProductInterface,
+} from '@app/models/product.interface';
+import { useState } from 'react';
+import { current } from '@reduxjs/toolkit';
+
+interface CartRowInterface {
+  _id: string;
+  imageUrl: string;
+  productId: string;
+  productName: string;
+  cost: number;
+  stock: number;
+  author?: string;
+  quantity: number;
+  additionalRequirement: string;
+}
 
 export default function CheckOutTable() {
   const { state, dispatch } = useContext(Store);
   const { cart } = state;
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [currentItem, setCurrentItem] = useState<CartItemInterface>();
 
   const handleDelete = (params: GridRenderCellParams<any, any, any>) => {
     const toBeDeleted = params.row;
-    console.log(toBeDeleted);
     dispatch({
       type: 'DELETE_ITEM',
       payload: toBeDeleted,
@@ -41,10 +62,27 @@ export default function CheckOutTable() {
     );
   };
 
+  const editButton = (params: GridRenderCellParams<any, any, any>) => {
+    return (
+      <strong>
+        <Button variant="outlined" onClick={(e) => handleEdit(params)}>
+          Edit
+        </Button>
+      </strong>
+    );
+  };
+
+  const handleEdit = (params: GridRenderCellParams<any, any, any>) => {
+    const quantity = params.row.quantity;
+    const additionalRequirement = params.row.additionalRequirement;
+    setCurrentItem(params.row);
+    setOpenEditModal(true);
+  };
+
   const columns: GridColDef[] = [
     { field: '_id', headerName: 'ID', width: 70, sortable: false },
     { field: 'type', headerName: 'Type', width: 140 },
-    { field: 'item', headerName: 'Item', width: 140 },
+    { field: 'name', headerName: 'Item', width: 140 },
     {
       field: 'quantity',
       headerName: 'Quantity',
@@ -54,17 +92,23 @@ export default function CheckOutTable() {
       field: 'cost',
       headerName: 'Cost',
       width: 100,
+      renderCell: (params) => <>${params.row.cost}</>,
     },
     {
-      field: 'additionalRequirements',
+      field: 'additionalRequirement',
       headerName: 'Additional Requirements',
       sortable: false,
       minWidth: 200,
       flex: 1,
     },
     {
-      field: 'action',
-      headerName: 'Action',
+      field: 'edit',
+      headerName: 'Edit',
+      renderCell: (params) => editButton(params),
+    },
+    {
+      field: 'delete',
+      headerName: 'Delete',
       renderCell: (params) => deleteButton(params),
     },
   ];
@@ -77,12 +121,14 @@ export default function CheckOutTable() {
       id: id + 1,
       _id: item._id,
       type,
-      item: name,
+      name: name,
+      price: item.price,
       quantity,
-      cost: '$' + quantity * item.price,
-      additionalRequirements: item.additionalRequirement
+      cost: quantity * item.price,
+      additionalRequirement: item.additionalRequirement
         ? item.additionalRequirement
         : 'None',
+      stock: item.stock,
     };
   });
 
@@ -94,6 +140,15 @@ export default function CheckOutTable() {
         backgroundColor: 'white',
       }}
     >
+      {currentItem && openEditModal && (
+        <EditCartModal
+          open={openEditModal}
+          handleClose={() => {
+            setOpenEditModal(false);
+          }}
+          item={currentItem}
+        />
+      )}
       <DataGrid
         rows={rows}
         columns={columns}
