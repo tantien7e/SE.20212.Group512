@@ -4,7 +4,8 @@ import React, { createContext, useReducer } from 'react';
 
 export interface CartItemInterface extends ProductInterface {
   quantity: number;
-  additionalRequirement?: string;
+  additionalRequirement: string;
+  cost: number;
 }
 export interface CartStateInterface {
   cart: {

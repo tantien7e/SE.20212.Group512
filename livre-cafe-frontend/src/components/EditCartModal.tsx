@@ -1,16 +1,19 @@
 import {
-  addBook,
-  selectBooksLoading,
+  selectBooksUpdateLoading,
+  updateBook,
 } from '@app/app/features/books/books-slice';
 import {
-  addDrink,
-  selectDrinksAddLoading,
+  selectDrinksUpdateLoading,
+  updateDrink,
 } from '@app/app/features/drinks/drinks-slice';
-import { InventoryType } from '@app/constants';
+import { ErrorStateInterface } from '@app/components/AddItemModal';
+import { InventoryType, PREFIX_URL } from '@app/constants';
+import { CartAction, CartItemInterface, Store } from '@app/context/Store';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { round2 } from '@app/utils';
-import AddIcon from '@mui/icons-material/Add';
-import LoadingButton from '@mui/lab/LoadingButton';
+import { toastError, toastInformSuccess } from '@app/utils/toast';
+import SaveIcon from '@mui/icons-material/Save';
+import { LoadingButton } from '@mui/lab';
 import {
   Button,
   Container,
@@ -23,7 +26,7 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import * as React from 'react';
+import React, { useContext } from 'react';
 import { useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector } from 'react-redux';
@@ -39,7 +42,7 @@ const style = {
   border: '0.5px solid #000',
   borderRadius: '8px',
   boxShadow: 24,
-  //   minHeight: 'calc(100vh - 64px)',
+  // minHeight: 'calc(100vh - 64px)',
   height: 'auto',
   margin: '32px auto',
   p: 4,
@@ -52,52 +55,50 @@ const Input = styled('input')({
 interface EditCartModalPropsInterface {
   open: boolean;
   handleClose: () => void;
-  item?: DrinkInterface | BookInterface;
-  type: InventoryType;
+  item: CartItemInterface;
 }
 
 interface ProductStateInterface {
+  _id: string;
   imageUrl: string;
   productId: string;
   productName: string;
   price: number;
+  cost: number;
   stockQuantity: number;
   author?: string;
+  quantity: number;
+  additionalRequirement?: string;
 }
 
-export interface ErrorStateInterface {
-  productId?: boolean;
-  productName: boolean;
-  cost: boolean;
-  stockQuantity: boolean;
-  author?: boolean;
-  quantity: boolean;
-}
-
-export default function AddItemModal(props: EditCartModalPropsInterface) {
-  const dispatch = useDispatch();
-  const drinksLoading = useSelector(selectDrinksAddLoading);
-  const booksLoading = useSelector(selectBooksLoading);
-  const [addSuccess, setAddSuccess] = useState(false);
-  const { open, handleClose, type } = props;
-
+export default function EditCartModal(props: EditCartModalPropsInterface) {
+  const { open, handleClose, item } = props;
+  const updateDrinkLoading = useSelector(selectDrinksUpdateLoading);
+  const updateBookLoading = useSelector(selectBooksUpdateLoading);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const { dispatch } = useContext(Store);
   const [productState, setProductState] = useState<ProductStateInterface>({
-    imageUrl: '',
-    productId: '',
-    productName: '',
-    price: 0,
-    stockQuantity: 0,
-    author: '',
+    _id: item?._id || '',
+    imageUrl: item?.imageUrl || '',
+    productId: item?._id || '',
+    productName: item?.name || item?.title || '',
+    cost: item?.cost || 0,
+    quantity: item?.quantity || 0,
+    stockQuantity: item?.stock || 0,
+    author: item?.author,
+    additionalRequirement: item?.additionalRequirement || '',
+    price: item?.price || 0,
   });
 
   const [errorState, setErrorState] = useState<ErrorStateInterface>({
-    imageUrl: false,
+    productId: false,
     productName: false,
     cost: false,
-    quantity: false,
     stockQuantity: false,
     author: false,
+    quantity: false,
   });
+
   const theme = useTheme();
   const headerPadding = `${theme.spacing(2)} 0`;
 
@@ -110,7 +111,6 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
         ...state,
         imageUrl: reader.result as string,
       }));
-
       setErrorState((state) => ({
         ...state,
         imageUrl: !reader.result,
@@ -126,8 +126,7 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
     field: keyof ProductStateInterface,
   ) => {
-    const isNumberField = field === 'price' || field === 'stockQuantity';
-
+    const isNumberField = field === 'cost' || field === 'stockQuantity';
     setProductState((prevState) => {
       return { ...prevState, [field]: e.target.value };
     });
@@ -140,55 +139,90 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
   };
 
   const generatePostData = (body: ProductStateInterface) => {
-    const { productName, price, stockQuantity, author, imageUrl } = body;
-    if (type === InventoryType.DRINK) {
-      return {
-        name: productName,
-        price,
-        stock: stockQuantity,
-        imageUrl,
-      };
-    } else if (type === InventoryType.BOOK) {
-      return {
-        title: productName,
-        author: author || '',
-        stock: stockQuantity,
-        price,
-        imageUrl,
-      };
-    }
+    const {
+      productName,
+      cost,
+      stockQuantity,
+      author,
+      imageUrl,
+      _id,
+      quantity,
+      additionalRequirement,
+    } = body;
+
     return {};
   };
 
-  const handleAdd = () => {
-    const { imageUrl, productName, price, stockQuantity, author } =
-      productState;
+  const genPostItem = (
+    productState: ProductStateInterface,
+  ): CartItemInterface => {
+    const {
+      productName,
+      price,
+      stockQuantity,
+      author,
+      imageUrl,
+      _id,
+      quantity,
+      additionalRequirement,
+    } = productState;
+
+    const postItem = {
+      _id: _id,
+      name: productName,
+      stock: stockQuantity,
+      price: price,
+      author: author,
+      imageUrl: imageUrl,
+      additionalRequirement: additionalRequirement,
+      quantity: Number(quantity),
+    };
+
+    return postItem as CartItemInterface;
+  };
+
+  const handleSave = () => {
+    const {
+      imageUrl,
+      productId,
+      productName,
+      cost,
+      stockQuantity,
+      author,
+      quantity,
+      additionalRequirement,
+    } = productState;
+
     const error = {
-      imageUrl: !imageUrl,
+      productId: !productId,
       productName: !productName,
-      price: price <= 0,
+      cost: cost <= 0,
       stockQuantity: stockQuantity <= 0,
-      author: type === InventoryType.BOOK ? !author : false,
+      quantity: quantity < 0,
     };
     setErrorState(error);
     const passable = !(Object.values(error).findIndex((item) => item) > -1);
+
+    console.log(error);
     if (!passable) return;
-    const data = generatePostData(productState);
-    if (type === InventoryType.DRINK) {
-      dispatch(addDrink(data as DrinkInterface));
+    const newItem = genPostItem(productState);
+    console.log(newItem);
+    dispatch({ type: CartAction.CART_UPDATE_ITEM_QUANTITY, payload: newItem });
+    if (newItem.quantity > newItem.stock) {
+      toastError('Out of stock');
+      handleClose();
+      return;
     }
-    if (type === InventoryType.BOOK) {
-      dispatch(addBook(data as BookInterface));
-    }
-    setAddSuccess(true);
+    toastInformSuccess('Changes saved!');
+    handleClose();
   };
 
   React.useEffect(() => {
-    const loading = drinksLoading || booksLoading;
-    if (addSuccess && !loading) {
+    const updateLoading = updateDrinkLoading || updateBookLoading;
+    if (updateSuccess && !updateLoading) {
       handleClose();
     }
-  }, [addSuccess, drinksLoading, booksLoading]);
+  }, [updateSuccess, updateDrinkLoading, updateBookLoading]);
 
   return (
     <div>
@@ -208,57 +242,28 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
             color={theme.palette.secondary.contrastText}
             style={{ padding: ` ${theme.spacing(1)} 0` }}
           >
-            <strong style={{ textTransform: 'capitalize' }}>
-              Add {type.toLowerCase()}
-            </strong>
-          </Typography>
-          <Divider />
-          <Box
-            sx={{
-              padding: `${theme.spacing(2)} 0`,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            {productState.imageUrl && (
-              <img
-                src={productState.imageUrl}
-                alt={'item image'}
-                style={{
-                  height: '256px',
-                  maxHeight: '50vh',
-                  borderRadius: '8px',
-                  margin: `${theme.spacing(2)} 0`,
-                }}
-              />
-            )}
-            <br />
-            <label htmlFor="contained-button-file">
-              <Input
-                accept="image/*"
-                id="contained-button-file"
-                multiple
-                type="file"
-                onChange={handleChangeImage}
-              />
-              <Button variant="contained" component="span">
-                Upload New Image
-              </Button>
-            </label>
-          </Box>
-          <Divider />
-          <Typography
-            variant="h6"
-            style={{ padding: ` ${theme.spacing(1)} 0` }}
-            color={theme.palette.secondary.contrastText}
-          >
-            <strong> Product Info</strong>
+            <strong> Edit Cart Item</strong>
           </Typography>
           <Divider />
 
           <Container sx={{ padding: headerPadding }} maxWidth="lg">
             <Grid container spacing={2}>
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="product-id">Product ID</label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <TextField
+                    variant="outlined"
+                    id="product-id"
+                    aria-describedby="my-helper-text"
+                    fullWidth
+                    value={productState?.productId}
+                    disabled
+                  />
+                </Grid>
+              </Grid>
+
               <Grid container item alignItems="center">
                 <Grid xs={3}>
                   <label htmlFor="product-name">Product Name</label>
@@ -272,14 +277,15 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                     value={productState?.productName}
                     onChange={(e) => handleChangeText(e, 'productName')}
                     error={errorState.productName}
-                    helperText={
-                      errorState.productName && 'Product Name must not be empty'
-                    }
+                    // helperText={
+                    //   errorState.productName && 'Product Name must not be empty'
+                    // }
+                    disabled
                   />
                 </Grid>
               </Grid>
 
-              {type === InventoryType.BOOK && (
+              {productState?.author && (
                 <Grid container item alignItems="center">
                   <Grid xs={3}>
                     <label htmlFor="product-author">Author</label>
@@ -296,6 +302,7 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                       helperText={
                         errorState.author && 'Author must not be empty'
                       }
+                      disabled
                     />
                   </Grid>
                 </Grid>
@@ -311,17 +318,18 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                     id="product-price"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={round2(productState?.price)}
+                    value={round2(productState?.cost)}
                     InputProps={{
                       startAdornment: '$',
                       inputComponent: NumberFormatCustom as any,
                     }}
-                    onChange={(e) => handleChangeText(e, 'price')}
+                    onChange={(e) => handleChangeText(e, 'cost')}
                     error={errorState.cost}
                     helperText={
                       errorState.cost &&
                       'Price must not be less than or equal to 0'
                     }
+                    disabled
                   />
                 </Grid>
               </Grid>
@@ -346,6 +354,51 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                       errorState.stockQuantity &&
                       'Stock must not be less than or equal to 0'
                     }
+                    disabled
+                  />
+                </Grid>
+              </Grid>
+
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="product-quantity">Quantity</label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <TextField
+                    variant="outlined"
+                    id="product-quantity"
+                    aria-describedby="my-helper-text"
+                    fullWidth
+                    value={productState?.quantity}
+                    InputProps={{
+                      inputComponent: NumberFormatCustom as any,
+                    }}
+                    onChange={(e) => handleChangeText(e, 'quantity')}
+                    error={errorState.quantity}
+                    helperText={
+                      errorState.quantity &&
+                      'Quantity must not be less than or equal to 0'
+                    }
+                  />
+                </Grid>
+              </Grid>
+
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="product-additionalRequirement">
+                    Additional Requirement
+                  </label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <TextField
+                    variant="outlined"
+                    id="product-additionalRequirement"
+                    aria-describedby="my-helper-text"
+                    fullWidth
+                    value={productState?.additionalRequirement}
+                    onChange={(e) =>
+                      handleChangeText(e, 'additionalRequirement')
+                    }
                   />
                 </Grid>
               </Grid>
@@ -368,15 +421,14 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
               </Button>
             </Grid>
             <Grid>
-              {' '}
               <LoadingButton
                 variant="contained"
-                loading={drinksLoading || booksLoading}
+                loading={updateDrinkLoading || updateBookLoading}
                 loadingPosition="end"
-                onClick={() => handleAdd()}
-                endIcon={<AddIcon />}
+                onClick={() => handleSave()}
+                endIcon={<SaveIcon />}
               >
-                Add{' '}
+                Save Changes{' '}
               </LoadingButton>
             </Grid>
           </Grid>
