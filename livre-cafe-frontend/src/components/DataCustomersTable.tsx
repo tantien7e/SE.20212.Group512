@@ -54,6 +54,7 @@ interface Data extends CustomerInterface {}
 type ExcludedKey = 'action' | 'orders';
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+
   if (b[orderBy] < a[orderBy]) {
     return -1;
   }
@@ -378,7 +379,6 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
   };
 
   const { state, dispatch } = useContext(Store);
-  // console.log(state);
 
   const getSalutation = (gender: CustomerGender) => {
     switch (gender) {
@@ -456,7 +456,7 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
           type={CUSTOMER}
         />
       )}
-      <Grid item>
+      <Grid>
         <Box sx={{ borderColor: 'divider', width: 'auto', marginBottom: 2 }}>
           <Tabs
             value={tabIndex}
@@ -532,7 +532,7 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
                         role="checkbox"
                         // aria-checked={isItemSelected}
                         tabIndex={-1}
-                        key={row?.id + index}
+                        key={`customer${row?.id}` + index}
                         // selected={isItemSelected}
                       >
                         <TableCell
