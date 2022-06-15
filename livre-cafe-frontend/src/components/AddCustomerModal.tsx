@@ -1,12 +1,9 @@
-import { selectBooksLoading } from '@app/app/features/books/books-slice';
 import {
   addCustomer,
   selectCustomersAddLoading,
 } from '@app/app/features/customers/customers-slice';
-import { selectDrinksAddLoading } from '@app/app/features/drinks/drinks-slice';
+import PhoneInputCustom from '@app/components/PhoneInputCustom';
 import { InventoryType } from '@app/constants';
-import { useFetch } from '@app/hooks/useFetch';
-import { OrderInterface } from '@app/models';
 import {
   CUSTOMER,
   CustomerGender,
@@ -15,12 +12,12 @@ import {
 } from '@app/models/customer.interface';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { genRanking } from '@app/utils';
-import { toastInformSuccess } from '@app/utils/toast';
 import AddIcon from '@mui/icons-material/Add';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Button,
   Divider,
+  FormHelperText,
   Grid,
   MenuItem,
   Select,
@@ -34,6 +31,7 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useState } from 'react';
 import NumberFormat from 'react-number-format';
+import PhoneInput, { CountryData } from 'react-phone-input-2';
 import { useDispatch, useSelector } from 'react-redux';
 
 const style = {
@@ -121,16 +119,22 @@ export default function AddCustomerModal(props: AddModalProps) {
       | React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
       | SelectChangeEvent,
     field: keyof CustomerStateInterface,
+    country?: CountryData,
   ) => {
-    const isNumberField = field === 'phone' || field === 'points';
 
     setCustomerState((prevState) => {
       return { ...prevState, [field]: e.target.value };
     });
+    let phoneValue = '';
+    if (field === 'phone') {
+      const valueCopy = e.target.value.slice();
+      const regex = new RegExp(`^${country?.dialCode}`);
+      phoneValue = valueCopy.replace(regex, '');
+    }
     setErrorState((prevState) => {
       return {
         ...prevState,
-        [field]: !e.target.value,
+        [field]: field === 'phone' ? !phoneValue : !e.target.value,
       };
     });
   };
@@ -143,7 +147,7 @@ export default function AddCustomerModal(props: AddModalProps) {
       lastName: body.lastName,
       phone: body.phone,
       email: body.email,
-      points: body.points,
+      points: Number(body.points),
       ranking: genRanking(body.points),
       gender: body.gender,
     };
@@ -252,7 +256,7 @@ export default function AddCustomerModal(props: AddModalProps) {
                     </label>
                   </Grid>
                   <Grid xs sx={{ maxWidth: 400 }}>
-                    <TextField
+                    {/* <TextField
                       variant="outlined"
                       id="phone"
                       aria-describedby="my-helper-text"
@@ -261,6 +265,25 @@ export default function AddCustomerModal(props: AddModalProps) {
                       onChange={(e) => handleChangeText(e, 'phone')}
                       error={errorState.phone}
                       helperText={errorState.phone && 'Phone must not be empty'}
+                      InputProps={{
+                        // inputMode: 'numeric',
+                        inputComponent: PhoneInputCustom as any,
+                      }}
+                      // inputProps={{
+                      //   thousandSeparator: false,
+                      // }}
+                    /> */}
+                    <PhoneInputCustom
+                      onChange={(value, country: CountryData) => {
+                        const event = {
+                          target: {
+                            value: value,
+                          },
+                        };
+
+                        handleChangeText(event as any, 'phone', country);
+                      }}
+                      error={errorState.phone}
                     />
                   </Grid>
                 </Grid>
@@ -301,7 +324,7 @@ export default function AddCustomerModal(props: AddModalProps) {
                       onChange={(e) => handleChangeText(e, 'points')}
                       error={errorState.points}
                       InputProps={{
-                        // inputMode: 'numeric',
+                        inputMode: 'numeric',
                         inputComponent: NumberFormatCustom as any,
                       }}
                       helperText={
@@ -374,7 +397,6 @@ const NumberFormatCustom = React.forwardRef<NumberFormat<string>, CustomProps>(
 
     return (
       <NumberFormat
-        {...other}
         getInputRef={ref}
         onValueChange={(values) => {
           onChange({
@@ -386,6 +408,7 @@ const NumberFormatCustom = React.forwardRef<NumberFormat<string>, CustomProps>(
         }}
         thousandSeparator
         isNumericString
+        {...other}
       />
     );
   },

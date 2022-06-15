@@ -40,3 +40,27 @@ code {
     z-index: 999;
   }
 }
+
+// Phone input
+.phone-input-container {
+  &:hover {
+    & input,
+    & .flag-dropdown {
+      border-color: rgba(0, 0, 0, 0.87);
+    }
+  }
+  &:focus-within,
+  &:active {
+    & input,
+    & .flag-dropdown {
+      border-color: rgba(124, 105, 239);
+      border-width: 2px;
+    }
+  }
+  &.phone-input-error {
+    & input,
+    & .flag-dropdown {
+      border-color: rgb(211, 47, 47);
+    }
+  }
+}

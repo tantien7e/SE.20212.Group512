@@ -9,6 +9,8 @@ import { ToastContainer } from 'react-toastify';
 import App from './App';
 import './styles/index.scss';
 import 'react-toastify/dist/ReactToastify.css';
+import 'react-phone-input-2/lib/style.css';
+
 import { Provider } from 'react-redux';
 import { store } from '@app/app/store';
 

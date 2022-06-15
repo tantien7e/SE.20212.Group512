@@ -2,6 +2,7 @@ import {
   selectCustomersUpdateLoading,
   updateCustomer,
 } from '@app/app/features/customers/customers-slice';
+import PhoneInputCustom from '@app/components/PhoneInputCustom';
 import { InventoryType } from '@app/constants';
 import {
   CUSTOMER,
@@ -28,6 +29,7 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useState } from 'react';
 import NumberFormat from 'react-number-format';
+import { CountryData } from 'react-phone-input-2';
 import { useDispatch, useSelector } from 'react-redux';
 
 const style = {
@@ -138,16 +140,24 @@ export default function EditCustomerModal(props: AddModalProps) {
       | React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
       | SelectChangeEvent,
     field: keyof CustomerStateInterface,
+    country?: CountryData,
   ) => {
     const isNumberField = field === 'phone' || field === 'points';
 
     setCustomerState((prevState) => {
       return { ...prevState, [field]: e.target.value };
     });
+
+    let phoneValue = '';
+    if (field === 'phone') {
+      const valueCopy = e.target.value.slice();
+      const regex = new RegExp(`^${country?.dialCode}`);
+      phoneValue = valueCopy.replace(regex, '');
+    }
     setErrorState((prevState) => {
       return {
         ...prevState,
-        [field]: !e.target.value,
+        [field]: field === 'phone' ? !phoneValue : !e.target.value,
       };
     });
   };
@@ -160,7 +170,7 @@ export default function EditCustomerModal(props: AddModalProps) {
       lastName: body.lastName,
       phone: body.phone,
       email: body.email,
-      points: body.points,
+      points: Number(body.points),
       ranking: genRanking(body.points),
       gender: body.gender,
       _id: body?.customerId,
@@ -272,15 +282,18 @@ export default function EditCustomerModal(props: AddModalProps) {
                     </label>
                   </Grid>
                   <Grid xs sx={{ maxWidth: 400 }}>
-                    <TextField
-                      variant="outlined"
-                      id="phone"
-                      aria-describedby="my-helper-text"
-                      fullWidth
-                      value={customerState?.phone}
-                      onChange={(e) => handleChangeText(e, 'phone')}
+                    <PhoneInputCustom
+                      value={customerState.phone}
+                      onChange={(value, country: CountryData) => {
+                        const event = {
+                          target: {
+                            value: value,
+                          },
+                        };
+
+                        handleChangeText(event as any, 'phone', country);
+                      }}
                       error={errorState.phone}
-                      helperText={errorState.phone && 'Phone must not be empty'}
                     />
                   </Grid>
                 </Grid>
