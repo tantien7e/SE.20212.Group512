@@ -66,12 +66,13 @@ interface ProductStateInterface {
 }
 
 export interface ErrorStateInterface {
+  imageUrl?: boolean;
   productId?: boolean;
   productName: boolean;
-  cost: boolean;
+  cost?: boolean;
   stockQuantity: boolean;
   author?: boolean;
-  quantity: boolean;
+  quantity?: boolean;
 }
 
 export default function AddItemModal(props: EditCartModalPropsInterface) {
