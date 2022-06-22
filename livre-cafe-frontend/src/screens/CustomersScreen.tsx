@@ -1,11 +1,9 @@
 import {
   fetchCustomers,
-  selectCustomers
+  selectCustomers,
 } from '@app/app/features/customers/customers-slice';
 import DataCustomersTable from '@app/components/DataCustomersTable';
-import {
-  CustomerGender, RankType
-} from '@app/models/customer.interface';
+import { CustomerGender, RankType } from '@app/models/customer.interface';
 import { stableSort } from '@app/utils';
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -90,8 +88,8 @@ function CustomersScreen() {
   const { customers, loading } = customersSelector;
 
   useEffect(() => {
-    dispatch(fetchCustomers());
-  }, []);
+    if (!customers.length) dispatch(fetchCustomers());
+  }, [customers, dispatch]);
 
   return (
     <Box

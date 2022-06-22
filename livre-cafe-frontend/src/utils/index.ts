@@ -1,5 +1,5 @@
 import { CartItemInterface } from '@app/context/Store';
-import { RankType } from '@app/models/customer.interface';
+import { CustomerGender, RankType } from '@app/models/customer.interface';
 
 export function stableSort<T>(
   array: readonly T[],
@@ -41,4 +41,26 @@ export const genRanking = (points: number) => {
   if (points > 500) return RankType.PLATINUM;
   if (points > 100) return RankType.GOLD;
   return RankType.SILVER;
+};
+
+export const getSalutation = (gender: CustomerGender) => {
+  switch (gender) {
+    case CustomerGender.MALE:
+      return 'Mr.';
+    case CustomerGender.FEMALE:
+      return 'Ms.';
+    default:
+      return '';
+  }
+};
+
+export const standardize_color = (str: string) => {
+  var ctx = document.createElement('canvas').getContext('2d');
+  if (!ctx) return '#000000';
+  ctx.fillStyle = str;
+  return ctx?.fillStyle;
+};
+export const getBackgroundColor = (colorString: string) => {
+  const hexColor = standardize_color(colorString);
+  return hexColor + '50';
 };

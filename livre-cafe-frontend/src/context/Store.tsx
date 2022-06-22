@@ -1,3 +1,4 @@
+import { CustomerInterface } from '@app/models';
 import { ProductInterface } from '@app/models/product.interface';
 import { toastInformSuccess } from '@app/utils/toast';
 import React, { createContext, useReducer } from 'react';
@@ -11,6 +12,8 @@ export interface CartStateInterface {
   cart: {
     cartItems: CartItemInterface[];
   };
+
+  customer?: CustomerInterface;
 }
 
 export enum CartAction {
@@ -18,11 +21,13 @@ export enum CartAction {
   CART_UPDATE_ITEM_QUANTITY = 'CART_UPDATE_ITEM_QUANTITY',
   DELETE_ITEM = 'DELETE_ITEM',
   CART_CLEAR = 'CART_CLEAR',
+  SELECT_CUSTOMER = 'SELECT_CUSTOMER',
+  REMOVE_CUSTOMER = 'REMOVE_CUSTOMER',
 }
 
 interface CartContextActionInterface {
   type: string;
-  payload: CartItemInterface;
+  payload: CartItemInterface | CustomerInterface;
 }
 
 const initialState: CartStateInterface = {
@@ -31,6 +36,10 @@ const initialState: CartStateInterface = {
       ? JSON.parse(localStorage.getItem('cartItems') || '')
       : [],
   },
+
+  customer: localStorage.getItem('cartCustomer')
+    ? JSON.parse(localStorage.getItem('cartCustomer') || '')
+    : null,
 };
 
 export const Store = createContext<{
@@ -50,7 +59,7 @@ function reducer(
   state: CartStateInterface,
   action: CartContextActionInterface,
 ) {
-  const selectedItem = action.payload;
+  const selectedItem = action.payload as CartItemInterface;
   const existItem = state.cart?.cartItems?.find(
     (item: ProductInterface) => item?._id === selectedItem?._id,
   );
@@ -78,7 +87,7 @@ function reducer(
               : item,
           )
         : [...state.cart.cartItems, action.payload];
-      const filteredCartItems = cartItems.filter(
+      const filteredCartItems = (cartItems as CartItemInterface[]).filter(
         (item) => item.quantity > 0 && item.quantity <= item.stock,
       );
       localStorage.setItem('cartItems', JSON.stringify(filteredCartItems));
@@ -109,6 +118,23 @@ function reducer(
         cart: {
           cartItems: [],
         },
+      };
+    }
+
+    case CartAction.SELECT_CUSTOMER: {
+      const customer = action.payload;
+      localStorage.setItem('cartCustomer', JSON.stringify(customer));
+      return {
+        ...state,
+        customer,
+      };
+    }
+
+    case CartAction.REMOVE_CUSTOMER: {
+      localStorage.removeItem('cartCustomer');
+      return {
+        ...state,
+        customer: null,
       };
     }
     default:

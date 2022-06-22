@@ -417,7 +417,7 @@ export default function DataInventoryTable(props: EnhancedTableProps) {
                             alt={row.name || row.title}
                             // sx={{ margin }}
                             variant="rounded"
-                            src={row.imageUrl || PREFIX_URL + row.imageLink}
+                            src={row.imageUrl}
                           ></Avatar>
                         </TableCell>
                         <TableCell
