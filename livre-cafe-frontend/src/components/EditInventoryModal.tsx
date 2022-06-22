@@ -54,7 +54,7 @@ interface EditCartModalPropsInterface {
   open: boolean;
   handleClose: () => void;
   item?: DrinkInterface & BookInterface;
-  type: string;
+  type?: string;
 }
 
 interface ProductStateInterface {

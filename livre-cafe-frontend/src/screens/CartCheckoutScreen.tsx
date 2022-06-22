@@ -8,12 +8,15 @@ import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import MenuDropdownButton from '@app/components/MenuDropdownButton';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import PrintOrderModal from '@app/components/PrintOrderModal';
-import { getCartTotal } from '@app/utils';
+import { getCartTotal, getSalutation } from '@app/utils';
+import NormalCheckoutModal from '@app/components/NormalCheckoutModal';
 
 function CartCheckoutScreen() {
   const { state } = useContext(Store);
-  const { cart } = state;
+  const { cart, customer } = state;
   const [printOrderModalOpen, setPrintOrderModalOpen] = useState(false);
+  const [normarlCheckoutModalOpen, setNormalCheckoutModalOpen] =
+    useState(false);
 
   const theme = useTheme();
 
@@ -26,6 +29,12 @@ function CartCheckoutScreen() {
         open={printOrderModalOpen}
         handleClose={() => setPrintOrderModalOpen(false)}
       />
+      {normarlCheckoutModalOpen && (
+        <NormalCheckoutModal
+          open={normarlCheckoutModalOpen}
+          handleClose={() => setNormalCheckoutModalOpen(false)}
+        />
+      )}
       <Box sx={{ marginBottom: theme.spacing(5) }}>
         <Typography variant="h4" color={theme.palette.secondary.contrastText}>
           Check-out
@@ -38,12 +47,17 @@ function CartCheckoutScreen() {
             icon: <ElectricBoltIcon />,
             handleClick: () => setPrintOrderModalOpen(true),
           },
-          { content: 'Normal Checkout', icon: <ShoppingCartCheckoutIcon /> },
+          {
+            content: 'Normal Checkout',
+            icon: <ShoppingCartCheckoutIcon />,
+            handleClick: () => setNormalCheckoutModalOpen(true),
+          },
         ]}
         disabled={!cart.cartItems?.length}
       >
         Checkout
       </MenuDropdownButton>
+
       <Box sx={{ margin: `${theme.spacing(2)} 0` }}>
         <CheckOutTable />
       </Box>

@@ -12,7 +12,7 @@ import {
   RankType,
 } from '@app/models/customer.interface';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
-import { a11yProps } from '@app/utils';
+import { a11yProps, getSalutation } from '@app/utils';
 import { Search } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
@@ -380,16 +380,7 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
 
   const { state, dispatch } = useContext(Store);
 
-  const getSalutation = (gender: CustomerGender) => {
-    switch (gender) {
-      case CustomerGender.MALE:
-        return 'Mr.';
-      case CustomerGender.FEMALE:
-        return 'Ms.';
-      default:
-        return '';
-    }
-  };
+  
 
   const getRankColor = (rank: RankType) => {
     switch (rank) {

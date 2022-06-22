@@ -62,9 +62,13 @@ function InventoryScreen() {
   const theme = useTheme();
 
   useEffect(() => {
-    dispatch(fetchDrinks());
-    dispatch(fetchBooks());
-  }, [dispatch]);
+    if (!drinks.length) {
+      dispatch(fetchDrinks());
+    }
+    if (!books.length) {
+      dispatch(fetchBooks());
+    }
+  }, [dispatch, drinks, books]);
 
   return (
     <Box

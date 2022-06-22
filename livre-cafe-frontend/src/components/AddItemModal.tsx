@@ -73,6 +73,7 @@ export interface ErrorStateInterface {
   stockQuantity: boolean;
   author?: boolean;
   quantity?: boolean;
+  price?: boolean;
 }
 
 export default function AddItemModal(props: EditCartModalPropsInterface) {

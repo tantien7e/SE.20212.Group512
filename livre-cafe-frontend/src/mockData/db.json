@@ -12,12 +12,14 @@
     },
     {
       "firstName": "Bach ",
-      "lastName": "Xu",
+      "lastName": "Xuan",
       "phone": "84123123",
       "email": "bachtom125@gmail.com",
       "points": 200,
       "ranking": "GOLD",
       "gender": "male",
+      "_id": 2,
+      "orders": [],
       "id": 2
     },
     {
