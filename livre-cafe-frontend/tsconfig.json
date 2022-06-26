@@ -16,7 +16,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@app/*": ["./src/*"]
+      "@app/*": ["./src/*"],
+      "@images/*": ["./src/assets/images/*"]
     },
     "types": ["node"]
   },

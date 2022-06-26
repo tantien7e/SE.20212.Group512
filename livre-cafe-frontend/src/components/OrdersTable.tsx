@@ -1,26 +1,15 @@
-import AddCustomerModal from '@app/components/AddCustomerModal';
-import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
-import EditCustomerModal from '@app/components/EditCustomerModal';
-import ViewCustomerModal from '@app/components/ViewCustomerModal';
-import { ModalType } from '@app/constants';
+import { updateOrder } from '@app/app/features/orders/orders-slice';
+import ConfirmModal from '@app/components/ConfirmModal';
+import { ModalType, OrderTabIndex } from '@app/constants';
 import { Store } from '@app/context/Store';
-import {
-  CUSTOMER,
-  CustomerGender,
-  CustomerInterface,
-  RankIndex,
-  RankType,
-} from '@app/models/customer.interface';
-import { BookInterface, DrinkInterface } from '@app/models/product.interface';
-import { a11yProps, getSalutation } from '@app/utils';
+import { OrderInterface, OrderStatusType } from '@app/models';
+import { RankType } from '@app/models/customer.interface';
+import { a11yProps, numberWithCommasRound2 } from '@app/utils';
 import { Search } from '@mui/icons-material';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import EditIcon from '@mui/icons-material/Edit';
+import DoneIcon from '@mui/icons-material/Done';
+import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
 import PreviewIcon from '@mui/icons-material/Preview';
 import {
-  Button,
-  Chip,
   CircularProgress,
   FormControl,
   Grid,
@@ -29,6 +18,7 @@ import {
   OutlinedInput,
   Tab,
   Tabs,
+  Tooltip,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -44,12 +34,15 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
+import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
-interface Data extends CustomerInterface {}
+interface Data extends OrderInterface {
+  totalCost: number;
+}
 
 type ExcludedKey = 'action' | 'orders';
 
@@ -65,12 +58,14 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
 
 type Order = 'asc' | 'desc';
 
+type OrderBy<T> = Exclude<T, 'actions' | 'orders'>;
+
 function getComparator<Key extends keyof any>(
   order: Order,
-  orderBy: Exclude<Key, 'actions' | 'orders'>,
+  orderBy: OrderBy<Key>,
 ): (
-  a: { [key in Exclude<Key, 'actions' | 'orders'>]: number | string },
-  b: { [key in Exclude<Key, 'actions' | 'orders'>]: number | string },
+  a: { [key in OrderBy<Key>]: number | string },
+  b: { [key in OrderBy<Key>]: number | string },
 ) => number {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
@@ -103,34 +98,40 @@ interface HeadCell {
 
 const headCells: readonly HeadCell[] = [
   {
-    id: 'firstName',
+    id: 'id',
     numeric: false,
     disablePadding: false,
-    label: 'Name',
+    label: 'Order ID',
   },
   {
-    id: 'phone',
+    id: 'customer',
     numeric: false,
     disablePadding: false,
-    label: 'Phone',
+    label: 'Customer',
   },
   {
-    id: 'email',
+    id: 'items',
     numeric: false,
     disablePadding: false,
-    label: 'Email',
+    label: 'Items',
   },
   {
-    id: 'points',
+    id: 'bookedAt',
     disablePadding: false,
-    label: 'Points',
+    label: 'Booked At',
+    numeric: false,
+  },
+  {
+    id: 'status',
+    disablePadding: false,
+    label: 'Status',
+    numeric: false,
+  },
+  {
+    id: 'totalCost',
+    disablePadding: false,
+    label: 'Total Cost',
     numeric: true,
-  },
-  {
-    id: 'ranking',
-    disablePadding: false,
-    label: 'Ranking',
-    numeric: false,
   },
 ];
 
@@ -189,18 +190,20 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
           // sortDirection={orderBy === headCell.id ? order : false}
         >
           <Box component="form" noValidate autoComplete="off">
-            <FormControl>
-              <OutlinedInput
-                startAdornment={
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                }
-                placeholder="Search by name"
-                onChange={onSearchChange}
-                value={filterText}
-              />
-            </FormControl>
+            <Tooltip title="Search by item's name, customer name or Order Id">
+              <FormControl>
+                <OutlinedInput
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <Search />
+                    </InputAdornment>
+                  }
+                  placeholder="Search by item's name, customer name, order Id"
+                  onChange={onSearchChange}
+                  value={filterText}
+                />
+              </FormControl>
+            </Tooltip>
           </Box>
         </TableCell>
       </TableRow>
@@ -210,7 +213,7 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
-  handleOpenModal: (type: ModalType, item?: CustomerInterface) => void;
+  handleOpenModal: (type: ModalType, item?: OrderInterface) => void;
 }
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
@@ -226,18 +229,8 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
       <Grid container direction="column">
         <Grid item container justifyContent="space-between" sx={{ pt: 2 }}>
           <Typography variant="h6" id="tableTitle" component="div">
-            Customers
+            Orders
           </Typography>
-
-          <Tooltip title="New Customer">
-            <Button
-              endIcon={<AddIcon />}
-              variant="contained"
-              onClick={() => handleOpenModal(ModalType.ADD_CUSTOMER)}
-            >
-              Add
-            </Button>
-          </Tooltip>
         </Grid>
       </Grid>
     </Toolbar>
@@ -253,88 +246,60 @@ interface EnhancedTableProps {
   isLoading?: boolean;
 }
 
-export default function DataCustomersTable(props: EnhancedTableProps) {
+export default function OrdersTable(props: EnhancedTableProps) {
   const { rows, stableSort, isLoading } = props;
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] =
-    React.useState<keyof Omit<Data, 'actions' | 'orders'>>('firstName');
+    React.useState<keyof Omit<Data, 'actions' | 'orders'>>('bookedAt');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [filterText, setFilterText] = useState('');
   const [filteredRows, setFilteredRows] = useState<Data[]>(rows);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
-  const [deleteCustomerModalOpen, setDeleteCustomerModalOpen] = useState(false);
-
+  const [confirmCompleteModalOpen, setConfirmCompleteModalOpen] =
+    useState(false);
+  const [confirmCancelModalOpen, setConfirmCancelModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [currentCustomer, setCurrentCustomer] = useState<CustomerInterface>();
+  const [currentOrder, setCurrentOrder] = useState<OrderInterface>();
   const theme = useTheme();
   const [tabIndex, setTabIndex] = React.useState(0);
+  const dispatch = useDispatch();
 
-  const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
-    setTabIndex(newValue);
-    let newRows;
-    switch (newValue) {
-      case RankIndex.DIAMOND:
-        newRows = rows.filter((row) => row.ranking === RankType.DIAMOND);
-        break;
-      case RankIndex.PLATINUM:
-        newRows = rows.filter((row) => row.ranking === RankType.PLATINUM);
-        break;
-      case RankIndex.GOLD:
-        newRows = rows.filter((row) => row.ranking === RankType.GOLD);
-        break;
-      case RankIndex.SILVER:
-        newRows = rows.filter((row) => row.ranking === RankType.SILVER);
-        break;
-      default:
-        newRows = rows.slice();
-    }
-    setFilteredRows(newRows);
-    return newRows;
-  };
-
-  const handleOpenModal = (type: ModalType, item?: CustomerInterface) => {
+  const handleOpenModal = (type: ModalType, item?: OrderInterface) => {
     switch (type) {
-      case ModalType.DELETE_CUSTOMER:
-        setDeleteCustomerModalOpen(true);
-        setCurrentCustomer(item);
-        break;
-      case ModalType.ADD_CUSTOMER:
-        setAddCustomerModalOpen(true);
-        break;
-      case ModalType.EDIT_CUSTOMER:
-        setEditModalOpen(true);
-        setCurrentCustomer(item);
-        break;
-      case ModalType.VIEW_CUSTOMER:
+      case ModalType.VIEW_ORDER:
         setViewModalOpen(true);
-        setCurrentCustomer(item);
+        setCurrentOrder(item);
         break;
+      case ModalType.CONFIRM_COMPLETE_ORDER:
+        setConfirmCompleteModalOpen(true);
+        setCurrentOrder(item);
+        break;
+      case ModalType.CONFIRM_CANCEL_ORDER:
+        setConfirmCancelModalOpen(true);
+        setCurrentOrder(item);
       default:
         return;
     }
   };
   const handleCloseModal = (type: ModalType) => {
     switch (type) {
-      case ModalType.EDIT_CUSTOMER:
-        setEditModalOpen(false);
-        break;
-      case ModalType.ADD_CUSTOMER:
-        setAddCustomerModalOpen(false);
-        break;
-      case ModalType.DELETE_CUSTOMER:
-        setDeleteCustomerModalOpen(false);
-        break;
-      case ModalType.VIEW_CUSTOMER:
+      case ModalType.VIEW_ORDER:
         setViewModalOpen(false);
+        setCurrentOrder(undefined);
         break;
+      case ModalType.CONFIRM_COMPLETE_ORDER:
+        setConfirmCompleteModalOpen(false);
+        setCurrentOrder(undefined);
+        break;
+      case ModalType.CONFIRM_CANCEL_ORDER:
+        setConfirmCancelModalOpen(false);
+        setCurrentOrder(undefined);
       default:
         return;
     }
-    setCurrentCustomer(undefined);
+    setCurrentOrder(undefined);
   };
 
   const handleRequestSort = (
@@ -369,39 +334,90 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
   ) => {
     const text = e.target.value.toLowerCase();
+    const textTokens = text.split(' ');
     setFilterText(text);
     const newRows = rows.filter((row) => {
-      const { firstName, lastName } = row;
-      const name = firstName + lastName;
-      return name.toLowerCase().includes(text);
+      const { customer, id, _id, items } = row;
+      const itemsName = items.reduce((a, c) => a + (c.name || c.title), '');
+      const idText = id || _id || '';
+      const name =
+        customer === 'Guest' ? 'Guest' : customer.firstName + customer.lastName;
+      const hasConflict = textTokens.find(
+        (token) =>
+          !(
+            name.toLowerCase().includes(token) ||
+            itemsName.toLowerCase().includes(token) ||
+            String(idText).toLowerCase().includes(token)
+          ),
+      );
+
+      return !hasConflict;
     });
     setFilteredRows(newRows);
   };
 
-  const { state, dispatch } = useContext(Store);
+  const handleCompleteOrder = () => {
+    if (!currentOrder) return;
+    dispatch(
+      updateOrder({ ...currentOrder, status: OrderStatusType.COMPLETED }),
+    );
+  };
 
-  const getRankColor = (rank: RankType) => {
-    switch (rank) {
-      case RankType.DIAMOND:
-        return 'info';
-      case RankType.PLATINUM:
-        return 'success';
-      case RankType.GOLD:
-        return 'warning';
-      case RankType.SILVER:
-        return 'default';
+  const handleCancerOrder = () => {
+    if (!currentOrder) return;
+    dispatch(
+      updateOrder({ ...currentOrder, status: OrderStatusType.CANCELLED }),
+    );
+  };
+
+  const handleChangeTab = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+    let newRows;
+    switch (newValue) {
+      case OrderTabIndex.COMPLETED:
+        newRows = rows.filter(
+          (row) => row.status === OrderStatusType.COMPLETED,
+        );
+        break;
+      case OrderTabIndex.PENDING:
+        newRows = rows.filter((row) => row.status === OrderStatusType.PENDING);
+        break;
+
+      case OrderTabIndex.CANCELLED:
+        newRows = rows.filter(
+          (row) => row.status === OrderStatusType.CANCELLED,
+        );
+        break;
       default:
-        return 'default';
+        newRows = rows.slice();
     }
+    setFilteredRows(newRows);
+    return newRows;
   };
 
   useEffect(() => {
     if (rows) {
       const tabRows = handleChangeTab(1 as any, tabIndex);
+      const text = filterText.toLowerCase();
+      const textTokens = text.split(' ');
       const newRows = tabRows.filter((row) => {
-        const { firstName, lastName } = row;
-        const name = firstName + lastName;
-        return name.toLowerCase().includes(filterText);
+        const { customer, id, _id, items } = row;
+        const itemsName = items.reduce((a, c) => a + (c.name || c.title), '');
+        const idText = id || _id || '';
+        const name =
+          customer === 'Guest'
+            ? 'Guest'
+            : customer.firstName + customer.lastName;
+        const hasConflict = textTokens.find(
+          (token) =>
+            !(
+              name.toLowerCase().includes(token) ||
+              itemsName.toLowerCase().includes(token) ||
+              String(idText).toLowerCase().includes(token)
+            ),
+        );
+
+        return !hasConflict;
       });
       setFilteredRows(newRows);
     }
@@ -409,41 +425,25 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
 
   return (
     <Box sx={{ width: '100%' }}>
-      {deleteCustomerModalOpen && (
-        <DeleteConfirmModal
-          open={deleteCustomerModalOpen}
-          handleClose={() => handleCloseModal(ModalType.DELETE_CUSTOMER)}
-          item={
-            currentCustomer as DrinkInterface &
-              BookInterface &
-              CustomerInterface
-          }
-          type={CUSTOMER}
-        />
-      )}
-      {addCustomerModalOpen && (
-        <AddCustomerModal
-          open={addCustomerModalOpen}
-          handleClose={() => handleCloseModal(ModalType.ADD_CUSTOMER)}
-          type={CUSTOMER}
+      {confirmCompleteModalOpen && currentOrder && (
+        <ConfirmModal
+          open={confirmCompleteModalOpen}
+          handleClose={() => handleCloseModal(ModalType.CONFIRM_COMPLETE_ORDER)}
+          handleConfirm={handleCompleteOrder}
+          title={`Do you want to mark order #${
+            currentOrder.id || currentOrder._id
+          } as COMPLETED`}
         />
       )}
 
-      {editModalOpen && currentCustomer && (
-        <EditCustomerModal
-          open={editModalOpen}
-          handleClose={() => handleCloseModal(ModalType.EDIT_CUSTOMER)}
-          item={currentCustomer}
-          type={CUSTOMER}
-        />
-      )}
-
-      {viewModalOpen && currentCustomer && (
-        <ViewCustomerModal
-          open={viewModalOpen}
-          handleClose={() => handleCloseModal(ModalType.VIEW_CUSTOMER)}
-          item={currentCustomer}
-          type={CUSTOMER}
+      {confirmCancelModalOpen && currentOrder && (
+        <ConfirmModal
+          open={confirmCancelModalOpen}
+          title={`Do you want to cancel order #${
+            currentOrder.id || currentOrder._id
+          }`}
+          handleClose={() => handleCloseModal(ModalType.CONFIRM_CANCEL_ORDER)}
+          handleConfirm={handleCancerOrder}
         />
       )}
       <Grid>
@@ -454,10 +454,9 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
             aria-label="basic tabs example"
           >
             <Tab label="All" {...a11yProps(0)} />
-            <Tab label="Diamond" {...a11yProps(RankIndex.DIAMOND)} />
-            <Tab label="PLATINUM" {...a11yProps(RankIndex.PLATINUM)} />
-            <Tab label="GOLD" {...a11yProps(RankIndex.GOLD)} />
-            <Tab label="SILVER" {...a11yProps(RankIndex.SILVER)} />
+            <Tab label="COMPLETED" {...a11yProps(OrderTabIndex.COMPLETED)} />
+            <Tab label="PENDING" {...a11yProps(OrderTabIndex.PENDING)} />
+            <Tab label="CANCELLED" {...a11yProps(OrderTabIndex.CANCELLED)} />
           </Tabs>
         </Box>
       </Grid>
@@ -509,10 +508,21 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
               <TableBody>
                 {/* if you don't need to support IE11, you can replace the `stableSort` call with:
               rows.slice().sort(getComparator(order, orderBy)) */}
-                {stableSort(filteredRows, getComparator(order, orderBy))
+                {stableSort(
+                  filteredRows,
+                  getComparator(
+                    order,
+                    orderBy as keyof Data & { items: string | number },
+                  ),
+                )
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
                     const labelId = `enhanced-table-checkbox-${index}`;
+                    const { customer } = row;
+                    const customerName =
+                      customer === 'Guest'
+                        ? 'Guest'
+                        : customer.firstName + ' ' + customer.lastName;
                     return (
                       <TableRow
                         hover
@@ -530,57 +540,79 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
                           id={labelId}
                           scope="row"
                           padding="normal"
+                          align="left"
                         >
-                          {`${getSalutation(row.gender)} `}
-                          <strong>{`${row.firstName}`}</strong>
-                          {` ${row.lastName}`}
+                          {`${row.id} `}
                         </TableCell>
-                        <TableCell align="left">{row.phone}</TableCell>
-                        <TableCell align="left">{row.email}</TableCell>
-                        <TableCell align="right">{row.points}</TableCell>
+                        <TableCell align="left">{customerName}</TableCell>
                         <TableCell align="left">
-                          <Chip
-                            label={
-                              <Typography variant="body2" fontWeight={600}>
-                                {row.ranking}
-                              </Typography>
-                            }
-                            variant="filled"
-                            color={getRankColor(row.ranking)}
-                          />
+                          {row.items.reduce(
+                            (a, c, cIndex) =>
+                              a +
+                              (c.author || c.name) +
+                              (cIndex < row.items.length - 1 ? ', ' : '.'),
+                            '',
+                          )}
                         </TableCell>
-
+                        <TableCell align="left">
+                          {moment(row.bookedAt).format('DD.MM.YYYY')}
+                        </TableCell>
+                        <TableCell align="left">
+                          <OrderStatusBadge status={row.status} />
+                        </TableCell>
+                        <TableCell align="right">
+                          ${numberWithCommasRound2(row.totalCost)}
+                        </TableCell>
                         <TableCell
                           align="right"
                           sx={{ minWidth: 200 }}
                           width="220px"
                         >
-                          <IconButton
-                            color="primary"
-                            onClick={() =>
-                              handleOpenModal(ModalType.VIEW_CUSTOMER, row)
-                            }
-                            sx={{ marginRight: 2 }}
-                          >
-                            <PreviewIcon />
-                          </IconButton>
-                          <IconButton
-                            onClick={() =>
-                              handleOpenModal(ModalType.EDIT_CUSTOMER, row)
-                            }
-                            sx={{ marginRight: 2 }}
-                            color="info"
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            color="error"
-                            onClick={() =>
-                              handleOpenModal(ModalType.DELETE_CUSTOMER, row)
-                            }
-                          >
-                            <DeleteOutlineOutlinedIcon />
-                          </IconButton>
+                          {row.status !== OrderStatusType.COMPLETED &&
+                            row.status !== OrderStatusType.CANCELLED && (
+                              <Tooltip title="Mark As Completed">
+                                <IconButton
+                                  color="success"
+                                  onClick={() =>
+                                    handleOpenModal(
+                                      ModalType.CONFIRM_COMPLETE_ORDER,
+                                      row,
+                                    )
+                                  }
+                                  sx={{ marginRight: 2 }}
+                                >
+                                  <DoneIcon />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          {row.status !== OrderStatusType.CANCELLED &&
+                            row.status !== OrderStatusType.COMPLETED && (
+                              <Tooltip title="Cancel order">
+                                <IconButton
+                                  onClick={() =>
+                                    handleOpenModal(
+                                      ModalType.CONFIRM_CANCEL_ORDER,
+                                      row,
+                                    )
+                                  }
+                                  sx={{ marginRight: 2 }}
+                                  color="error"
+                                >
+                                  <DoNotDisturbAltIcon />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          <Tooltip title="View Details">
+                            <IconButton
+                              color="info"
+                              onClick={() =>
+                                handleOpenModal(ModalType.VIEW_CUSTOMER, row)
+                              }
+                              sx={{ marginRight: 2 }}
+                            >
+                              <PreviewIcon />
+                            </IconButton>
+                          </Tooltip>
                         </TableCell>
                       </TableRow>
                     );
@@ -614,4 +646,66 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
       />
     </Box>
   );
+}
+
+interface OrderStatusBadgeProps {
+  status: OrderStatusType;
+}
+
+function OrderStatusBadge(props: OrderStatusBadgeProps) {
+  const theme = useTheme();
+  const themeBlock = theme.block;
+  const { status } = props;
+  switch (status) {
+    case OrderStatusType.PENDING:
+      return (
+        <Box
+          minWidth={100}
+          sx={{
+            backgroundColor: themeBlock?.pending.backgroundColor,
+            borderRadius: theme.spacing(1),
+          }}
+          p={1}
+          textAlign="center"
+        >
+          <Typography fontWeight={600} color={themeBlock?.pending.fontColor}>
+            {OrderStatusType.PENDING}
+          </Typography>
+        </Box>
+      );
+    case OrderStatusType.COMPLETED:
+      return (
+        <Box
+          minWidth={100}
+          sx={{
+            backgroundColor: themeBlock?.completed.backgroundColor,
+            borderRadius: theme.spacing(1),
+          }}
+          p={1}
+          textAlign="center"
+        >
+          <Typography fontWeight={600} color={themeBlock?.completed.fontColor}>
+            {OrderStatusType.COMPLETED}
+          </Typography>
+        </Box>
+      );
+    case OrderStatusType.CANCELLED:
+      return (
+        <Box
+          minWidth={100}
+          sx={{
+            backgroundColor: themeBlock?.cancelled.backgroundColor,
+            borderRadius: theme.spacing(1),
+          }}
+          textAlign="center"
+          p={1}
+        >
+          <Typography fontWeight={600} color={themeBlock?.cancelled.fontColor}>
+            {OrderStatusType.CANCELLED}
+          </Typography>
+        </Box>
+      );
+    default:
+      return <>Invalid Status</>;
+  }
 }

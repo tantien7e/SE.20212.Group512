@@ -1,11 +1,13 @@
 import {
   CART_CHECKOUT_PATH,
   CUSTOMERS_PATH,
-  INVENTORY_PATH
+  INVENTORY_PATH,
+  ORDERS_PATH,
 } from '@app/constants';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import Person from '@mui/icons-material/Person';
 import PriceCheckIcon from '@mui/icons-material/PriceCheck';
+import EventNoteIcon from '@mui/icons-material/EventNote';
 
 const navbarList = [
   // {
@@ -39,6 +41,12 @@ const navbarList = [
     badge: true,
     subList: [],
     to: CART_CHECKOUT_PATH,
+  },
+  {
+    icon: EventNoteIcon,
+    desc: 'Orders',
+    secondDesc: '',
+    to: ORDERS_PATH,
   },
   // {
   //   icon: Analytics,

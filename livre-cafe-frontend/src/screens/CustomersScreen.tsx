@@ -101,7 +101,11 @@ function CustomersScreen() {
         <title>Customers</title>
       </Helmet>
       <Box sx={{ marginBottom: theme.spacing(4) }}>
-        <Typography variant="h4" color={theme.palette.secondary.contrastText}>
+        <Typography
+          variant="h5"
+          fontWeight={600}
+          color={theme.palette.secondary.contrastText}
+        >
           Customers
         </Typography>{' '}
       </Box>

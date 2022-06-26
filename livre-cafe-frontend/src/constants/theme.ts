@@ -14,6 +14,20 @@ declare module '@mui/material/styles' {
     };
     block?: {
       gray: string;
+      cancelled: {
+        fontColor: string;
+        backgroundColor: string;
+      };
+
+      pending: {
+        fontColor: string;
+        backgroundColor: string;
+      };
+
+      completed: {
+        fontColor: string;
+        backgroundColor: string;
+      };
     };
   }
   // allow configuration using `createTheme`
@@ -25,6 +39,20 @@ declare module '@mui/material/styles' {
 
     block?: {
       gray: string;
+      cancelled: {
+        fontColor: string;
+        backgroundColor: string;
+      };
+
+      pending: {
+        fontColor: string;
+        backgroundColor: string;
+      };
+
+      completed: {
+        fontColor: string;
+        backgroundColor: string;
+      };
     };
   }
 }
@@ -36,6 +64,20 @@ const theme = createTheme({
 
   block: {
     gray: grayBackground,
+    cancelled: {
+      fontColor: '#de486c',
+      backgroundColor: '#fdf4f6',
+    },
+
+    pending: {
+      fontColor: '#ffae00',
+      backgroundColor: '#fff7e6',
+    },
+
+    completed: {
+      fontColor: '#2fb182',
+      backgroundColor: '#ebf9f4',
+    },
   },
 
   palette: {
