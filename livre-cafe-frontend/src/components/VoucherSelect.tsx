@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Theme, useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
+import Box, { BoxProps } from '@mui/material/Box';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -9,6 +9,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Chip from '@mui/material/Chip';
 import { Checkbox, Typography } from '@mui/material';
 import { getBackgroundColor } from '@app/utils';
+import { VoucherInterface } from '@app/models';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -41,27 +42,49 @@ const rows = [
   genVoucher('Progentinor Voucher', 'green', 500, 55),
 ];
 
-function getStyles(name: string, personName: readonly string[], theme: Theme) {
+function getStyles(name: string, VoucherName: readonly string[], theme: Theme) {
   return {
     fontWeight:
-      personName.indexOf(name) === -1
+      VoucherName.indexOf(name) === -1
         ? theme.typography.fontWeightRegular
         : theme.typography.fontWeightMedium,
   };
 }
 
-export default function VoucherSelect() {
-  const theme = useTheme();
-  const [personName, setPersonName] = React.useState<string[]>([]);
+interface VoucherSelectProps {
+  setSelectedVouchers: (vouchers: VoucherInterface[]) => void;
+  selectedVouchers: VoucherInterface[];
+}
 
-  const handleChange = (event: SelectChangeEvent<typeof personName>) => {
+export default function VoucherSelect(props: VoucherSelectProps) {
+  const { selectedVouchers, setSelectedVouchers } = props;
+  const theme = useTheme();
+  const [voucherName, setVoucherName] = React.useState<string[]>([]);
+
+  const handleChange = (event: SelectChangeEvent<typeof voucherName>) => {
     const {
       target: { value },
     } = event;
-    setPersonName(
+    setVoucherName(
       // On autofill we get a stringified value.
       typeof value === 'string' ? value.split(',') : value,
     );
+  };
+
+  const handleSelect = (option: VoucherInterface) => {
+    const existingVoucher = selectedVouchers?.findIndex(
+      (e) => e.name === option.name,
+    );
+    console.log(existingVoucher);
+    console.log(selectedVouchers);
+    const newSelectedVouchers = selectedVouchers.slice();
+    if (existingVoucher > -1) {
+      newSelectedVouchers.splice(existingVoucher, 1);
+      setSelectedVouchers(newSelectedVouchers);
+      return;
+    }
+    newSelectedVouchers.push(option);
+    setSelectedVouchers(newSelectedVouchers);
   };
 
   return (
@@ -72,7 +95,7 @@ export default function VoucherSelect() {
           labelId="demo-multiple-chip-label"
           id="demo-multiple-chip"
           multiple
-          value={personName}
+          value={voucherName}
           onChange={handleChange}
           input={
             <OutlinedInput id="select-multiple-chip" label="Select Vouchers" />
@@ -90,9 +113,10 @@ export default function VoucherSelect() {
             <MenuItem
               key={row.name}
               value={row.name}
-              style={getStyles(row.name, personName, theme)}
+              style={getStyles(row.name, voucherName, theme)}
+              onClick={() => handleSelect(row)}
             >
-              <VoucherOption {...row} />
+              <VoucherOption {...row} width="100%" />
             </MenuItem>
           ))}
         </Select>
@@ -101,22 +125,26 @@ export default function VoucherSelect() {
   );
 }
 
-interface VoucherOptionProps {
+interface VoucherOptionProps extends BoxProps {
   name: string;
   points: number;
   color: string;
   discount: number;
+  showDetails?: boolean;
 }
 
-function VoucherOption(props: VoucherOptionProps) {
-  const { name, points, color, discount } = props;
+export function VoucherOption(props: VoucherOptionProps) {
+  const { name, points, color, discount, showDetails, ...restProps } = props;
 
   return (
     <Box
       p={2}
-      sx={{ backgroundColor: getBackgroundColor(color), width: '100%' }}
+      sx={{ backgroundColor: getBackgroundColor(color) }}
+      {...restProps}
     >
-      <Typography color={color}>{name}</Typography>
+      <Typography color={color}>
+        {name} {showDetails && `(${points} points for $${discount} saved)`}
+      </Typography>
     </Box>
   );
 }

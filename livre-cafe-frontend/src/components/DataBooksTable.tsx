@@ -218,7 +218,7 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         id="tableTitle"
         component="div"
       >
-        Drinks
+        Books
       </Typography>
 
       <Tooltip title="New Product">

@@ -4,19 +4,36 @@ import {
   selectCustomers,
   selectCustomersAddLoading,
 } from '@app/app/features/customers/customers-slice';
+import {
+  addOrder,
+  fetchOrders,
+  selectOrdersAddLoading,
+  selectOrdersError,
+} from '@app/app/features/orders/orders-slice';
 import GroupedSearchBar from '@app/components/GroupedSearchBar';
+import Invoice from '@app/components/Invoice';
 import PhoneInputCustom from '@app/components/PhoneInputCustom';
-import VoucherSelect from '@app/components/VoucherSelect';
+import VoucherSelect, { VoucherOption } from '@app/components/VoucherSelect';
+import { NormalCheckoutTabIndex } from '@app/constants';
 import { CartAction, Store } from '@app/context/Store';
+import { useFetchOrders } from '@app/hooks/useFetchOrders';
+import { OrderInterface, OrderStatusType, VoucherInterface } from '@app/models';
 import {
   CustomerGender,
   CustomerInterface,
   RankType,
 } from '@app/models/customer.interface';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
-import { genRanking, getSalutation } from '@app/utils';
-import { toastInformSuccess } from '@app/utils/toast';
-import AddIcon from '@mui/icons-material/Add';
+import { TabPanel } from '@app/screens/InventoryScreen';
+import {
+  a11yProps,
+  genAvatarImage,
+  genRanking,
+  getSalutation,
+  getTotalCost,
+} from '@app/utils';
+import { toastError, toastInformSuccess } from '@app/utils/toast';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Button,
@@ -25,13 +42,15 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
+  Tab,
+  Tabs,
   TextField,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { CountryData } from 'react-phone-input-2';
 import { useDispatch, useSelector } from 'react-redux';
@@ -85,7 +104,9 @@ export interface ErrorStateInterface {
 
 export default function NormalCheckoutModal(props: AddModalProps) {
   const dispatch = useDispatch();
-  const customersLoading = useSelector(selectCustomersAddLoading);
+
+  const orderLoading = useSelector(selectOrdersAddLoading);
+  const orderError = useSelector(selectOrdersError);
   const [addSuccess, setAddSuccess] = useState(false);
   const { open, handleClose } = props;
   const { state, dispatch: ctxDispatch } = useContext(Store);
@@ -110,6 +131,8 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     gender: false,
   });
 
+  const [tabIndex, setTabIndex] = useState(0);
+
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerInterface>();
   const [isAddNew, setIsAddNew] = useState(false);
   const [filterText, setFilterText] = useState('');
@@ -118,6 +141,8 @@ export default function NormalCheckoutModal(props: AddModalProps) {
   const customersSelector = useSelector(selectCustomers);
   const { customers, loading } = customersSelector;
   const [filteredCustomers, setFilteredCustomers] = useState(customers);
+  const [vouchers, setVouchers] = useState<VoucherInterface[]>([]);
+  const [isPost, setIsPost] = useState(false);
 
   const onSearchChange = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
@@ -213,14 +238,38 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     });
 
     toastInformSuccess('Select customer successfully!');
-    handleClose();
   };
 
-  React.useEffect(() => {
-    if (addSuccess && !customersLoading) {
+  const handleAddVouchersToCart = () => {
+    if (vouchers && vouchers.length) {
+      ctxDispatch({
+        type: CartAction.ADD_VOUCHERS,
+        payload: vouchers,
+      });
+      toastInformSuccess('Select vouchers successfully!');
+    }
+  };
+
+  const handlePlaceOrder = () => {
+    const postOrderData: OrderInterface = {
+      customer: selectedCustomer || 'Guest',
+      items: state.cart.cartItems,
+      vouchers: vouchers,
+      status: OrderStatusType.PENDING,
+      bookedAt: new Date(),
+      totalCost: getTotalCost(state),
+    };
+    dispatch(addOrder(postOrderData));
+    setIsPost(true);
+  };
+
+  useEffect(() => {
+    if (!orderLoading && isPost && !orderError) {
+      ctxDispatch({ type: CartAction.CART_CLEAR });
+      dispatch(fetchOrders());
       handleClose();
     }
-  }, [addSuccess, customersLoading]);
+  }, [orderLoading, isPost, orderError]);
 
   React.useEffect(() => {
     if (!customers.length) {
@@ -228,6 +277,10 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     }
     handleSearch(filterText);
   }, [dispatch, customers]);
+
+  useEffect(() => {
+    setSelectedCustomer(state.customer);
+  }, []);
 
   return (
     <div>
@@ -252,76 +305,81 @@ export default function NormalCheckoutModal(props: AddModalProps) {
             </strong>
           </Typography>
           <Divider />
-          <Grid container my={1}>
-            <Typography
-              variant="h6"
-              color={theme.palette.secondary.contrastText}
-              style={{ padding: ` ${theme.spacing(1)} 0` }}
-            >
-              {isAddNew
-                ? 'Add new customer or '
-                : 'Find customer by phone, name or'}
-            </Typography>
+          <TabPanel
+            value={tabIndex}
+            index={NormalCheckoutTabIndex.CUSTOMER}
+            mt={-3}
+          >
+            <Grid container my={1}>
+              <Typography
+                variant="h6"
+                color={theme.palette.secondary.contrastText}
+                style={{ padding: ` ${theme.spacing(1)} 0` }}
+              >
+                {isAddNew
+                  ? 'Add new customer or '
+                  : 'Find customer by phone, name or'}
+              </Typography>
 
-            <Button onClick={() => setIsAddNew(!isAddNew)}>
-              <Typography variant="h6">
-                {isAddNew ? 'Search for customer' : 'Add New Customer'}
-              </Typography>{' '}
-            </Button>
-          </Grid>
-          {isAddNew ? (
-            <Box my={2}>
-              <Grid container spacing={2}>
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="first-name">
-                      <Grid container>
-                        <Typography>First Name</Typography>{' '}
-                        <Typography color="error">*</Typography>
-                      </Grid>
-                    </label>
+              <Button onClick={() => setIsAddNew(!isAddNew)}>
+                <Typography variant="h6">
+                  {isAddNew ? 'Search for customer' : 'Add New Customer'}
+                </Typography>{' '}
+              </Button>
+            </Grid>
+            {isAddNew ? (
+              <Box my={2}>
+                <Grid container spacing={2}>
+                  <Grid container item alignItems="center">
+                    <Grid xs={3}>
+                      <label htmlFor="first-name">
+                        <Grid container>
+                          <Typography>First Name</Typography>{' '}
+                          <Typography color="error">*</Typography>
+                        </Grid>
+                      </label>
+                    </Grid>
+                    <Grid xs sx={{ maxWidth: 400 }}>
+                      <TextField
+                        variant="outlined"
+                        id="first-name"
+                        aria-describedby="my-helper-text"
+                        fullWidth
+                        value={customerState?.firstName}
+                        onChange={(e) => handleChangeText(e, 'firstName')}
+                        error={errorState.firstName}
+                        helperText={
+                          errorState.firstName && 'First Name must not be empty'
+                        }
+                      />
+                    </Grid>
                   </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <TextField
-                      variant="outlined"
-                      id="first-name"
-                      aria-describedby="my-helper-text"
-                      fullWidth
-                      value={customerState?.firstName}
-                      onChange={(e) => handleChangeText(e, 'firstName')}
-                      error={errorState.firstName}
-                      helperText={
-                        errorState.firstName && 'First Name must not be empty'
-                      }
-                    />
+                  <Grid container item alignItems="center">
+                    <Grid xs={3}>
+                      <label htmlFor="last-name">Last Name</label>
+                    </Grid>
+                    <Grid xs sx={{ maxWidth: 400 }}>
+                      <TextField
+                        variant="outlined"
+                        id="last-name"
+                        aria-describedby="my-helper-text"
+                        fullWidth
+                        value={customerState?.lastName}
+                        onChange={(e) => handleChangeText(e, 'lastName')}
+                      />
+                    </Grid>
                   </Grid>
-                </Grid>
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="last-name">Last Name</label>
-                  </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <TextField
-                      variant="outlined"
-                      id="last-name"
-                      aria-describedby="my-helper-text"
-                      fullWidth
-                      value={customerState?.lastName}
-                      onChange={(e) => handleChangeText(e, 'lastName')}
-                    />
-                  </Grid>
-                </Grid>
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="phone">
-                      <Grid container>
-                        <Typography>Phone</Typography>{' '}
-                        <Typography color="error">*</Typography>
-                      </Grid>
-                    </label>
-                  </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    {/* <TextField
+                  <Grid container item alignItems="center">
+                    <Grid xs={3}>
+                      <label htmlFor="phone">
+                        <Grid container>
+                          <Typography>Phone</Typography>{' '}
+                          <Typography color="error">*</Typography>
+                        </Grid>
+                      </label>
+                    </Grid>
+                    <Grid xs sx={{ maxWidth: 400 }}>
+                      {/* <TextField
                         variant="outlined"
                         id="phone"
                         aria-describedby="my-helper-text"
@@ -338,170 +396,220 @@ export default function NormalCheckoutModal(props: AddModalProps) {
                         //   thousandSeparator: false,
                         // }}
                       /> */}
-                    <PhoneInputCustom
-                      onChange={(value, country: CountryData) => {
-                        const event = {
-                          target: {
-                            value: value,
-                          },
-                        };
+                      <PhoneInputCustom
+                        onChange={(value, country: CountryData) => {
+                          const event = {
+                            target: {
+                              value: value,
+                            },
+                          };
 
-                        handleChangeText(event as any, 'phone', country);
-                      }}
-                      error={errorState.phone}
-                    />
+                          handleChangeText(event as any, 'phone', country);
+                        }}
+                        error={errorState.phone}
+                      />
+                    </Grid>
                   </Grid>
-                </Grid>
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="email">
-                      <Grid container>
-                        <Typography>Email</Typography>{' '}
-                        <Typography color="error">*</Typography>
-                      </Grid>
-                    </label>
+                  <Grid container item alignItems="center">
+                    <Grid xs={3}>
+                      <label htmlFor="email">
+                        <Grid container>
+                          <Typography>Email</Typography>{' '}
+                          <Typography color="error">*</Typography>
+                        </Grid>
+                      </label>
+                    </Grid>
+                    <Grid xs sx={{ maxWidth: 400 }}>
+                      <TextField
+                        variant="outlined"
+                        id="email"
+                        aria-describedby="my-helper-text"
+                        fullWidth
+                        value={customerState?.email}
+                        onChange={(e) => handleChangeText(e, 'email')}
+                        error={errorState.email}
+                        helperText={
+                          errorState.email && 'Email must not be empty'
+                        }
+                      />
+                    </Grid>
                   </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <TextField
-                      variant="outlined"
-                      id="email"
-                      aria-describedby="my-helper-text"
-                      fullWidth
-                      value={customerState?.email}
-                      onChange={(e) => handleChangeText(e, 'email')}
-                      error={errorState.email}
-                      helperText={errorState.email && 'Email must not be empty'}
-                    />
-                  </Grid>
-                </Grid>
 
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="points">Points</label>
+                  <Grid container item alignItems="center">
+                    <Grid xs={3}>
+                      <label htmlFor="points">Points</label>
+                    </Grid>
+                    <Grid xs sx={{ maxWidth: 400 }}>
+                      <TextField
+                        variant="outlined"
+                        id="points"
+                        aria-describedby="my-helper-text"
+                        fullWidth
+                        value={customerState?.points}
+                        onChange={(e) => handleChangeText(e, 'points')}
+                        error={errorState.points}
+                        InputProps={{
+                          inputMode: 'numeric',
+                          inputComponent: NumberFormatCustom as any,
+                        }}
+                        helperText={
+                          errorState.points && 'points must not be empty'
+                        }
+                      />
+                    </Grid>
                   </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <TextField
-                      variant="outlined"
-                      id="points"
-                      aria-describedby="my-helper-text"
-                      fullWidth
-                      value={customerState?.points}
-                      onChange={(e) => handleChangeText(e, 'points')}
-                      error={errorState.points}
-                      InputProps={{
-                        inputMode: 'numeric',
-                        inputComponent: NumberFormatCustom as any,
-                      }}
-                      helperText={
-                        errorState.points && 'points must not be empty'
-                      }
-                    />
-                  </Grid>
-                </Grid>
 
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="points">Gender</label>
+                  <Grid container item alignItems="center">
+                    <Grid xs={3}>
+                      <label htmlFor="points">Gender</label>
+                    </Grid>
+                    <Select
+                      labelId="demo-select-small"
+                      id="demo-select-small"
+                      value={customerState.gender}
+                      onChange={(e) => handleChangeText(e, 'gender')}
+                    >
+                      <MenuItem value={CustomerGender.FEMALE}>Female</MenuItem>
+                      <MenuItem value={CustomerGender.MALE}>Male</MenuItem>
+                      <MenuItem value={CustomerGender.NA}>N/A</MenuItem>
+                    </Select>
                   </Grid>
-                  <Select
-                    labelId="demo-select-small"
-                    id="demo-select-small"
-                    value={customerState.gender}
-                    onChange={(e) => handleChangeText(e, 'gender')}
-                  >
-                    <MenuItem value={CustomerGender.FEMALE}>Female</MenuItem>
-                    <MenuItem value={CustomerGender.MALE}>Male</MenuItem>
-                    <MenuItem value={CustomerGender.NA}>N/A</MenuItem>
-                  </Select>
                 </Grid>
-              </Grid>
-            </Box>
-          ) : (
-            <Box my={2}>
-              <Box component="form" noValidate autoComplete="off">
-                <GroupedSearchBar
-                  onSearchChange={onSearchChange}
-                  filterText={filterText}
-                  rows={filteredCustomers}
-                  handleSelect={handleSelect}
-                  selectedValue={selectedCustomer}
+              </Box>
+            ) : (
+              <Box my={2}>
+                <Box component="form" noValidate autoComplete="off">
+                  <GroupedSearchBar
+                    onSearchChange={onSearchChange}
+                    filterText={filterText}
+                    rows={filteredCustomers}
+                    handleSelect={handleSelect}
+                    selectedValue={selectedCustomer}
+                  />
+                </Box>
+                {selectedCustomer && (
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Box
+                        my={2}
+                        sx={{
+                          // backgroundColor: theme.block?.gray,
+                          borderRadius: 2,
+                          p: 2,
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          color={theme.palette.secondary.contrastText}
+                        >
+                          Customer Details
+                        </Typography>
+
+                        <Box my={2}>
+                          <Grid container direction="column">
+                            <Typography mb={2}>
+                              {getSalutation(selectedCustomer.gender)}{' '}
+                              <strong>{selectedCustomer.firstName}</strong>{' '}
+                              {selectedCustomer.lastName || ''}
+                            </Typography>
+                            <Typography mb={1}>
+                              Phone: +{selectedCustomer.phone}
+                            </Typography>
+                            <Typography mb={1}>
+                              Email: {selectedCustomer.email || 'N/A'}
+                            </Typography>
+                            <Typography mb={1}>
+                              Points: {selectedCustomer.points || 0}
+                            </Typography>
+                            <Typography mb={1}>
+                              Ranking: {selectedCustomer?.ranking}
+                            </Typography>
+                            <Typography mb={1}>
+                              Total Orders:{' '}
+                              {selectedCustomer?.orders?.length || 0}
+                            </Typography>
+                          </Grid>
+                        </Box>
+                      </Box>
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
+                      <img
+                        src={genAvatarImage(selectedCustomer.gender)}
+                        alt="avatar"
+                        width={200}
+                      />
+                    </Grid>
+                  </Grid>
+                )}
+              </Box>
+            )}
+          </TabPanel>
+          <TabPanel
+            value={tabIndex}
+            index={NormalCheckoutTabIndex.VOUCHERS}
+            mt={-3}
+          >
+            <Box
+              sx={{
+                // backgroundColor: theme.block?.gray,
+                borderRadius: 2,
+              }}
+              mt={1}
+              mb={2}
+            >
+              {' '}
+              <Typography
+                variant="h6"
+                color={theme.palette.secondary.contrastText}
+                mb={2}
+              >
+                Voucher Details
+              </Typography>
+              <Box mb={2}>
+                <VoucherSelect
+                  selectedVouchers={vouchers}
+                  setSelectedVouchers={(selected) => {
+                    setVouchers(selected);
+                  }}
                 />
               </Box>
-              {selectedCustomer && (
-                <Grid container spacing={2}>
-                  <Grid item xs={7}>
-                    <Box
-                      my={2}
-                      sx={{
-                        backgroundColor: theme.block?.gray,
-                        borderRadius: 2,
-                        p: 2,
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        color={theme.palette.secondary.contrastText}
-                      >
-                        Customer Details
-                      </Typography>
-
-                      <Box my={2}>
-                        <Grid container direction="column">
-                          <Typography mb={2}>
-                            {getSalutation(selectedCustomer.gender)}{' '}
-                            <strong>{selectedCustomer.firstName}</strong>{' '}
-                            {selectedCustomer.lastName || ''}
-                          </Typography>
-                          <Typography mb={1}>
-                            Phone: +{selectedCustomer.phone}
-                          </Typography>
-                          <Typography mb={1}>
-                            Email: {selectedCustomer.email || 'N/A'}
-                          </Typography>
-                          <Typography mb={1}>
-                            Points: {selectedCustomer.points || 0}
-                          </Typography>
-                          <Typography mb={1}>
-                            Total Orders:{' '}
-                            {selectedCustomer?.orders?.length || 0}
-                          </Typography>
-                        </Grid>
-                      </Box>
-                    </Box>
-                  </Grid>
-                  <Grid item xs>
-                    <Box
-                      my={2}
-                      sx={{
-                        backgroundColor: theme.block?.gray,
-                        borderRadius: 2,
-                        p: 2,
-                      }}
-                    >
-                      {' '}
-                      <Typography
-                        variant="h6"
-                        color={theme.palette.secondary.contrastText}
-                        mb={2}
-                      >
-                        Voucher Details
-                      </Typography>
-                      <Box mb={2}>
-                        <VoucherSelect />
-                      </Box>
-                    </Box>
-                  </Grid>
+              {vouchers?.length > 0 && (
+                <Grid container direction="column" spacing={2}>
+                  {vouchers.map((voucher) => {
+                    return (
+                      <Grid item>
+                        {' '}
+                        <VoucherOption showDetails {...voucher} />
+                      </Grid>
+                    );
+                  })}
                 </Grid>
               )}
             </Box>
-          )}
+          </TabPanel>
+          <TabPanel
+            value={tabIndex}
+            index={NormalCheckoutTabIndex.INVOICE}
+            mt={-1}
+            mb={3}
+          >
+            <Invoice vouchers={vouchers} />
+          </TabPanel>
           <Divider />
           <Grid
             container
             justifyContent="space-between"
             padding={`${theme.spacing(2)} 0`}
+            direction="row"
           >
-            <Grid>
+            <Grid item display="flex" alignItems="center">
               <Button
                 variant="contained"
                 color="error"
@@ -510,24 +618,123 @@ export default function NormalCheckoutModal(props: AddModalProps) {
                 Cancel
               </Button>
             </Grid>
-            <Grid>
-              {' '}
-              <LoadingButton
-                variant="contained"
-                loading={customersLoading}
-                loadingPosition="end"
-                onClick={() => handleAddCustomerToCart()}
-                endIcon={<AddIcon />}
-                disabled={!isAddNew ? !selectedCustomer : false}
+
+            <Grid item sx={{ bgcolor: 'background.paper' }}>
+              <Tabs
+                value={tabIndex}
+                onChange={(_e, newValue) => setTabIndex(newValue)}
+                centered
               >
-                {isAddNew ? ' Add And Select Customer' : 'Select Customer'}{' '}
-              </LoadingButton>
+                <Tab
+                  label="Customer"
+                  {...a11yProps(NormalCheckoutTabIndex.CUSTOMER)}
+                />
+                <Tab
+                  label="Vouchers"
+                  {...a11yProps(NormalCheckoutTabIndex.VOUCHERS)}
+                  disabled={!state?.customer}
+                />
+                <Tab
+                  label="Invoice"
+                  {...a11yProps(NormalCheckoutTabIndex.INVOICE)}
+                  disabled={!state?.vouchers}
+                />
+              </Tabs>
+            </Grid>
+
+            <Grid item display="flex" alignItems="center">
+              {' '}
+              <TabButton
+                orderLoading={orderLoading}
+                tabIndex={tabIndex}
+                setTabIndex={setTabIndex}
+                handlePlaceOrder={handlePlaceOrder}
+                handleAddCustomerToCart={handleAddCustomerToCart}
+                disabled={!selectedCustomer}
+                handleAddVouchersToCart={handleAddVouchersToCart}
+              />
             </Grid>
           </Grid>
         </Box>
       </Modal>
     </div>
   );
+}
+
+interface TabButtonProps {
+  orderLoading: boolean;
+  disabled?: boolean;
+  tabIndex: number;
+  setTabIndex: (value: React.SetStateAction<number>) => void;
+  handlePlaceOrder: () => void;
+  handleAddCustomerToCart: () => void;
+  handleAddVouchersToCart: () => void;
+}
+
+function TabButton(props: TabButtonProps) {
+  const {
+    orderLoading,
+    disabled,
+    tabIndex,
+    setTabIndex,
+    handlePlaceOrder,
+    handleAddCustomerToCart,
+    handleAddVouchersToCart,
+  } = props;
+  switch (tabIndex) {
+    case NormalCheckoutTabIndex.CUSTOMER:
+      return (
+        <Grid item display="flex" alignItems="center">
+          {' '}
+          <LoadingButton
+            variant="contained"
+            loadingPosition="end"
+            onClick={() => {
+              setTabIndex(tabIndex + 1);
+              handleAddCustomerToCart();
+            }}
+            disabled={disabled}
+          >
+            Next
+          </LoadingButton>
+        </Grid>
+      );
+    case NormalCheckoutTabIndex.VOUCHERS:
+      return (
+        <Grid item display="flex" alignItems="center">
+          {' '}
+          <LoadingButton
+            variant="contained"
+            loadingPosition="end"
+            onClick={() => {
+              setTabIndex(tabIndex + 1);
+              handleAddVouchersToCart();
+            }}
+            disabled={disabled}
+          >
+            Next
+          </LoadingButton>
+        </Grid>
+      );
+
+    case NormalCheckoutTabIndex.INVOICE:
+      return (
+        <LoadingButton
+          variant="contained"
+          loading={orderLoading}
+          loadingPosition="end"
+          endIcon={<BorderColorIcon />}
+          onClick={() => {
+            handlePlaceOrder();
+          }}
+          disabled={disabled}
+        >
+          Place An Order
+        </LoadingButton>
+      );
+    default:
+      return <>Invalid Tab Index</>;
+  }
 }
 
 interface CustomProps {

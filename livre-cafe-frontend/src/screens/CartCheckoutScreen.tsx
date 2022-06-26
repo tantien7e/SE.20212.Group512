@@ -36,7 +36,11 @@ function CartCheckoutScreen() {
         />
       )}
       <Box sx={{ marginBottom: theme.spacing(5) }}>
-        <Typography variant="h4" color={theme.palette.secondary.contrastText}>
+        <Typography
+          variant="h5"
+          fontWeight={600}
+          color={theme.palette.secondary.contrastText}
+        >
           Check-out
         </Typography>{' '}
       </Box>

@@ -1,5 +1,6 @@
-import { CustomerInterface } from '@app/models';
+import { CustomerInterface, VoucherInterface } from '@app/models';
 import { ProductInterface } from '@app/models/product.interface';
+import { getCartTotal } from '@app/utils';
 import { toastInformSuccess } from '@app/utils/toast';
 import React, { createContext, useReducer } from 'react';
 
@@ -14,6 +15,7 @@ export interface CartStateInterface {
   };
 
   customer?: CustomerInterface;
+  vouchers?: VoucherInterface[];
 }
 
 export enum CartAction {
@@ -23,11 +25,13 @@ export enum CartAction {
   CART_CLEAR = 'CART_CLEAR',
   SELECT_CUSTOMER = 'SELECT_CUSTOMER',
   REMOVE_CUSTOMER = 'REMOVE_CUSTOMER',
+  ADD_VOUCHERS = 'ADD_VOUCHERS',
+  REMOVE_VOUCHERS = 'REMOVE_VOUCHERS',
 }
 
 interface CartContextActionInterface {
   type: string;
-  payload: CartItemInterface | CustomerInterface;
+  payload: CartItemInterface | CustomerInterface | VoucherInterface[];
 }
 
 const initialState: CartStateInterface = {
@@ -39,6 +43,9 @@ const initialState: CartStateInterface = {
 
   customer: localStorage.getItem('cartCustomer')
     ? JSON.parse(localStorage.getItem('cartCustomer') || '')
+    : null,
+  vouchers: localStorage.getItem('vouchers')
+    ? JSON.parse(localStorage.getItem('vouchers') || '')
     : null,
 };
 
@@ -71,6 +78,7 @@ function reducer(
             item._id === existItem._id ? selectedItem : item,
           )
         : [...state.cart.cartItems, action.payload];
+
       return {
         ...state,
         cart: {
@@ -114,10 +122,15 @@ function reducer(
 
     case CartAction.CART_CLEAR: {
       localStorage.removeItem('cartItems');
+      localStorage.removeItem('cartCustomer');
+      localStorage.removeItem('vouchers');
+
       return {
         cart: {
           cartItems: [],
         },
+        customer: null,
+        vouchers: null,
       };
     }
 
@@ -135,6 +148,23 @@ function reducer(
       return {
         ...state,
         customer: null,
+      };
+    }
+
+    case CartAction.ADD_VOUCHERS: {
+      const vouchers = action.payload;
+      localStorage.setItem('vouchers', JSON.stringify(vouchers));
+      return {
+        ...state,
+        vouchers,
+      };
+    }
+
+    case CartAction.REMOVE_VOUCHERS: {
+      localStorage.removeItem('vouchers');
+      return {
+        ...state,
+        vouchers: null,
       };
     }
     default:

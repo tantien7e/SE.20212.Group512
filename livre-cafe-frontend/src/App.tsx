@@ -11,10 +11,12 @@ import {
   CART_CHECKOUT_PATH,
   CUSTOMERS_PATH,
   INVENTORY_PATH,
+  ORDERS_PATH,
 } from '@app/constants';
 import '@app/styles/main.scss';
 import CustomersScreen from '@app/screens/CustomersScreen';
 import { ToastContainer } from 'react-toastify';
+import OrdersScreen from '@app/screens/OrdersScreen';
 
 function App() {
   const { pathname } = useLocation();
@@ -38,6 +40,7 @@ function App() {
           <Route path={INVENTORY_PATH} element={<InventoryScreen />} />
           <Route path={CART_CHECKOUT_PATH} element={<CartCheckoutScreen />} />
           <Route path={CUSTOMERS_PATH} element={<CustomersScreen />} />
+          <Route path={ORDERS_PATH} element={<OrdersScreen />} />
 
           {/* <Route path="/products/:slug" element={<ProductScreen />} />
           <Route path="/cart" element={<CartScreen />} />

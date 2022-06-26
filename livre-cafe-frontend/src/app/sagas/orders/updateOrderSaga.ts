@@ -12,7 +12,11 @@ import { call, put, takeEvery } from 'redux-saga/effects';
 function* updateOrderData(action: PayloadAction<OrderInterface>) {
   //   const token = localStorage.getItem('token');
   try {
-    yield call(ordersApi.update, action.payload, action.payload?._id);
+    yield call(
+      ordersApi.update,
+      action.payload,
+      action.payload?._id || action.payload.id,
+    );
     yield put(updateOrderSucceeded());
     yield put(fetchOrders());
   } catch (error) {

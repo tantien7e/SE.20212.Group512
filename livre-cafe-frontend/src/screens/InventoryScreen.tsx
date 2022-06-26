@@ -10,20 +10,20 @@ import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { stableSort } from '@app/utils';
 import CoffeeIcon from '@mui/icons-material/Coffee';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import { Box, Tab, Tabs, Typography } from '@mui/material';
+import { Box, BoxProps, Tab, Tabs, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useDispatch, useSelector } from 'react-redux';
 
-interface TabPanelProps {
+interface TabPanelProps extends BoxProps {
   children?: React.ReactNode;
   index: number;
   value: number;
 }
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
+export function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...boxProps } = props;
 
   return (
     <div
@@ -31,18 +31,17 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
-      {...other}
     >
       {value === index && (
-        <Box sx={{ paddingTop: 3 }}>
-          <Typography>{children}</Typography>
+        <Box sx={{ paddingTop: 3 }} {...boxProps}>
+          {children}
         </Box>
       )}
     </div>
   );
 }
 
-function a11yProps(index: number) {
+export function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
     'aria-controls': `simple-tabpanel-${index}`,
@@ -79,14 +78,16 @@ function InventoryScreen() {
         <title>Inventory</title>
       </Helmet>
       <Box sx={{ marginBottom: theme.spacing(2) }}>
-        <Typography variant="h4" color={theme.palette.secondary.contrastText}>
+        <Typography
+          variant="h5"
+          fontWeight={600}
+          color={theme.palette.secondary.contrastText}
+        >
           Inventory
         </Typography>{' '}
       </Box>
       {/* <Divider /> */}
-      <Box
-        sx={{ borderBottom: 1, borderColor: 'divider', width: 'fit-content' }}
-      >
+      <Box sx={{ borderColor: 'divider', width: 'fit-content' }}>
         <Tabs
           value={value}
           onChange={handleChange}

@@ -1,4 +1,6 @@
-import { CartItemInterface } from '@app/context/Store';
+import IMAGES from '@app/assets/images';
+import { CartItemInterface, CartStateInterface } from '@app/context/Store';
+import { VoucherInterface } from '@app/models';
 import { CustomerGender, RankType } from '@app/models/customer.interface';
 
 export function stableSort<T>(
@@ -28,6 +30,10 @@ export const numberWithCommasRound2 = (x: number): string =>
 
 export const getCartTotal = (items: CartItemInterface[]) => {
   return items.reduce((a, c) => a + Number(c.price) * c.quantity, 0);
+};
+
+export const getVouchersTotal = (items: VoucherInterface[]) => {
+  return items.reduce((a, c) => a + Number(c.discount), 0);
 };
 
 export const a11yProps = (index: number) => {
@@ -63,4 +69,23 @@ export const standardize_color = (str: string) => {
 export const getBackgroundColor = (colorString: string) => {
   const hexColor = standardize_color(colorString);
   return hexColor + '50';
+};
+
+export const genAvatarImage = (gender: CustomerGender) => {
+  switch (gender) {
+    case CustomerGender.MALE:
+      return IMAGES.malePic;
+    case CustomerGender.FEMALE:
+      return IMAGES.femalePic;
+    case CustomerGender.NA:
+      return IMAGES.naPic;
+  }
+};
+
+export const getTotalCost = (state: CartStateInterface) => {
+  const { cart, vouchers } = state;
+  const voucherCost = vouchers ? getVouchersTotal(vouchers) : 0;
+  return getCartTotal(cart.cartItems) - voucherCost < 0
+    ? 0
+    : getCartTotal(cart.cartItems) - voucherCost;
 };

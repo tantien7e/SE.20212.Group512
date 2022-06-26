@@ -1,29 +1,25 @@
-import BasicTable from '@app/components/BasicTable';
+import {
+  addOrder,
+  selectOrdersAddLoading,
+  selectOrdersError,
+} from '@app/app/features/orders/orders-slice';
+import Invoice from '@app/components/Invoice';
 import { CartAction, Store } from '@app/context/Store';
 import { useFetchOrders } from '@app/hooks/useFetchOrders';
 import { OrderInterface, OrderStatusType } from '@app/models/order.interface';
-import { getCartTotal, numberWithCommasRound2 } from '@app/utils';
+import { getTotalCost } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { LoadingButton } from '@mui/lab';
-import {
-  Box,
-  Checkbox,
-  Divider,
-  FormControlLabel,
-  Grid,
-  TableCell,
-  Typography,
-} from '@mui/material';
+import { Checkbox, Divider, FormControlLabel, Grid } from '@mui/material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/material/styles';
-import moment from 'moment';
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useReactToPrint } from 'react-to-print';
 
 interface ModalPropsInterface {
@@ -34,50 +30,38 @@ interface ModalPropsInterface {
 export default function PrintOrderModal(props: ModalPropsInterface) {
   const { open, handleClose } = props;
   const theme = useTheme();
-  const [orderLoading, setOrderLoading] = useState(false);
+  const dispatch = useDispatch();
+
+  const orderLoading = useSelector(selectOrdersAddLoading);
+  const orderError = useSelector(selectOrdersError);
   const [printInvoice, setPrintInvoice] = useState(true);
   const [isPost, setIsPost] = useState(false);
-  const { postData, error, isPending, data } = useFetchOrders(
-    'http://localhost:3001/orders',
-    'POST',
-  );
-
-  const dispatch = useDispatch();
-  const {
-    state: { cart },
-    dispatch: ctxDispatch,
-  } = useContext(Store);
+  const { state, dispatch: ctxDispatch } = useContext(Store);
+  const { cart } = state;
   const invoiceRef = useRef(null);
   const handlePrint = useReactToPrint({
     content: () => invoiceRef.current,
   });
 
   const handlePlaceOrder = () => {
-    setOrderLoading(true);
     const postOrderData: OrderInterface = {
       customer: 'Guest',
-      items: cart.cartItems,
-      status: OrderStatusType.COMPLETED,
+      items: state.cart.cartItems,
+      status: OrderStatusType.PENDING,
       bookedAt: new Date(),
+      totalCost: getTotalCost(state),
     };
-    postData(postOrderData);
+    dispatch(addOrder(postOrderData));
     setIsPost(true);
   };
 
   useEffect(() => {
-    if (!isPending && isPost && !error) {
+    if (!orderLoading && isPost && !orderError) {
       ctxDispatch({ type: CartAction.CART_CLEAR });
-      toastInformSuccess('Order was placed successfully!');
-      setOrderLoading(false);
       if (printInvoice) handlePrint();
       handleClose();
-      return;
     }
-    if (error) {
-      toastError(error);
-      setOrderLoading(false);
-    }
-  }, [data]);
+  }, [orderLoading, isPost, orderError]);
 
   return (
     <div>
@@ -94,94 +78,7 @@ export default function PrintOrderModal(props: ModalPropsInterface) {
         </DialogTitle>
         <Divider />
         <DialogContent ref={invoiceRef}>
-          <Box>
-            <Grid container direction={'column'}>
-              <Grid item xs={12} container justifyContent="center">
-                <Typography
-                  variant="h3"
-                  sx={{ fontFamily: 'Caveat, cursive', fontWeight: 600 }}
-                >
-                  Livre Café
-                </Typography>
-              </Grid>
-              <Grid item xs={12} container justifyContent="center">
-                <Typography>I N V O I C E</Typography>
-              </Grid>
-              <Grid
-                item
-                container
-                direction="column"
-                my={2}
-                sx={{
-                  '& .MuiTypography-root': {
-                    fontFamily: 'Nunito, sans-serif',
-                    fontWeight: 300,
-                  },
-                }}
-              >
-                <Grid item>
-                  <Typography>
-                    Address: 1 Dai Co Viet, Bach Khoa, Hai Ba Trung, Hanoi
-                  </Typography>
-                </Grid>
-                <Grid item marginBottom={3}>
-                  <Typography>Tel: 1900 599 840</Typography>
-                </Grid>
-                <Grid item>
-                  <Typography>
-                    Date: {moment().format('MMMM D, YYYY HH:mm:ss')}
-                  </Typography>
-                </Grid>
-                <Divider sx={{ margin: `${theme.spacing(2)} 0` }} />
-                <Grid item sx={{ margin: `0` }}>
-                  <BasicTable
-                    headCells={[
-                      <TableCell align="left">Name</TableCell>,
-                      <TableCell align="right">Quantity</TableCell>,
-                      <TableCell align="right">Price&nbsp;($)</TableCell>,
-                      <TableCell align="right">Total&nbsp;($)</TableCell>,
-                      <TableCell align="right">
-                        Additonal Requirements&nbsp;
-                      </TableCell>,
-                    ]}
-                    rows={cart.cartItems}
-                  />
-                </Grid>
-                <Divider sx={{ margin: `${theme.spacing(2)} 0` }} />
-                <Grid item container justifyContent="space-between">
-                  <Typography>Subtotal: </Typography>
-                  <Typography>
-                    {numberWithCommasRound2(getCartTotal(cart.cartItems))}$
-                  </Typography>
-                </Grid>
-                <Grid item container justifyContent="space-between">
-                  <Typography>VAT: </Typography>
-                  <Typography>
-                    {numberWithCommasRound2(getCartTotal(cart.cartItems) * 0.1)}
-                    $
-                  </Typography>
-                </Grid>
-
-                <Grid item container justifyContent="space-between">
-                  <Typography>Total: </Typography>
-                  <Typography>
-                    {numberWithCommasRound2(getCartTotal(cart.cartItems) * 1.1)}
-                    $
-                  </Typography>
-                </Grid>
-                <Divider sx={{ marginTop: `${theme.spacing(2)}` }} />
-              </Grid>
-              <Grid item container justifyContent="center">
-                <Typography
-                  textAlign="center"
-                  sx={{ fontFamily: 'Caveat, cursive' }}
-                  variant="h5"
-                >
-                  Thank you and see you again!
-                </Typography>
-              </Grid>
-            </Grid>
-          </Box>
+          <Invoice />
         </DialogContent>
         <Divider />
         <DialogActions>

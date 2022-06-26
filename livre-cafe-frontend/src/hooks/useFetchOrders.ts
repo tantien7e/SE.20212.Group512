@@ -6,7 +6,7 @@ interface OptionInterface {
   headers: {
     'Content-Type': string;
   };
-  body: string;
+  body?: string;
 }
 
 export const useFetchOrders = (url: string, method = 'GET') => {
@@ -18,7 +18,6 @@ export const useFetchOrders = (url: string, method = 'GET') => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: '',
   });
 
   const postData = (orderData: OrderInterface) => {
@@ -38,6 +37,7 @@ export const useFetchOrders = (url: string, method = 'GET') => {
       setIsPending(true);
 
       try {
+        console.log('fetching Data');
         const res = await fetch(url, {
           ...fetchOption,
           signal: controller.signal,
@@ -54,6 +54,7 @@ export const useFetchOrders = (url: string, method = 'GET') => {
         if (err.name === 'AbortError') {
           console.log('the fetch was aborted');
         } else {
+          console.log(err);
           setIsPending(false);
           setError('Could not fetch the data');
         }
