@@ -78,6 +78,7 @@ CustomerRouter.route('/')
  *      tags: [Customer]
  */
 
+
 CustomerRouter.route('/:customerId')
 .get(CustomerController.getCustomer)
 .put(CustomerController.editCustomer)
