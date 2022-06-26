@@ -37,8 +37,12 @@ const editBook = async (req, res) => {
 }
 
 const addBook = async (req, res) => {
-    const book = await Books.create(req.body);
-    res.status(200).json(book);
+    try {
+        const book = await Books.create(req.body);
+        res.status(200).json(book);
+    } catch (err) {
+        res.json(err);
+    }
 }
 
 module.exports = {

@@ -5,6 +5,8 @@ const swaggerJsDoc = require('swagger-jsdoc');
 
 const BooksRouter = require('./api/books/books.route');
 const DrinksRouter = require('./api/drinks/drinks.route');
+const OrdersRouter = require('./api/orders/orders.route');
+const CustomerRouter = require('./api/customers/customers.route');
 
 const app = express();
 
@@ -37,5 +39,12 @@ app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 app.use('/books', BooksRouter);
 app.use('/drinks', DrinksRouter);
+app.use('/orders', OrdersRouter);
+app.use('/customers', CustomerRouter);
+
+app.use('/*', (err, req, res, next) => {
+    console.log(err);
+    res.status(500).json({ message: "Internal server error" });
+});
 
 module.exports = app;
