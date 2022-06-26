@@ -3,16 +3,17 @@ const Schema = mongoose.Schema;
 
 const OrdersSchema = new Schema({
 
-    items: [
+    itemsOrdered: [
         {
             productType: {
                 type: String,
+                enum: ['books', 'drinks'],
                 required: true
             },
 
             product: {
                 type: Schema.Types.ObjectId,
-                refPath: 'items.productType'
+                refPath: 'itemsOrdered.productType'
             },
 
             quantity: {
@@ -24,13 +25,14 @@ const OrdersSchema = new Schema({
 
     status: {
         type: String,
+        enum: ["processing", "completed"],
         required: true
     },
 
-    // customer: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'Customer'
-    // }
+    customer: {
+        type: Schema.Types.ObjectId,
+        ref: 'customers',
+    }
 
 
 },

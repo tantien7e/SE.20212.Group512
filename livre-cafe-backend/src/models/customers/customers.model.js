@@ -20,14 +20,26 @@ const CustomerSchema = new Schema({
 
     point: {
         type: Number,
-        required: true
-    }
+        default: 0
+    },
+    
 	order: {
 		type: Schema.Types.ObjectId,
-        refPath: 'Order'
-	}
-});
+        ref: 'orders'
+	},
 
-Customer = mongoose.model('customer', CustomerSchema);
+    ordersHistory: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'orders'
+        }
+    ]
+},
+    {
+        timestamps: true
+    }
+);
+
+Customer = mongoose.model('customers', CustomerSchema);
 
 module.exports = Customer;

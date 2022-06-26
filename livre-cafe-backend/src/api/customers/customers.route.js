@@ -1,6 +1,6 @@
 const express = require('express');
 
-const CustomerController = require('./customer.controller');
+const CustomerController = require('./customers.controller');
 
 /**
  * @swagger
@@ -29,6 +29,14 @@ const CustomerController = require('./customer.controller');
  *              point:
  *                  type: number
  *                  description: the bonus point
+ *              order:
+ *                  type: string
+ *                  description: the id of the processing order placed by the customer
+ *              ordersHistory:
+ *                  type: array
+ *                  items:
+ *                      type: string
+ *                      description: the id of completed orders placed by the customer
  */
 
 /**
