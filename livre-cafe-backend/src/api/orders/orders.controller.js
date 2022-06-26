@@ -10,6 +10,16 @@ const getAllOrders = async (req, res, next) => {
     }
 }
 
+const getAllCustomers = async (req, res, next) => {
+    try {
+        const Customer = await Customer.find({})
+                            .populate('items.product');
+        res.status(200).json(Customer);
+    } catch (err) {
+        next(err);
+    }
+}
+
 const createOrder = async (req, res, next) => {
     try {
         await Orders.create(req.body);
@@ -65,6 +75,7 @@ const getOrder = async (req, res, next) => {
 
 module.exports = {
     getAllOrders,
+	getAllCustomers,
     editOrder,
     deleteOrder,
     createOrder,
