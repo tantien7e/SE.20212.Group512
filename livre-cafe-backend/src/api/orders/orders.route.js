@@ -36,7 +36,7 @@ const OrdersRouter = express.Router();
  *                                  description: the number of products in cart
  *              status:
  *                  type: string
- *                  enum: [processing, completed]
+ *                  enum: [processing, completed, cancelled]
  *                  description: the status of the order
  *              customer:
  *                  type: string

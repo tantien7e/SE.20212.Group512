@@ -9,7 +9,8 @@ const CustomerController = require('./customers.controller');
  *      Customer:
  *          type: object
  *          required:
- *              - name
+ *              - firstName,
+ *              - lastName
  *              - email
  *              - phone
  *              - point
@@ -17,9 +18,12 @@ const CustomerController = require('./customers.controller');
  *              id:
  *                  type: string
  *                  description: the auto-generated id
- *              name:
+ *              firstName:
  *                  type: string
- *                  description: the customer's name
+ *                  description: the customer's first name
+ *              lastName:
+ *                  type: string
+ *                  description: the customer's last name
  *              email:
  *                  type: string
  *                  description: the customer's email
