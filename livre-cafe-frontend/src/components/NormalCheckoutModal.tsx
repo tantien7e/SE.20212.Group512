@@ -46,7 +46,7 @@ import {
   Tabs,
   TextField,
 } from '@mui/material';
-import Box from '@mui/material/Box';
+import Box, { BoxProps } from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -488,65 +488,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
                   />
                 </Box>
                 {selectedCustomer && (
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <Box
-                        my={2}
-                        sx={{
-                          // backgroundColor: theme.block?.gray,
-                          borderRadius: 2,
-                          p: 2,
-                        }}
-                      >
-                        <Typography
-                          variant="h6"
-                          color={theme.palette.secondary.contrastText}
-                        >
-                          Customer Details
-                        </Typography>
-
-                        <Box my={2}>
-                          <Grid container direction="column">
-                            <Typography mb={2}>
-                              {getSalutation(selectedCustomer.gender)}{' '}
-                              <strong>{selectedCustomer.firstName}</strong>{' '}
-                              {selectedCustomer.lastName || ''}
-                            </Typography>
-                            <Typography mb={1}>
-                              Phone: +{selectedCustomer.phone}
-                            </Typography>
-                            <Typography mb={1}>
-                              Email: {selectedCustomer.email || 'N/A'}
-                            </Typography>
-                            <Typography mb={1}>
-                              Points: {selectedCustomer.points || 0}
-                            </Typography>
-                            <Typography mb={1}>
-                              Ranking: {selectedCustomer?.ranking}
-                            </Typography>
-                            <Typography mb={1}>
-                              Total Orders:{' '}
-                              {selectedCustomer?.orders?.length || 0}
-                            </Typography>
-                          </Grid>
-                        </Box>
-                      </Box>
-                    </Grid>
-
-                    <Grid
-                      item
-                      xs
-                      display="flex"
-                      justifyContent="center"
-                      alignItems="center"
-                    >
-                      <img
-                        src={genAvatarImage(selectedCustomer.gender)}
-                        alt="avatar"
-                        width={200}
-                      />
-                    </Grid>
-                  </Grid>
+                  <CustomerDetailsBlock selectedCustomer={selectedCustomer} />
                 )}
               </Box>
             )}
@@ -764,3 +706,61 @@ const NumberFormatCustom = React.forwardRef<NumberFormat<string>, CustomProps>(
     );
   },
 );
+
+interface CustomerDetailsBlockProps extends BoxProps {
+  selectedCustomer: CustomerInterface;
+}
+export function CustomerDetailsBlock(props: CustomerDetailsBlockProps) {
+  const { selectedCustomer, ...boxProps } = props;
+  const theme = useTheme();
+  return (
+    <Grid container spacing={2}>
+      <Grid item xs={6}>
+        <Box
+          my={2}
+          sx={{
+            // backgroundColor: theme.block?.gray,
+            borderRadius: 2,
+          }}
+          p={2}
+          {...boxProps}
+        >
+          <Typography variant="h6" color={theme.palette.secondary.contrastText}>
+            Customer Details
+          </Typography>
+
+          <Box my={2} mx={1}>
+            <Grid container direction="column">
+              <Typography mb={2}>
+                {getSalutation(selectedCustomer.gender)}{' '}
+                <strong>{selectedCustomer.firstName}</strong>{' '}
+                {selectedCustomer.lastName || ''}
+              </Typography>
+              <Typography mb={1}>Phone: +{selectedCustomer.phone}</Typography>
+              <Typography mb={1}>
+                Email: {selectedCustomer.email || 'N/A'}
+              </Typography>
+              <Typography mb={1}>
+                Points: {selectedCustomer.points || 0}
+              </Typography>
+              <Typography mb={1}>
+                Ranking: {selectedCustomer?.ranking}
+              </Typography>
+              <Typography mb={1}>
+                Total Orders: {selectedCustomer?.orders?.length || 0}
+              </Typography>
+            </Grid>
+          </Box>
+        </Box>
+      </Grid>
+
+      <Grid item xs display="flex" justifyContent="center" alignItems="center">
+        <img
+          src={genAvatarImage(selectedCustomer.gender)}
+          alt="avatar"
+          width={200}
+        />
+      </Grid>
+    </Grid>
+  );
+}

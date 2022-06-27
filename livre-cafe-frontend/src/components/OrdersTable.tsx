@@ -1,5 +1,6 @@
 import { updateOrder } from '@app/app/features/orders/orders-slice';
 import ConfirmModal from '@app/components/ConfirmModal';
+import ViewOrderModal from '@app/components/ViewOrderModal';
 import { ModalType, OrderTabIndex } from '@app/constants';
 import { Store } from '@app/context/Store';
 import { OrderInterface, OrderStatusType } from '@app/models';
@@ -248,7 +249,7 @@ interface EnhancedTableProps {
 
 export default function OrdersTable(props: EnhancedTableProps) {
   const { rows, stableSort, isLoading } = props;
-  const [order, setOrder] = React.useState<Order>('asc');
+  const [order, setOrder] = React.useState<Order>('desc');
   const [orderBy, setOrderBy] =
     React.useState<keyof Omit<Data, 'actions' | 'orders'>>('bookedAt');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
@@ -279,6 +280,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
       case ModalType.CONFIRM_CANCEL_ORDER:
         setConfirmCancelModalOpen(true);
         setCurrentOrder(item);
+        break;
       default:
         return;
     }
@@ -296,6 +298,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
       case ModalType.CONFIRM_CANCEL_ORDER:
         setConfirmCancelModalOpen(false);
         setCurrentOrder(undefined);
+        break;
       default:
         return;
     }
@@ -444,6 +447,14 @@ export default function OrdersTable(props: EnhancedTableProps) {
           }`}
           handleClose={() => handleCloseModal(ModalType.CONFIRM_CANCEL_ORDER)}
           handleConfirm={handleCancerOrder}
+        />
+      )}
+
+      {viewModalOpen && currentOrder && (
+        <ViewOrderModal
+          open={viewModalOpen}
+          handleClose={() => handleCloseModal(ModalType.VIEW_ORDER)}
+          currentOrder={currentOrder}
         />
       )}
       <Grid>
@@ -606,7 +617,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
                             <IconButton
                               color="info"
                               onClick={() =>
-                                handleOpenModal(ModalType.VIEW_CUSTOMER, row)
+                                handleOpenModal(ModalType.VIEW_ORDER, row)
                               }
                               sx={{ marginRight: 2 }}
                             >
