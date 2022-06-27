@@ -144,6 +144,24 @@ const editOrder = async (req, res, next) => {
         await order.save();
 
         if (order) {
+            if (order.status === 'cancelled') {
+                for(let item of order.itemsOrdered) {
+                    let model = null;
+                    switch (item.productType) {
+                        case 'books':
+                            model = Books;
+                            break;
+
+                        case 'drinks':
+                            model = Drinks;
+                            break;
+                    }
+
+                    const product = await model.findById(item.product);
+                    product.stock += item.quantity;
+                    await product.save();
+                }
+            }
 
             if (order.customer && (order.status === 'completed' || order.status === 'cancelled')) {
                 const customer = await Customers.findById(order.customer);
