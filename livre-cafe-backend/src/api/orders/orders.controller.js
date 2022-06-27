@@ -61,7 +61,7 @@ const editOrder = async (req, res, next) => {
         .populate('customer');
 
         if (order) {
-            if (order.customer && order.status === 'completed') {
+            if (order.customer && (order.status === 'completed' || order.status === 'cancelled')) {
                 const customer = await Customers.findById(order.customer);
                 customer.order = null;
                 customer.ordersHistory.push(order);

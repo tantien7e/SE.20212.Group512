@@ -25,7 +25,7 @@ const OrdersSchema = new Schema({
 
     status: {
         type: String,
-        enum: ["processing", "completed"],
+        enum: ["processing", "completed", "cancelled"],
         required: true
     },
 
