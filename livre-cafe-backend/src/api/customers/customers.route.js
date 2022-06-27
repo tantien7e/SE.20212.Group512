@@ -13,7 +13,6 @@ const CustomerController = require('./customers.controller');
  *              - lastName
  *              - email
  *              - phone
- *              - point
  *          properties:
  *              id:
  *                  type: string
@@ -30,9 +29,17 @@ const CustomerController = require('./customers.controller');
  *              phone:
  *                  type: number
  *                  description: the customer's phone number
- *              point:
+ *              exchangeablePoints:
  *                  type: number
- *                  description: the bonus point
+ *                  description: the bonus points which are exchangeable for vouchers
+ *              rankPoints:
+ *                  type: number
+ *                  description: the points for calculating the customer's rank
+ *              rank:
+ *                  type: string
+ *                  enum: [Silver, Gold, Platinum, Diamond]
+ *                  default: Silver
+ *                  description: the customer's rank
  *              order:
  *                  type: string
  *                  description: the id of the processing order placed by the customer
@@ -40,7 +47,7 @@ const CustomerController = require('./customers.controller');
  *                  type: array
  *                  items:
  *                      type: string
- *                      description: the id of completed orders placed by the customer
+ *                      description: the id of completed and cancelled orders placed by the customer
  */
 
 /**

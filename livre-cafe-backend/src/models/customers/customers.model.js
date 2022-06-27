@@ -23,9 +23,20 @@ const CustomerSchema = new Schema({
         required: true
     },
 
-    point: {
+    exchangeablePoints: {
         type: Number,
         default: 0
+    },
+
+    rankPoints: {
+        type: Number,
+        default: 0
+    },
+
+    rank: {
+        type: String,
+        enum: ['Silver', 'Gold', 'Platinum', 'Diamond'],
+        default: 'Silver'
     },
     
 	order: {

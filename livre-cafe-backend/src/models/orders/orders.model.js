@@ -19,6 +19,10 @@ const OrdersSchema = new Schema({
             quantity: {
                 type: Number,
                 required: true
+            },
+
+            additionalRequirements: {
+                type: String
             }
         }
     ],
@@ -32,9 +36,12 @@ const OrdersSchema = new Schema({
     customer: {
         type: Schema.Types.ObjectId,
         ref: 'customers',
+    },
+
+    totalCost: {
+        type: Number,
+        default: 0
     }
-
-
 },
     {
         timestamps: true
