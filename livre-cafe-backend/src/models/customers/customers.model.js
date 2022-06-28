@@ -41,8 +41,8 @@ const CustomerSchema = new Schema({
 
     ranking: {
         type: String,
-        enum: ['Silver', 'Gold', 'Platinum', 'Diamond'],
-        default: 'Silver'
+        enum: ['silver', 'gold', 'platinum', 'diamond'],
+        default: 'silver'
     },
     
 	order: {
