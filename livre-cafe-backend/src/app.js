@@ -44,7 +44,7 @@ app.use('/customers', CustomerRouter);
 
 app.use('/*', (err, req, res, next) => {
     console.log(err);
-    res.status(500).json({ message: "Internal server error" });
+    res.json(err);
 });
 
 module.exports = app;

@@ -47,7 +47,16 @@ const createOrder = async (req, res, next) => {
         }
 
         if (insufficientItems.length > 0) {
-            return res.status(400).json(insufficientItems);
+            let message = 'Out of stock:';
+
+            for (let item of insufficientItems) {
+                message += ` ${item.name ? item.name : item.title} - ${item.stock} left,`;
+            }
+
+            message = message.substring(0, message.length - 1) + '.';
+            return res.status(400).json({
+                message: message
+            });
         } else {
             const promiseToAwait = [];
             for (let product of pendingProducts) {
@@ -144,7 +153,16 @@ const editOrder = async (req, res, next) => {
                 }
 
                 if (insufficientItems.length > 0) {
-                    return res.status(400).json(insufficientItems);
+                    let message = 'Out of stock:';
+
+                    for (let item of insufficientItems) {
+                        message += ` ${item.name ? item.name : item.title} - ${item.stock} left,`;
+                    }
+
+                    message = message.substring(0, message.length - 1) + '.';
+                    return res.status(400).json({
+                        message: message
+                    });
                 } else {
                     const promiseToAwait = [];
 
@@ -173,6 +191,7 @@ const editOrder = async (req, res, next) => {
 
         if (order) {
             if (order.status === 'cancelled') {
+                const promiseToAwait2 = [];
                 for (let item of order.itemsOrdered) {
                     let model = null;
                     switch (item.productType) {
@@ -187,8 +206,10 @@ const editOrder = async (req, res, next) => {
 
                     const product = await model.findById(item.product);
                     product.stock += item.quantity;
-                    await product.save();
+                    promiseToAwait2.push(product.save());
                 }
+
+                await Promise.all(promiseToAwait2);
             }
 
             if (order.customer && (order.status === 'completed' || order.status === 'cancelled')) {
@@ -196,8 +217,8 @@ const editOrder = async (req, res, next) => {
                 customer.order = null;
 
                 if (order.status === 'completed') {
-                    customer.exchangeablePoints += order.totalCost;
-                    customer.rankingPoints += order.totalCost;
+                    customer.exchangeablePoints += Math.floor(order.totalCost);
+                    customer.rankingPoints += Math.floor(order.totalCost);
                     if (customer.rankingPoints < 100) {
                         customer.ranking = 'silver';
                     } else if (customer.rankingPoints < 500) {
