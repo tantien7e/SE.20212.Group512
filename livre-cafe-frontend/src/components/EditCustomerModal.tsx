@@ -10,7 +10,6 @@ import {
   CustomerInterface,
   RankType,
 } from '@app/models/customer.interface';
-import { genRanking } from '@app/utils';
 import SaveIcon from '@mui/icons-material/Save';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
@@ -66,9 +65,10 @@ interface CustomerStateInterface {
   lastName: string;
   phone: string;
   email: string;
-  points: number;
+  rankingPoints: number;
   ranking: RankType;
   gender: CustomerGender;
+  exchangeablePoints: number;
 }
 
 export interface ErrorStateInterface {
@@ -92,12 +92,13 @@ export default function EditCustomerModal(props: AddModalProps) {
   const isCustomer = type === CUSTOMER;
 
   const [customerState, setCustomerState] = useState<CustomerStateInterface>({
-    customerId: item?._id || item?.id || '',
+    customerId: item?._id || '',
     firstName: item?.firstName || '',
     lastName: item?.lastName || '',
-    phone: item?.phone || '',
+    phone: String(item?.phone) || '',
     email: item?.email || '',
-    points: item?.points || 0,
+    rankingPoints: item?.rankingPoints || 0,
+    exchangeablePoints: item?.exchangeablePoints || 0,
     ranking: item?.ranking || RankType.SILVER,
     gender: item?.gender || CustomerGender.NA,
   });
@@ -142,7 +143,7 @@ export default function EditCustomerModal(props: AddModalProps) {
     field: keyof CustomerStateInterface,
     country?: CountryData,
   ) => {
-    const isNumberField = field === 'phone' || field === 'points';
+    const isNumberField = field === 'phone';
 
     setCustomerState((prevState) => {
       return { ...prevState, [field]: e.target.value };
@@ -170,12 +171,12 @@ export default function EditCustomerModal(props: AddModalProps) {
       lastName: body.lastName,
       phone: body.phone,
       email: body.email,
-      points: Number(body.points),
-      ranking: genRanking(body.points),
+      rankingPoints: Number(body.rankingPoints),
+      exchangeablePoints: Number(body.exchangeablePoints),
+      ranking: body.ranking,
       gender: body.gender,
       _id: body?.customerId,
-      orders: item?.orders || [],
-      id: body?.customerId,
+      ordersHistory: item?.ordersHistory || [],
     };
   };
 
@@ -320,7 +321,7 @@ export default function EditCustomerModal(props: AddModalProps) {
                   </Grid>
                 </Grid>
 
-                <Grid container item alignItems="center">
+                {/* <Grid container item alignItems="center">
                   <Grid xs={3}>
                     <label htmlFor="points">
                       <Grid container>
@@ -347,7 +348,7 @@ export default function EditCustomerModal(props: AddModalProps) {
                       }
                     />
                   </Grid>
-                </Grid>
+                </Grid> */}
 
                 <Grid container item alignItems="center">
                   <Grid xs={3}>

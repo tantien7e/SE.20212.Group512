@@ -8,7 +8,7 @@ export interface CustomersState {
   addLoading: boolean;
   updateLoading: boolean;
   deleteLoading: boolean;
-  customers: CustomerInterface[];
+  customers?: CustomerInterface[];
   error?: string;
 }
 
@@ -17,7 +17,6 @@ const initialState: CustomersState = {
   addLoading: false,
   updateLoading: false,
   deleteLoading: false,
-  customers: [],
 };
 
 const customersSlice = createSlice({
@@ -43,6 +42,7 @@ const customersSlice = createSlice({
     },
     addCustomerSucceeded(state, action: PayloadAction<CustomerInterface>) {
       state.addLoading = false;
+      if (!state.customers) state.customers = [];
       state.customers.push(action.payload);
       toastInformSuccess('Item was added successfully');
     },

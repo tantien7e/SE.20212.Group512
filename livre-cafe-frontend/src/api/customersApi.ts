@@ -1,7 +1,7 @@
-import axiosClient from '@app/api/axiosClientMock';
+import axiosClient from '@app/api/axiosClient';
 import { CUSTOMERS_URL } from '@app/constants';
 import { GetParams } from '@app/models/common';
-import { CustomerInterface } from '@app/models/customer.interface';
+import { CustomerInterface, CustomerPostData } from '@app/models/customer.interface';
 
 const customersApi = {
   getAll(params?: GetParams): Promise<CustomerInterface[]> {
@@ -14,7 +14,7 @@ const customersApi = {
     return axiosClient.get(url);
   },
 
-  add(data: CustomerInterface): Promise<CustomerInterface> {
+  add(data: CustomerPostData): Promise<CustomerInterface> {
     const url = CUSTOMERS_URL;
     return axiosClient.post(url, data);
   },

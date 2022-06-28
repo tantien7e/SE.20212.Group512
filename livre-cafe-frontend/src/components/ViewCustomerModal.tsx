@@ -1,5 +1,7 @@
 import { selectBooksLoading } from '@app/app/features/books/books-slice';
 import { selectDrinksAddLoading } from '@app/app/features/drinks/drinks-slice';
+import BasicOrdersHistoryTable from '@app/components/BasicOrdersHistoryTable';
+import { BootstrapDialogTitle } from '@app/components/ViewOrderModal';
 import { InventoryType } from '@app/constants';
 import {
   CUSTOMER,
@@ -7,7 +9,7 @@ import {
   RankType,
 } from '@app/models/customer.interface';
 import { OrderInterface } from '@app/models/order.interface';
-import { Divider, Grid } from '@mui/material';
+import { Dialog, DialogContent, Divider, Grid, TableCell } from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
@@ -72,9 +74,9 @@ export default function ViewCustomerModal(props: AddModalProps) {
     lastName: item?.lastName || '',
     phone: item?.phone || '',
     email: item?.email || '',
-    points: item?.points || 0,
+    points: item?.exchangeablePoints || 0,
     ranking: item?.ranking || RankType.SILVER,
-    orders: item?.orders || [],
+    orders: item?.ordersHistory || [],
   });
 
   const theme = useTheme();
@@ -89,15 +91,19 @@ export default function ViewCustomerModal(props: AddModalProps) {
 
   return (
     <div>
-      <Modal
+      <Dialog
         open={open}
         onClose={() => {
           handleClose();
         }}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
+        maxWidth='md'
       >
-        <Box sx={style}>
+        <BootstrapDialogTitle
+          id="customized-dialog-title"
+          onClose={handleClose}
+        >
           <Typography
             id="modal-modal-title"
             variant="h5"
@@ -109,7 +115,8 @@ export default function ViewCustomerModal(props: AddModalProps) {
               View {type.toLowerCase()}
             </strong>
           </Typography>
-          <Divider />
+        </BootstrapDialogTitle>
+        <DialogContent dividers>
           <Typography
             variant="body1"
             style={{ padding: ` ${theme.spacing(1)} 0` }}
@@ -206,9 +213,20 @@ export default function ViewCustomerModal(props: AddModalProps) {
           >
             Order History
           </Typography>
-          <Divider />
-        </Box>
-      </Modal>
+          {customerState.orders && customerState.orders.length > 0 && (
+            <BasicOrdersHistoryTable
+              rows={customerState.orders || []}
+              headCells={[
+                <TableCell align="left">Order ID</TableCell>,
+                <TableCell align="right">Items</TableCell>,
+                <TableCell align="right">Booked At</TableCell>,
+                <TableCell align="right">Status</TableCell>,
+                <TableCell align="right">Total Cost</TableCell>,
+              ]}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

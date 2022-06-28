@@ -1,14 +1,15 @@
 import {
   addOrder,
   selectOrdersAddLoading,
-  selectOrdersError,
+  selectOrdersError
 } from '@app/app/features/orders/orders-slice';
 import Invoice from '@app/components/Invoice';
 import { CartAction, Store } from '@app/context/Store';
-import { useFetchOrders } from '@app/hooks/useFetchOrders';
-import { OrderInterface, OrderStatusType } from '@app/models/order.interface';
-import { getTotalCost } from '@app/utils';
-import { toastError, toastInformSuccess } from '@app/utils/toast';
+import {
+  OrderPostData,
+  OrderStatusType
+} from '@app/models/order.interface';
+import { genOrderPostItems, getTotalCost } from '@app/utils';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { LoadingButton } from '@mui/lab';
 import { Checkbox, Divider, FormControlLabel, Grid } from '@mui/material';
@@ -44,12 +45,11 @@ export default function PrintOrderModal(props: ModalPropsInterface) {
   });
 
   const handlePlaceOrder = () => {
-    const postOrderData: OrderInterface = {
-      customer: 'Guest',
-      items: state.cart.cartItems,
-      status: OrderStatusType.PENDING,
+    const postOrderData: OrderPostData = {
+      itemsOrdered: genOrderPostItems(state.cart.cartItems),
+      status: OrderStatusType.PROCESSING,
       bookedAt: new Date(),
-      totalCost: getTotalCost(state),
+      totalCost: getTotalCost(state) * 1.1,
     };
     dispatch(addOrder(postOrderData));
     setIsPost(true);

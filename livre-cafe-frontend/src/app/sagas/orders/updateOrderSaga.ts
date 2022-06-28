@@ -1,4 +1,7 @@
 import ordersApi from '@app/api/ordersApi';
+import { fetchBooks } from '@app/app/features/books/books-slice';
+import { fetchCustomers } from '@app/app/features/customers/customers-slice';
+import { fetchDrinks } from '@app/app/features/drinks/drinks-slice';
 import {
   fetchOrders,
   updateOrder,
@@ -12,13 +15,12 @@ import { call, put, takeEvery } from 'redux-saga/effects';
 function* updateOrderData(action: PayloadAction<OrderInterface>) {
   //   const token = localStorage.getItem('token');
   try {
-    yield call(
-      ordersApi.update,
-      action.payload,
-      action.payload?._id || action.payload.id,
-    );
+    yield call(ordersApi.update, action.payload, action.payload?._id || '');
     yield put(updateOrderSucceeded());
     yield put(fetchOrders());
+    yield put(fetchCustomers());
+    yield put(fetchDrinks());
+    yield put(fetchBooks());
   } catch (error) {
     const { message } = error as Error;
     yield put(updateOrderFailed(message));

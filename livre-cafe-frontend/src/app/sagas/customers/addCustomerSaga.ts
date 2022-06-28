@@ -5,11 +5,11 @@ import {
   addCustomerSucceeded,
   fetchCustomers,
 } from '@app/app/features/customers/customers-slice';
-import { CustomerInterface } from '@app/models';
+import { CustomerInterface, CustomerPostData } from '@app/models';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
-function* addNewCustomer(action: PayloadAction<CustomerInterface>) {
+function* addNewCustomer(action: PayloadAction<CustomerPostData>) {
   //   const token = localStorage.getItem('token');
   try {
     const data = (yield call(

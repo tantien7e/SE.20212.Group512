@@ -47,6 +47,6 @@ export enum NormalCheckoutTabIndex {
 export enum OrderTabIndex {
   ALL = 0,
   COMPLETED = 1,
-  PENDING = 2,
+  PROCESSING = 2,
   CANCELLED = 3,
 }

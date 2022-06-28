@@ -1,5 +1,6 @@
 import { updateOrder } from '@app/app/features/orders/orders-slice';
 import ConfirmModal from '@app/components/ConfirmModal';
+import ViewOrderModal from '@app/components/ViewOrderModal';
 import { ModalType, OrderTabIndex } from '@app/constants';
 import { Store } from '@app/context/Store';
 import { OrderInterface, OrderStatusType } from '@app/models';
@@ -110,7 +111,7 @@ const headCells: readonly HeadCell[] = [
     label: 'Customer',
   },
   {
-    id: 'items',
+    id: 'itemsOrdered',
     numeric: false,
     disablePadding: false,
     label: 'Items',
@@ -248,7 +249,7 @@ interface EnhancedTableProps {
 
 export default function OrdersTable(props: EnhancedTableProps) {
   const { rows, stableSort, isLoading } = props;
-  const [order, setOrder] = React.useState<Order>('asc');
+  const [order, setOrder] = React.useState<Order>('desc');
   const [orderBy, setOrderBy] =
     React.useState<keyof Omit<Data, 'actions' | 'orders'>>('bookedAt');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
@@ -279,6 +280,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
       case ModalType.CONFIRM_CANCEL_ORDER:
         setConfirmCancelModalOpen(true);
         setCurrentOrder(item);
+        break;
       default:
         return;
     }
@@ -296,6 +298,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
       case ModalType.CONFIRM_CANCEL_ORDER:
         setConfirmCancelModalOpen(false);
         setCurrentOrder(undefined);
+        break;
       default:
         return;
     }
@@ -337,11 +340,13 @@ export default function OrdersTable(props: EnhancedTableProps) {
     const textTokens = text.split(' ');
     setFilterText(text);
     const newRows = rows.filter((row) => {
-      const { customer, id, _id, items } = row;
-      const itemsName = items.reduce((a, c) => a + (c.name || c.title), '');
+      const { customer, id, _id, itemsOrdered } = row;
+      const itemsName = itemsOrdered.reduce(
+        (a, c) => a + (c.product.name || c.product.title),
+        '',
+      );
       const idText = id || _id || '';
-      const name =
-        customer === 'Guest' ? 'Guest' : customer.firstName + customer.lastName;
+      const name = !customer ? 'Guest' : customer.firstName + customer.lastName;
       const hasConflict = textTokens.find(
         (token) =>
           !(
@@ -379,8 +384,10 @@ export default function OrdersTable(props: EnhancedTableProps) {
           (row) => row.status === OrderStatusType.COMPLETED,
         );
         break;
-      case OrderTabIndex.PENDING:
-        newRows = rows.filter((row) => row.status === OrderStatusType.PENDING);
+      case OrderTabIndex.PROCESSING:
+        newRows = rows.filter(
+          (row) => row.status === OrderStatusType.PROCESSING,
+        );
         break;
 
       case OrderTabIndex.CANCELLED:
@@ -401,13 +408,15 @@ export default function OrdersTable(props: EnhancedTableProps) {
       const text = filterText.toLowerCase();
       const textTokens = text.split(' ');
       const newRows = tabRows.filter((row) => {
-        const { customer, id, _id, items } = row;
-        const itemsName = items.reduce((a, c) => a + (c.name || c.title), '');
+        const { customer, id, _id, itemsOrdered } = row;
+        const itemsName = itemsOrdered.reduce(
+          (a, c) => a + (c.product.name || c.product.title),
+          '',
+        );
         const idText = id || _id || '';
-        const name =
-          customer === 'Guest'
-            ? 'Guest'
-            : customer.firstName + customer.lastName;
+        const name = !customer
+          ? 'Guest'
+          : customer.firstName + customer.lastName;
         const hasConflict = textTokens.find(
           (token) =>
             !(
@@ -446,6 +455,14 @@ export default function OrdersTable(props: EnhancedTableProps) {
           handleConfirm={handleCancerOrder}
         />
       )}
+
+      {viewModalOpen && currentOrder && (
+        <ViewOrderModal
+          open={viewModalOpen}
+          handleClose={() => handleCloseModal(ModalType.VIEW_ORDER)}
+          currentOrder={currentOrder}
+        />
+      )}
       <Grid>
         <Box sx={{ borderColor: 'divider', width: 'auto', marginBottom: 2 }}>
           <Tabs
@@ -455,7 +472,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
           >
             <Tab label="All" {...a11yProps(0)} />
             <Tab label="COMPLETED" {...a11yProps(OrderTabIndex.COMPLETED)} />
-            <Tab label="PENDING" {...a11yProps(OrderTabIndex.PENDING)} />
+            <Tab label="PROCESSING" {...a11yProps(OrderTabIndex.PROCESSING)} />
             <Tab label="CANCELLED" {...a11yProps(OrderTabIndex.CANCELLED)} />
           </Tabs>
         </Box>
@@ -512,17 +529,16 @@ export default function OrdersTable(props: EnhancedTableProps) {
                   filteredRows,
                   getComparator(
                     order,
-                    orderBy as keyof Data & { items: string | number },
+                    orderBy as keyof Data & { itemsOrdered: string | number },
                   ),
                 )
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
                     const labelId = `enhanced-table-checkbox-${index}`;
                     const { customer } = row;
-                    const customerName =
-                      customer === 'Guest'
-                        ? 'Guest'
-                        : customer.firstName + ' ' + customer.lastName;
+                    const customerName = !customer
+                      ? 'Guest'
+                      : customer.firstName + ' ' + customer.lastName;
                     return (
                       <TableRow
                         hover
@@ -532,7 +548,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
                         role="checkbox"
                         // aria-checked={isItemSelected}
                         tabIndex={-1}
-                        key={`customer${row?.id}` + index}
+                        key={`customer${row?._id}` + index}
                         // selected={isItemSelected}
                       >
                         <TableCell
@@ -541,16 +557,26 @@ export default function OrdersTable(props: EnhancedTableProps) {
                           scope="row"
                           padding="normal"
                           align="left"
+                          width={100}
                         >
-                          {`${row.id} `}
+                          <Tooltip title={row._id || ''}>
+                            <Typography
+                              overflow="hidden"
+                              textOverflow="ellipsis"
+                              width={100}
+                              whiteSpace="nowrap"
+                            >{`${row._id} `}</Typography>
+                          </Tooltip>
                         </TableCell>
                         <TableCell align="left">{customerName}</TableCell>
                         <TableCell align="left">
-                          {row.items.reduce(
+                          {row.itemsOrdered.reduce(
                             (a, c, cIndex) =>
                               a +
-                              (c.author || c.name) +
-                              (cIndex < row.items.length - 1 ? ', ' : '.'),
+                              (c.product.title || c.product.name) +
+                              (cIndex < row.itemsOrdered.length - 1
+                                ? ', '
+                                : '.'),
                             '',
                           )}
                         </TableCell>
@@ -606,7 +632,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
                             <IconButton
                               color="info"
                               onClick={() =>
-                                handleOpenModal(ModalType.VIEW_CUSTOMER, row)
+                                handleOpenModal(ModalType.VIEW_ORDER, row)
                               }
                               sx={{ marginRight: 2 }}
                             >
@@ -652,12 +678,12 @@ interface OrderStatusBadgeProps {
   status: OrderStatusType;
 }
 
-function OrderStatusBadge(props: OrderStatusBadgeProps) {
+export function OrderStatusBadge(props: OrderStatusBadgeProps) {
   const theme = useTheme();
   const themeBlock = theme.block;
   const { status } = props;
   switch (status) {
-    case OrderStatusType.PENDING:
+    case OrderStatusType.PROCESSING:
       return (
         <Box
           minWidth={100}
@@ -668,8 +694,12 @@ function OrderStatusBadge(props: OrderStatusBadgeProps) {
           p={1}
           textAlign="center"
         >
-          <Typography fontWeight={600} color={themeBlock?.pending.fontColor}>
-            {OrderStatusType.PENDING}
+          <Typography
+            fontWeight={600}
+            color={themeBlock?.pending.fontColor}
+            textTransform="uppercase"
+          >
+            {OrderStatusType.PROCESSING}
           </Typography>
         </Box>
       );
@@ -684,7 +714,11 @@ function OrderStatusBadge(props: OrderStatusBadgeProps) {
           p={1}
           textAlign="center"
         >
-          <Typography fontWeight={600} color={themeBlock?.completed.fontColor}>
+          <Typography
+            fontWeight={600}
+            color={themeBlock?.completed.fontColor}
+            textTransform="uppercase"
+          >
             {OrderStatusType.COMPLETED}
           </Typography>
         </Box>
@@ -700,7 +734,11 @@ function OrderStatusBadge(props: OrderStatusBadgeProps) {
           textAlign="center"
           p={1}
         >
-          <Typography fontWeight={600} color={themeBlock?.cancelled.fontColor}>
+          <Typography
+            fontWeight={600}
+            color={themeBlock?.cancelled.fontColor}
+            textTransform="uppercase"
+          >
             {OrderStatusType.CANCELLED}
           </Typography>
         </Box>

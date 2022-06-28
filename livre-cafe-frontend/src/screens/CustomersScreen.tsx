@@ -88,8 +88,8 @@ function CustomersScreen() {
   const { customers, loading } = customersSelector;
 
   useEffect(() => {
-    if (!customers.length) dispatch(fetchCustomers());
-  }, [customers, dispatch]);
+    if (!customers) dispatch(fetchCustomers());
+  }, [customers]);
 
   return (
     <Box
@@ -111,7 +111,7 @@ function CustomersScreen() {
       </Box>
       <Box sx={{ marginBottom: theme.spacing(2) }}>{/* <FilterBox /> */}</Box>
       <DataCustomersTable
-        rows={customers}
+        rows={customers || []}
         stableSort={stableSort}
         isLoading={loading}
       />
