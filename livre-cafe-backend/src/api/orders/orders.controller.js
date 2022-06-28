@@ -5,7 +5,7 @@ const Drinks = require('../../models/drinks/drinks.model');
 
 const getAllOrders = async (req, res, next) => {
     try {
-        const orders = await Orders.find({ status: "processing" })
+        const orders = await Orders.find({})
             .populate('itemsOrdered.product')
             .populate('customer');
 
@@ -17,8 +17,13 @@ const getAllOrders = async (req, res, next) => {
 
 const createOrder = async (req, res, next) => {
     try {
+        if (req.body.status !== 'processing') {
+            return res.status(403).json({ message: "Order status must be processing" });
+        }
+
         let totalCost = 0;
         const insufficientItems = [];
+        const pendingProducts = [];
         for (let item of req.body.itemsOrdered) {
             let model = null;
             switch (item.productType) {
@@ -37,12 +42,19 @@ const createOrder = async (req, res, next) => {
             } else {
                 totalCost += product.price * item.quantity;
                 product.stock -= item.quantity;
-                await product.save();
+                pendingProducts.push(product);
             }
         }
 
         if (insufficientItems.length > 0) {
             return res.status(400).json(insufficientItems);
+        } else {
+            const promiseToAwait = [];
+            for (let product of pendingProducts) {
+                promiseToAwait.push(product.save());
+            }
+
+            await Promise.all(promiseToAwait);
         }
 
         const order = await Orders.create({
@@ -93,6 +105,7 @@ const editOrder = async (req, res, next) => {
         }
 
         const insufficientItems = [];
+        const pendingProducts = [];
         let totalCost = 0;
         for (let item of req.body.itemsOrdered) {
             let model = null;
@@ -114,7 +127,7 @@ const editOrder = async (req, res, next) => {
                 } else {
                     totalCost += product.price * item.quantity;
                     product.stock -= item.quantity;
-                    await product.save();
+                    pendingProducts.push(product);
                 }
             } else {
                 if (product.stock + oldOrder.itemsOrdered[oldItemIndex].quantity < item.quantity) {
@@ -122,13 +135,21 @@ const editOrder = async (req, res, next) => {
                 } else {
                     product.stock -= item.quantity - oldOrder.itemsOrdered[oldItemIndex].quantity;
                     totalCost += item.quantity * product.price;
-                    await product.save();
+                    pendingProducts.push(product);
                 }
             }
         }
 
         if (insufficientItems.length > 0) {
             return res.status(400).json(insufficientItems);
+        } else {
+            const promiseToAwait = [];
+
+            for (let product of pendingProducts) {
+                promiseToAwait.push(product.save());
+            }
+
+            await Promise.all(promiseToAwait);
         }
 
         const order = await Orders.findByIdAndUpdate(req.params.orderId, {
@@ -169,12 +190,12 @@ const editOrder = async (req, res, next) => {
 
                 if (order.status === 'completed') {
                     customer.exchangeablePoints += order.totalCost;
-                    customer.rankPoints  += order.totalCost;
-                    if (customer.rankPoints < 100) {
+                    customer.rankingPoints  += order.totalCost;
+                    if (customer.rankingPoints < 100) {
                         customer.ranking = 'Silver';
-                    } else if (customer.rankPoints< 500) {
+                    } else if (customer.rankingPoints< 500) {
                         customer.ranking = 'Gold';
-                    } else if (customer.rankPoints < 1000) {
+                    } else if (customer.rankingPoints < 1000) {
                         customer.ranking = 'Platinum';
                     } else {
                         customer.ranking = 'Diamond';

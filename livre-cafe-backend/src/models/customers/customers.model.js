@@ -23,12 +23,18 @@ const CustomerSchema = new Schema({
         required: true
     },
 
+    gender: {
+        type: String,
+        enum: ['male', 'female', 'unknown'],
+        required: true
+    },
+
     exchangeablePoints: {
         type: Number,
         default: 0
     },
 
-    rankPoints: {
+    rankingPoints: {
         type: Number,
         default: 0
     },
