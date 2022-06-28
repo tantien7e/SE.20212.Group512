@@ -3,7 +3,7 @@ import { OrderInterface } from '@app/models/order.interface';
 export enum CustomerGender {
   MALE = 'male',
   FEMALE = 'female',
-  NA = 'N/A',
+  NA = '',
 }
 
 export enum RankType {

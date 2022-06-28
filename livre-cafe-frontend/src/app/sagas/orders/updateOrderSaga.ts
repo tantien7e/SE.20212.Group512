@@ -6,13 +6,13 @@ import {
   fetchOrders,
   updateOrder,
   updateOrderFailed,
-  updateOrderSucceeded,
+  updateOrderSucceeded
 } from '@app/app/features/orders/orders-slice';
-import { OrderInterface } from '@app/models';
+import { OrderPostData } from '@app/models';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
-function* updateOrderData(action: PayloadAction<OrderInterface>) {
+function* updateOrderData(action: PayloadAction<OrderPostData>) {
   //   const token = localStorage.getItem('token');
   try {
     yield call(ordersApi.update, action.payload, action.payload?._id || '');

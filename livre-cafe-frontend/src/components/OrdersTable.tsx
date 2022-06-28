@@ -3,9 +3,13 @@ import ConfirmModal from '@app/components/ConfirmModal';
 import ViewOrderModal from '@app/components/ViewOrderModal';
 import { ModalType, OrderTabIndex } from '@app/constants';
 import { Store } from '@app/context/Store';
-import { OrderInterface, OrderStatusType } from '@app/models';
+import { OrderInterface, OrderPostData, OrderStatusType } from '@app/models';
 import { RankType } from '@app/models/customer.interface';
-import { a11yProps, numberWithCommasRound2 } from '@app/utils';
+import {
+  a11yProps,
+  genOrderPostItems,
+  numberWithCommasRound2,
+} from '@app/utils';
 import { Search } from '@mui/icons-material';
 import DoneIcon from '@mui/icons-material/Done';
 import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
@@ -360,18 +364,30 @@ export default function OrdersTable(props: EnhancedTableProps) {
     });
     setFilteredRows(newRows);
   };
-
+  const convertToOrderPostItems = (
+    orderItem: OrderInterface,
+  ): OrderPostData => {
+    return {
+      ...orderItem,
+      customer: orderItem.customer?._id || '',
+      itemsOrdered: orderItem.itemsOrdered.map((item) => {
+        return { ...item, product: item.product._id };
+      }),
+    };
+  };
   const handleCompleteOrder = () => {
     if (!currentOrder) return;
+    const orderPostData = convertToOrderPostItems(currentOrder);
     dispatch(
-      updateOrder({ ...currentOrder, status: OrderStatusType.COMPLETED }),
+      updateOrder({ ...orderPostData, status: OrderStatusType.COMPLETED }),
     );
   };
 
   const handleCancerOrder = () => {
     if (!currentOrder) return;
+    const orderPostData = convertToOrderPostItems(currentOrder);
     dispatch(
-      updateOrder({ ...currentOrder, status: OrderStatusType.CANCELLED }),
+      updateOrder({ ...orderPostData, status: OrderStatusType.CANCELLED }),
     );
   };
 

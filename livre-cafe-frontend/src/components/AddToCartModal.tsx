@@ -45,7 +45,7 @@ interface ProductCartStateInterface {
   productName: string;
   price: number;
   quantity: number;
-  additionalRequirement: string;
+  additionalRequirements: string;
   author?: string;
 }
 
@@ -63,7 +63,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
   const handleAddToCart = (
     product?: DrinkInterface | BookInterface,
     addedQuantity = 1,
-    additionalRequirement = '',
+    additionalRequirements = '',
   ) => {
     if (!product) return;
     const existItem = state?.cart?.cartItems?.find(
@@ -83,7 +83,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
       payload: {
         ...product,
         quantity,
-        additionalRequirement,
+        additionalRequirements,
       },
     });
     if (quantity > product?.stock) {
@@ -98,7 +98,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
     handleAddToCart(
       item,
       productState.quantity,
-      productState.additionalRequirement,
+      productState.additionalRequirements,
     );
     handleClose();
   };
@@ -109,8 +109,8 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
     productName: item?.name || item?.title || '',
     price: item?.price || 0,
     quantity: 1,
-    additionalRequirement:
-      findCartItem(state, item)?.additionalRequirement || '',
+    additionalRequirements:
+      findCartItem(state, item)?.additionalRequirements || '',
     author: item?.author,
   });
   const theme = useTheme();
@@ -275,9 +275,9 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
                     id="product-requirement"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={productState?.additionalRequirement}
+                    value={productState?.additionalRequirements}
                     onChange={(e) =>
-                      handleChangeText(e, 'additionalRequirement')
+                      handleChangeText(e, 'additionalRequirements')
                     }
                     // disabled
                   />

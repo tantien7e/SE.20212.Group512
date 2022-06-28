@@ -18,9 +18,9 @@ const customersApi = {
     const url = ORDERS_URL;
     return axiosClient.post(url, data);
   },
-  update(data: OrderInterface, id: string): Promise<OrderInterface> {
+  update(data: OrderPostData, id: string): Promise<OrderInterface> {
     const url = `${ORDERS_URL}/${id}`;
-    return axiosClient.put(url, { ...data, customer: data._id });
+    return axiosClient.put(url, data);
   },
   remove(id: string): Promise<OrderInterface> {
     const url = `${ORDERS_URL}/${id}`;

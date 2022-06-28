@@ -68,7 +68,7 @@ interface ProductStateInterface {
   stockQuantity: number;
   author?: string;
   quantity: number;
-  additionalRequirement?: string;
+  additionalRequirements?: string;
 }
 
 export default function EditCartModal(props: EditCartModalPropsInterface) {
@@ -86,7 +86,7 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
     quantity: item?.quantity || 0,
     stockQuantity: item?.stock || 0,
     author: item?.author,
-    additionalRequirement: item?.additionalRequirement || '',
+    additionalRequirements: item?.additionalRequirements || '',
     price: item?.price || 0,
   });
 
@@ -147,7 +147,7 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
       imageUrl,
       _id,
       quantity,
-      additionalRequirement,
+      additionalRequirements,
     } = body;
 
     return {};
@@ -164,7 +164,7 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
       imageUrl,
       _id,
       quantity,
-      additionalRequirement,
+      additionalRequirements,
     } = productState;
 
     const postItem = {
@@ -174,7 +174,7 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
       price: price,
       author: author,
       imageUrl: imageUrl,
-      additionalRequirement: additionalRequirement,
+      additionalRequirements: additionalRequirements,
       quantity: Number(quantity),
     };
 
@@ -190,7 +190,7 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
       stockQuantity,
       author,
       quantity,
-      additionalRequirement,
+      additionalRequirements,
     } = productState;
 
     const error = {
@@ -385,19 +385,19 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
 
               <Grid container item alignItems="center">
                 <Grid xs={3}>
-                  <label htmlFor="product-additionalRequirement">
+                  <label htmlFor="product-additionalRequirements">
                     Additional Requirement
                   </label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
                   <TextField
                     variant="outlined"
-                    id="product-additionalRequirement"
+                    id="product-additionalRequirements"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={productState?.additionalRequirement}
+                    value={productState?.additionalRequirements}
                     onChange={(e) =>
-                      handleChangeText(e, 'additionalRequirement')
+                      handleChangeText(e, 'additionalRequirements')
                     }
                   />
                 </Grid>

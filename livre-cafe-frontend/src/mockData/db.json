@@ -77,7 +77,7 @@
           "price": 5,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "status": "COMPLETED",
@@ -106,7 +106,7 @@
           "price": 5,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "vouchers": [],
@@ -126,7 +126,7 @@
           "price": 9,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "status": "COMPLETED",
@@ -155,7 +155,7 @@
           "price": 5,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         },
         {
           "_id": "629855653b0c0ddf660ce327",
@@ -165,7 +165,7 @@
           "price": 4,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         },
         {
           "_id": "629f371a01ba9fb91c227b51",
@@ -175,7 +175,7 @@
           "price": 9,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "vouchers": [
@@ -214,7 +214,7 @@
           "price": 5,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "vouchers": [
@@ -251,7 +251,7 @@
           "price": 4,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "vouchers": [
@@ -288,7 +288,7 @@
           "price": 20,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         },
         {
           "_id": "629f371a01ba9fb91c227b51",
@@ -298,7 +298,7 @@
           "price": 9,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "vouchers": [
@@ -335,7 +335,7 @@
           "price": 9,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "vouchers": [
@@ -362,7 +362,7 @@
           "price": 4,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         },
         {
           "_id": "629f371a01ba9fb91c227b51",
@@ -372,7 +372,7 @@
           "price": 9,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "status": "COMPLETED",
@@ -391,7 +391,7 @@
           "price": 20,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "status": "COMPLETED",
@@ -422,7 +422,7 @@
           "price": 5,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "vouchers": [
@@ -459,7 +459,7 @@
           "price": 5,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         },
         {
           "_id": "62976505b56f6c116d51f9f2",
@@ -469,7 +469,7 @@
           "price": 20,
           "__v": 0,
           "quantity": 1,
-          "additionalRequirement": ""
+          "additionalRequirements": ""
         }
       ],
       "vouchers": [
