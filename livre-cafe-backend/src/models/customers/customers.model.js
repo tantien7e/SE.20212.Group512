@@ -33,7 +33,7 @@ const CustomerSchema = new Schema({
         default: 0
     },
 
-    rank: {
+    ranking: {
         type: String,
         enum: ['Silver', 'Gold', 'Platinum', 'Diamond'],
         default: 'Silver'
