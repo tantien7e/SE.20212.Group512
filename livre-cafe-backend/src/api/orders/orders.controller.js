@@ -166,6 +166,20 @@ const editOrder = async (req, res, next) => {
             if (order.customer && (order.status === 'completed' || order.status === 'cancelled')) {
                 const customer = await Customers.findById(order.customer);
                 customer.order = null;
+
+                if (order.status === 'completed') {
+                    customer.exchangeablePoints += order.totalCost;
+                    customer.rankPoints  += order.totalCost;
+                    if (customer.rankPoints < 100) {
+                        customer.ranking = 'Silver';
+                    } else if (customer.rankPoints< 500) {
+                        customer.ranking = 'Gold';
+                    } else if (customer.rankPoints < 1000) {
+                        customer.ranking = 'Platinum';
+                    } else {
+                        customer.ranking = 'Diamond';
+                    }
+                }
                 customer.ordersHistory.push(order);
                 await customer.save();
             }
