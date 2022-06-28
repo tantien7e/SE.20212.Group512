@@ -12,7 +12,7 @@ const getAllCustomers = async (req, res, next) => {
                 customer.gender = '';
             }
         }
-        
+
         res.status(200).json(customers);
     } catch (err) {
         next(err);
@@ -25,13 +25,13 @@ const createCustomer = async (req, res, next) => {
             req.body.exchangeablePoints = req.body.rankingPoints;
 
             if (req.body.rankingPoints < 100) {
-                req.body.ranking = 'Silver';
+                req.body.ranking = 'silver';
             } else if (req.body.rankingPoints < 500) {
-                req.body.ranking = 'Gold';
+                req.body.ranking = 'gold';
             } else if (req.body.rankingPoints < 1000) {
-                req.body.ranking = 'Platinum';
+                req.body.ranking = 'platinum';
             } else {
-                req.body.ranking = 'Diamond';
+                req.body.ranking = 'diamond';
             }
         }
 

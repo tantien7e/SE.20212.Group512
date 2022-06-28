@@ -21,7 +21,7 @@ const createOrder = async (req, res, next) => {
             return res.status(403).json({ message: "Order status must be processing" });
         }
 
-        let totalCost = 0;
+        //let totalCost = 0;
         const insufficientItems = [];
         const pendingProducts = [];
         for (let item of req.body.itemsOrdered) {
@@ -40,7 +40,7 @@ const createOrder = async (req, res, next) => {
             if (product.stock < item.quantity) {
                 insufficientItems.push(product);
             } else {
-                totalCost += product.price * item.quantity;
+                //totalCost += product.price * item.quantity;
                 product.stock -= item.quantity;
                 pendingProducts.push(product);
             }
@@ -59,7 +59,7 @@ const createOrder = async (req, res, next) => {
 
         const order = await Orders.create({
             ...req.body,
-            totalCost: totalCost
+            //totalCost: totalCost
         });
 
         if (order.customer) {
@@ -106,55 +106,58 @@ const editOrder = async (req, res, next) => {
 
         const insufficientItems = [];
         const pendingProducts = [];
-        let totalCost = 0;
-        for (let item of req.body.itemsOrdered) {
-            let model = null;
-            switch (item.productType) {
-                case 'books':
-                    model = Books;
-                    break;
+        //let totalCost = 0;
+        if (req.body.itemsOrdered) {
+            for (let item of req.body.itemsOrdered) {
+                let model = null;
+                switch (item.productType) {
+                    case 'books':
+                        model = Books;
+                        break;
 
-                case 'drinks':
-                    model = Drinks;
-                    break;
+                    case 'drinks':
+                        model = Drinks;
+                        break;
+                }
+
+                const product = await model.findById(item.product);
+                const oldItemIndex = oldOrder.itemsOrdered.map(oldItem => oldItem.product.toString()).indexOf(item.product);
+                if (oldItemIndex === -1) {
+                    if (product.stock < item.quantity) {
+                        insufficientItems.push(product);
+                    } else {
+                        //totalCost += product.price * item.quantity;
+                        product.stock -= item.quantity;
+                        pendingProducts.push(product);
+                    }
+                } else {
+                    if (product.stock + oldOrder.itemsOrdered[oldItemIndex].quantity < item.quantity) {
+                        insufficientItems.push(product);
+                    } else {
+                        product.stock -= item.quantity - oldOrder.itemsOrdered[oldItemIndex].quantity;
+                        //totalCost += item.quantity * product.price;
+                        pendingProducts.push(product);
+                    }
+                }
             }
 
-            const product = await model.findById(item.product);
-            const oldItemIndex = oldOrder.itemsOrdered.map(oldItem => oldItem.product.toString()).indexOf(item.product);
-            if (oldItemIndex === -1) {
-                if (product.stock < item.quantity) {
-                    insufficientItems.push(product);
-                } else {
-                    totalCost += product.price * item.quantity;
-                    product.stock -= item.quantity;
-                    pendingProducts.push(product);
-                }
+            if (insufficientItems.length > 0) {
+                return res.status(400).json(insufficientItems);
             } else {
-                if (product.stock + oldOrder.itemsOrdered[oldItemIndex].quantity < item.quantity) {
-                    insufficientItems.push(product);
-                } else {
-                    product.stock -= item.quantity - oldOrder.itemsOrdered[oldItemIndex].quantity;
-                    totalCost += item.quantity * product.price;
-                    pendingProducts.push(product);
+                const promiseToAwait = [];
+
+                for (let product of pendingProducts) {
+                    promiseToAwait.push(product.save());
                 }
+
+                await Promise.all(promiseToAwait);
             }
         }
 
-        if (insufficientItems.length > 0) {
-            return res.status(400).json(insufficientItems);
-        } else {
-            const promiseToAwait = [];
-
-            for (let product of pendingProducts) {
-                promiseToAwait.push(product.save());
-            }
-
-            await Promise.all(promiseToAwait);
-        }
 
         const order = await Orders.findByIdAndUpdate(req.params.orderId, {
             $set: req.body,
-            totalCost: totalCost
+            //totalCost: totalCost
         }, {
             new: true
         })
@@ -166,7 +169,7 @@ const editOrder = async (req, res, next) => {
 
         if (order) {
             if (order.status === 'cancelled') {
-                for(let item of order.itemsOrdered) {
+                for (let item of order.itemsOrdered) {
                     let model = null;
                     switch (item.productType) {
                         case 'books':
@@ -190,15 +193,15 @@ const editOrder = async (req, res, next) => {
 
                 if (order.status === 'completed') {
                     customer.exchangeablePoints += order.totalCost;
-                    customer.rankingPoints  += order.totalCost;
+                    customer.rankingPoints += order.totalCost;
                     if (customer.rankingPoints < 100) {
-                        customer.ranking = 'Silver';
-                    } else if (customer.rankingPoints< 500) {
-                        customer.ranking = 'Gold';
+                        customer.ranking = 'silver';
+                    } else if (customer.rankingPoints < 500) {
+                        customer.ranking = 'gold';
                     } else if (customer.rankingPoints < 1000) {
-                        customer.ranking = 'Platinum';
+                        customer.ranking = 'platinum';
                     } else {
-                        customer.ranking = 'Diamond';
+                        customer.ranking = 'diamond';
                     }
                 }
                 customer.ordersHistory.push(order);
