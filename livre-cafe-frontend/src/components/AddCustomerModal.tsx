@@ -8,6 +8,7 @@ import {
   CUSTOMER,
   CustomerGender,
   CustomerInterface,
+  CustomerPostData,
   RankType,
 } from '@app/models/customer.interface';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
@@ -121,7 +122,6 @@ export default function AddCustomerModal(props: AddModalProps) {
     field: keyof CustomerStateInterface,
     country?: CountryData,
   ) => {
-
     setCustomerState((prevState) => {
       return { ...prevState, [field]: e.target.value };
     });
@@ -141,15 +141,16 @@ export default function AddCustomerModal(props: AddModalProps) {
 
   const generatePostData = (
     body: CustomerStateInterface,
-  ): CustomerStateInterface => {
+  ): CustomerPostData => {
     return {
       firstName: body.firstName,
       lastName: body.lastName,
       phone: body.phone,
       email: body.email,
-      points: Number(body.points),
-      ranking: genRanking(body.points),
+      rankingPoints: Number(body.points),
+      exchangeablePoints: Number(body.points),
       gender: body.gender,
+      ordersHistory: [],
     };
   };
 

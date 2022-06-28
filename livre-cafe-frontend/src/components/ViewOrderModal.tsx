@@ -1,4 +1,4 @@
-import BasicTable from '@app/components/BasicTable';
+import BasicOrderTable from '@app/components/BasicOrderTable';
 import { CustomerDetailsBlock } from '@app/components/NormalCheckoutModal';
 import {
   CustomerInterface,
@@ -68,7 +68,7 @@ interface ViewOrderModalProps {
 export default function ViewOrderModal(props: ViewOrderModalProps) {
   const { open, handleClose, currentOrder } = props;
   const customer = currentOrder.customer as CustomerInterface;
-  const isGuest = currentOrder.customer === 'Guest';
+  const isGuest = !currentOrder.customer;
   const theme = useTheme();
   return (
     <div>
@@ -86,7 +86,7 @@ export default function ViewOrderModal(props: ViewOrderModalProps) {
         </BootstrapDialogTitle>
         <DialogContent dividers>
           <Typography variant="h6">Order Details</Typography>
-          <BasicTable
+          <BasicOrderTable
             headCells={[
               <TableCell align="left">Name</TableCell>,
               <TableCell align="right">Quantity</TableCell>,
@@ -94,12 +94,12 @@ export default function ViewOrderModal(props: ViewOrderModalProps) {
               <TableCell align="right">Total&nbsp;($)</TableCell>,
               <TableCell align="right">Additonal Requirements&nbsp;</TableCell>,
             ]}
-            rows={currentOrder.items}
+            rows={currentOrder.itemsOrdered}
           />
           {currentOrder.vouchers && currentOrder.vouchers.length > 0 && (
             <VoucherDetailsBlock vouchers={currentOrder.vouchers} />
           )}
-          {currentOrder.customer !== 'Guest' && (
+          {currentOrder.customer && (
             <CustomerDetailsBlock
               selectedCustomer={currentOrder.customer}
               p={0}

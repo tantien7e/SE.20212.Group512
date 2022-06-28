@@ -7,10 +7,10 @@ export enum CustomerGender {
 }
 
 export enum RankType {
-  DIAMOND = 'DIAMOND',
-  PLATINUM = 'PLATINUM',
-  GOLD = 'GOLD',
-  SILVER = 'SILVER',
+  DIAMOND = 'diamond',
+  PLATINUM = 'platinum',
+  GOLD = 'gold',
+  SILVER = 'silver',
 }
 
 export enum RankIndex {
@@ -28,8 +28,11 @@ export interface CustomerInterface {
   phone: string;
   email: string;
   ranking: RankType;
-  points: number;
-  _id: string;
-  orders: OrderInterface[];
-  id: string;
+  rankingPoints: number;
+  exchangeablePoints: number;
+  _id?: string;
+  ordersHistory: OrderInterface[];
+  // id: string;
 }
+
+export type CustomerPostData = Omit<CustomerInterface, '_id' | 'ranking'>;

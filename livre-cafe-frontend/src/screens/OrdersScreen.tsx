@@ -18,7 +18,7 @@ function OrdersScreen() {
   const { orders, loading } = ordersSelector;
 
   useEffect(() => {
-    if (!orders || orders.length < 1) dispatch(fetchOrders());
+    if (!orders) dispatch(fetchOrders());
   }, [orders, dispatch]);
 
   return (

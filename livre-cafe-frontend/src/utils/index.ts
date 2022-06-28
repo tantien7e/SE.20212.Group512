@@ -1,6 +1,6 @@
 import IMAGES from '@app/assets/images';
 import { CartItemInterface, CartStateInterface } from '@app/context/Store';
-import { VoucherInterface } from '@app/models';
+import { OrderPostData, ProductType, VoucherInterface } from '@app/models';
 import { CustomerGender, RankType } from '@app/models/customer.interface';
 
 export function stableSort<T>(
@@ -79,6 +79,8 @@ export const genAvatarImage = (gender: CustomerGender) => {
       return IMAGES.femalePic;
     case CustomerGender.NA:
       return IMAGES.naPic;
+    default:
+      return IMAGES.naPic;
   }
 };
 
@@ -88,4 +90,15 @@ export const getTotalCost = (state: CartStateInterface) => {
   return getCartTotal(cart.cartItems) - voucherCost < 0
     ? 0
     : getCartTotal(cart.cartItems) - voucherCost;
+};
+
+export const genOrderPostItems = (
+  cartItems: CartItemInterface[],
+): OrderPostData['itemsOrdered'] => {
+  return cartItems.map((item) => ({
+    product: item._id,
+    quantity: item.quantity,
+    additionalRequirement: item.additionalRequirement,
+    productType: item.title ? ProductType.BOOK : ProductType.DRINK,
+  }));
 };

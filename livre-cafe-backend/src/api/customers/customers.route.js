@@ -32,7 +32,7 @@ const CustomerController = require('./customers.controller');
  *              exchangeablePoints:
  *                  type: number
  *                  description: the bonus points which are exchangeable for vouchers
- *              rankPoints:
+ *              rankingPoints:
  *                  type: number
  *                  description: the points for calculating the customer's rank
  *              rank:

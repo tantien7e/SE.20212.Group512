@@ -1,5 +1,5 @@
 import { RootState } from '@app/app/store';
-import { OrderInterface } from '@app/models';
+import { OrderInterface, OrderPostData } from '@app/models';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -8,7 +8,7 @@ export interface OrdersState {
   addLoading: boolean;
   updateLoading: boolean;
   deleteLoading: boolean;
-  orders: OrderInterface[];
+  orders?: OrderInterface[];
   error?: string;
 }
 
@@ -17,7 +17,6 @@ const initialState: OrdersState = {
   addLoading: false,
   updateLoading: false,
   deleteLoading: false,
-  orders: [],
 };
 
 const ordersSlice = createSlice({
@@ -38,11 +37,12 @@ const ordersSlice = createSlice({
       state.error = action.payload;
     },
     // Add
-    addOrder(state, action: PayloadAction<OrderInterface>) {
+    addOrder(state, action: PayloadAction<OrderPostData>) {
       state.addLoading = true;
     },
     addOrderSucceeded(state, action: PayloadAction<OrderInterface>) {
       state.addLoading = false;
+      if (!state.orders) state.orders = [];
       state.orders.push(action.payload);
       toastInformSuccess('Item was added successfully');
     },

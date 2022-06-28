@@ -12,7 +12,7 @@ export interface BookState {
   addLoading: boolean;
   updateLoading: boolean;
   deleteLoading: boolean;
-  books: BookInterface[];
+  books?: BookInterface[];
   error?: string;
 }
 
@@ -21,7 +21,6 @@ const initialState: BookState = {
   addLoading: false,
   updateLoading: false,
   deleteLoading: false,
-  books: [],
 };
 
 const booksSlice = createSlice({
@@ -45,6 +44,7 @@ const booksSlice = createSlice({
     },
     addBookSucceeded(state, action: PayloadAction<BookInterface>) {
       state.loading = false;
+      if (!state.books) state.books = [];
       state.books.push(action.payload);
       toastInformSuccess('Added Successfully');
     },

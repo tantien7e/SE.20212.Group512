@@ -12,7 +12,7 @@ export interface DrinksState {
   addLoading: boolean;
   updateLoading: boolean;
   deleteLoading: boolean;
-  drinks: DrinkInterface[];
+  drinks?: DrinkInterface[];
   error?: string;
 }
 
@@ -21,7 +21,7 @@ const initialState: DrinksState = {
   addLoading: false,
   updateLoading: false,
   deleteLoading: false,
-  drinks: [],
+  drinks: undefined,
 };
 
 const drinksSlice = createSlice({
@@ -47,6 +47,7 @@ const drinksSlice = createSlice({
     },
     addDrinkSucceeded(state, action: PayloadAction<DrinkInterface>) {
       state.addLoading = false;
+      if (!state.drinks) state.drinks = [];
       state.drinks.push(action.payload);
       toastInformSuccess('Item was added successfully');
     },

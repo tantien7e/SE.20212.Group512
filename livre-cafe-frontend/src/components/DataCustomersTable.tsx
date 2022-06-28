@@ -12,7 +12,7 @@ import {
   RankType,
 } from '@app/models/customer.interface';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
-import { a11yProps, getSalutation } from '@app/utils';
+import { a11yProps, getSalutation, numberWithCommas } from '@app/utils';
 import { Search } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
@@ -121,7 +121,7 @@ const headCells: readonly HeadCell[] = [
     label: 'Email',
   },
   {
-    id: 'points',
+    id: 'rankingPoints',
     disablePadding: false,
     label: 'Points',
     numeric: true,
@@ -509,7 +509,13 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
               <TableBody>
                 {/* if you don't need to support IE11, you can replace the `stableSort` call with:
               rows.slice().sort(getComparator(order, orderBy)) */}
-                {stableSort(filteredRows, getComparator(order, orderBy))
+                {stableSort(
+                  filteredRows,
+                  getComparator(
+                    order,
+                    orderBy as Exclude<keyof Data, 'ordersHistory'>,
+                  ),
+                )
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
                     const labelId = `enhanced-table-checkbox-${index}`;
@@ -522,7 +528,7 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
                         role="checkbox"
                         // aria-checked={isItemSelected}
                         tabIndex={-1}
-                        key={`customer${row?.id}` + index}
+                        key={`customer${row?._id}` + index}
                         // selected={isItemSelected}
                       >
                         <TableCell
@@ -537,11 +543,17 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
                         </TableCell>
                         <TableCell align="left">{row.phone}</TableCell>
                         <TableCell align="left">{row.email}</TableCell>
-                        <TableCell align="right">{row.points}</TableCell>
+                        <TableCell align="right">
+                          {numberWithCommas(row.rankingPoints)}
+                        </TableCell>
                         <TableCell align="left">
                           <Chip
                             label={
-                              <Typography variant="body2" fontWeight={600}>
+                              <Typography
+                                variant="body2"
+                                fontWeight={600}
+                                textTransform="uppercase"
+                              >
                                 {row.ranking}
                               </Typography>
                             }

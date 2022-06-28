@@ -2,7 +2,6 @@ import {
   addCustomer,
   fetchCustomers,
   selectCustomers,
-  selectCustomersAddLoading,
 } from '@app/app/features/customers/customers-slice';
 import {
   addOrder,
@@ -16,11 +15,11 @@ import PhoneInputCustom from '@app/components/PhoneInputCustom';
 import VoucherSelect, { VoucherOption } from '@app/components/VoucherSelect';
 import { NormalCheckoutTabIndex } from '@app/constants';
 import { CartAction, Store } from '@app/context/Store';
-import { useFetchOrders } from '@app/hooks/useFetchOrders';
-import { OrderInterface, OrderStatusType, VoucherInterface } from '@app/models';
+import { OrderPostData, OrderStatusType, VoucherInterface } from '@app/models';
 import {
   CustomerGender,
   CustomerInterface,
+  CustomerPostData,
   RankType,
 } from '@app/models/customer.interface';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
@@ -28,11 +27,11 @@ import { TabPanel } from '@app/screens/InventoryScreen';
 import {
   a11yProps,
   genAvatarImage,
-  genRanking,
+  genOrderPostItems,
   getSalutation,
   getTotalCost,
 } from '@app/utils';
-import { toastError, toastInformSuccess } from '@app/utils/toast';
+import { toastInformSuccess } from '@app/utils/toast';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
@@ -153,13 +152,14 @@ export default function NormalCheckoutModal(props: AddModalProps) {
   };
 
   const handleSearch = (text = '') => {
+    if (!customers) return;
     const filteredRows = customers.filter((customer) => {
       const textTokens = text.split(' ');
       const hasConflict = textTokens.find((token) => {
         return !(
           customer.firstName.toLowerCase().includes(token) ||
           customer.lastName.toLowerCase().includes(token) ||
-          customer.phone.toLowerCase().includes(token)
+          String(customer.phone).toLowerCase().includes(token)
         );
       });
       return !hasConflict;
@@ -195,17 +195,16 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     setFilterText(`${customer.firstName} ${customer.lastName}`);
   };
 
-  const generatePostData = (
-    body: CustomerStateInterface,
-  ): CustomerStateInterface => {
+  const generatePostData = (body: CustomerStateInterface): CustomerPostData => {
     return {
       firstName: body.firstName,
       lastName: body.lastName,
       phone: body.phone,
       email: body.email,
-      points: Number(body.points),
-      ranking: genRanking(body.points),
+      rankingPoints: Number(body.points),
+      exchangeablePoints: Number(body.points),
       gender: body.gender,
+      ordersHistory: [],
     };
   };
 
@@ -241,23 +240,21 @@ export default function NormalCheckoutModal(props: AddModalProps) {
   };
 
   const handleAddVouchersToCart = () => {
-    if (vouchers && vouchers.length) {
-      ctxDispatch({
-        type: CartAction.ADD_VOUCHERS,
-        payload: vouchers,
-      });
-      toastInformSuccess('Select vouchers successfully!');
-    }
+    ctxDispatch({
+      type: CartAction.ADD_VOUCHERS,
+      payload: vouchers || [],
+    });
+    toastInformSuccess('Select vouchers successfully!');
   };
 
   const handlePlaceOrder = () => {
-    const postOrderData: OrderInterface = {
-      customer: selectedCustomer || 'Guest',
-      items: state.cart.cartItems,
+    const postOrderData: OrderPostData = {
+      customer: selectedCustomer?._id || '',
+      itemsOrdered: genOrderPostItems(state.cart.cartItems),
       vouchers: vouchers,
-      status: OrderStatusType.PENDING,
+      status: OrderStatusType.PROCESSING,
       bookedAt: new Date(),
-      totalCost: getTotalCost(state),
+      totalCost: getTotalCost(state) * 1.1,
     };
     dispatch(addOrder(postOrderData));
     setIsPost(true);
@@ -272,7 +269,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
   }, [orderLoading, isPost, orderError]);
 
   React.useEffect(() => {
-    if (!customers.length) {
+    if (!customers) {
       dispatch(fetchCustomers());
     }
     handleSearch(filterText);
@@ -482,7 +479,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
                   <GroupedSearchBar
                     onSearchChange={onSearchChange}
                     filterText={filterText}
-                    rows={filteredCustomers}
+                    rows={filteredCustomers || []}
                     handleSelect={handleSelect}
                     selectedValue={selectedCustomer}
                   />
@@ -741,13 +738,13 @@ export function CustomerDetailsBlock(props: CustomerDetailsBlockProps) {
                 Email: {selectedCustomer.email || 'N/A'}
               </Typography>
               <Typography mb={1}>
-                Points: {selectedCustomer.points || 0}
+                Points: {selectedCustomer.exchangeablePoints || 0}
               </Typography>
               <Typography mb={1}>
                 Ranking: {selectedCustomer?.ranking}
               </Typography>
               <Typography mb={1}>
-                Total Orders: {selectedCustomer?.orders?.length || 0}
+                Total Orders: {selectedCustomer?.ordersHistory?.length || 0}
               </Typography>
             </Grid>
           </Box>
