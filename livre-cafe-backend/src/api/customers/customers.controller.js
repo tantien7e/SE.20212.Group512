@@ -6,6 +6,13 @@ const getAllCustomers = async (req, res, next) => {
         const customers = await Customers.find({})
             .populate('order')
             .populate('ordersHistory');
+
+        for (let customer of customers) {
+            if (customer.gender === 'unknown') {
+                customer.gender = '';
+            }
+        }
+        
         res.status(200).json(customers);
     } catch (err) {
         next(err);
@@ -73,6 +80,9 @@ const getCustomer = async (req, res, next) => {
     try {
         const customer = await Customers.findById(req.params.customerId).populate('order').populate('ordersHistory');
         if (customer) {
+            if (customer.gender === 'unknown') {
+                customer.gender = '';
+            }
             res.status(200).json(customer);
         } else {
             res.status(404).json({ message: "Customer not found" });
