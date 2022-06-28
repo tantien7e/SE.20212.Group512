@@ -104,55 +104,59 @@ const editOrder = async (req, res, next) => {
             return res.status(403).json({ message: "Can not make changes to completed or cancelled order" });
         }
 
-        const insufficientItems = [];
-        const pendingProducts = [];
-        //let totalCost = 0;
-        if (req.body.itemsOrdered) {
-            for (let item of req.body.itemsOrdered) {
-                let model = null;
-                switch (item.productType) {
-                    case 'books':
-                        model = Books;
-                        break;
 
-                    case 'drinks':
-                        model = Drinks;
-                        break;
+        if (req.body.status === 'processing') {
+            const insufficientItems = [];
+            const pendingProducts = [];
+            //let totalCost = 0;
+            if (req.body.itemsOrdered) {
+                for (let item of req.body.itemsOrdered) {
+                    let model = null;
+                    switch (item.productType) {
+                        case 'books':
+                            model = Books;
+                            break;
+
+                        case 'drinks':
+                            model = Drinks;
+                            break;
+                    }
+
+                    const product = await model.findById(item.product);
+                    const oldItemIndex = oldOrder.itemsOrdered.map(oldItem => oldItem.product.toString()).indexOf(item.product);
+                    if (oldItemIndex === -1) {
+                        if (product.stock < item.quantity) {
+                            insufficientItems.push(product);
+                        } else {
+                            //totalCost += product.price * item.quantity;
+                            product.stock -= item.quantity;
+                            pendingProducts.push(product);
+                        }
+                    } else {
+                        if (product.stock + oldOrder.itemsOrdered[oldItemIndex].quantity < item.quantity) {
+                            insufficientItems.push(product);
+                        } else {
+                            product.stock -= item.quantity - oldOrder.itemsOrdered[oldItemIndex].quantity;
+                            //totalCost += item.quantity * product.price;
+                            pendingProducts.push(product);
+                        }
+                    }
                 }
 
-                const product = await model.findById(item.product);
-                const oldItemIndex = oldOrder.itemsOrdered.map(oldItem => oldItem.product.toString()).indexOf(item.product);
-                if (oldItemIndex === -1) {
-                    if (product.stock < item.quantity) {
-                        insufficientItems.push(product);
-                    } else {
-                        //totalCost += product.price * item.quantity;
-                        product.stock -= item.quantity;
-                        pendingProducts.push(product);
-                    }
+                if (insufficientItems.length > 0) {
+                    return res.status(400).json(insufficientItems);
                 } else {
-                    if (product.stock + oldOrder.itemsOrdered[oldItemIndex].quantity < item.quantity) {
-                        insufficientItems.push(product);
-                    } else {
-                        product.stock -= item.quantity - oldOrder.itemsOrdered[oldItemIndex].quantity;
-                        //totalCost += item.quantity * product.price;
-                        pendingProducts.push(product);
+                    const promiseToAwait = [];
+
+                    for (let product of pendingProducts) {
+                        promiseToAwait.push(product.save());
                     }
+
+                    await Promise.all(promiseToAwait);
                 }
-            }
-
-            if (insufficientItems.length > 0) {
-                return res.status(400).json(insufficientItems);
-            } else {
-                const promiseToAwait = [];
-
-                for (let product of pendingProducts) {
-                    promiseToAwait.push(product.save());
-                }
-
-                await Promise.all(promiseToAwait);
             }
         }
+
 
 
         const order = await Orders.findByIdAndUpdate(req.params.orderId, {

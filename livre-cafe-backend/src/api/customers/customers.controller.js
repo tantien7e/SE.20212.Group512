@@ -4,14 +4,18 @@ const Orders = require('../../models/orders/orders.model');
 const getAllCustomers = async (req, res, next) => {
     try {
         const customers = await Customers.find({})
-            .populate('order')
-            .populate('ordersHistory');
-
-        for (let customer of customers) {
-            if (customer.gender === 'unknown') {
-                customer.gender = '';
-            }
-        }
+            .populate({
+                path: 'order',
+                populate: {
+                    path: 'itemsOrdered.product'
+                }
+            })
+            .populate({
+                path: 'ordersHistory',
+                populate: {
+                    path: 'itemsOrdered.product'
+                }
+            });
 
         res.status(200).json(customers);
     } catch (err) {
@@ -78,11 +82,20 @@ const editCustomer = async (req, res, next) => {
 
 const getCustomer = async (req, res, next) => {
     try {
-        const customer = await Customers.findById(req.params.customerId).populate('order').populate('ordersHistory');
+        const customer = await Customers.findById(req.params.customerId)
+            .populate({
+                path: 'order',
+                populate: {
+                    path: 'itemsOrdered.product'
+                }
+            })
+            .populate({
+                path: 'ordersHistory',
+                populate: {
+                    path: 'itemsOrdered.product'
+                }
+            });
         if (customer) {
-            if (customer.gender === 'unknown') {
-                customer.gender = '';
-            }
             res.status(200).json(customer);
         } else {
             res.status(404).json({ message: "Customer not found" });
