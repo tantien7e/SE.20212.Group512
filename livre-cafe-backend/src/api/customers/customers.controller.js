@@ -14,6 +14,20 @@ const getAllCustomers = async (req, res, next) => {
 
 const createCustomer = async (req, res, next) => {
     try {
+        if (req.body.rankingPoints) {
+            req.body.exchangeablePoints = req.body.rankingPoints;
+
+            if (req.body.rankingPoints < 100) {
+                req.body.ranking = 'Silver';
+            } else if (req.body.rankingPoints < 500) {
+                req.body.ranking = 'Gold';
+            } else if (req.body.rankingPoints < 1000) {
+                req.body.ranking = 'Platinum';
+            } else {
+                req.body.ranking = 'Diamond';
+            }
+        }
+
         const customer = await Customers.create(req.body);
         res.status(200).json(customer);
     } catch (err) {
