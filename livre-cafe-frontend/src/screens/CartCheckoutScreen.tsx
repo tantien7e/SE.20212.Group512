@@ -10,6 +10,7 @@ import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import PrintOrderModal from '@app/components/PrintOrderModal';
 import { getCartTotal, getSalutation } from '@app/utils';
 import NormalCheckoutModal from '@app/components/NormalCheckoutModal';
+import requireAuthentication from '@app/hocs/requireAuthentication';
 
 function CartCheckoutScreen() {
   const { state } = useContext(Store);
@@ -88,4 +89,4 @@ function CartCheckoutScreen() {
   );
 }
 
-export default CartCheckoutScreen;
+export default requireAuthentication(CartCheckoutScreen);

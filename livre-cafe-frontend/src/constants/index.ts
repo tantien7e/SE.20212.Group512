@@ -4,6 +4,7 @@ export const CART_CHECKOUT_PATH = '/cart-checkout';
 export const CUSTOMERS_PATH = '/customers';
 export const ORDERS_PATH = '/orders';
 export const VOUCHERS_PATH = '/vouchers';
+export const LOGIN_PATH = '/login';
 // API Constants
 export const BASE_URL = '/api/';
 export const BASE_URL_MOCK = '/api-mock/';
@@ -14,6 +15,8 @@ export const DRINKS_URL = 'drinks';
 export const BOOKS_URL = 'books';
 export const CUSTOMERS_URL = 'customers';
 export const ORDERS_URL = 'orders';
+export const LOGIN_URL = 'auth/login';
+export const VERIFY_URL = 'auth/verify';
 export const IMAGE_BASE = '@app';
 
 // Modal Type

@@ -5,6 +5,7 @@ import {
 } from '@app/app/features/drinks/drinks-slice';
 import DataBooksTable from '@app/components/DataBooksTable';
 import DataDrinksTable from '@app/components/DataDrinksTable';
+import requireAuthentication from '@app/hocs/requireAuthentication';
 import useFetchBooks from '@app/hooks/useFetchBooks';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { stableSort } from '@app/utils';
@@ -125,4 +126,4 @@ function InventoryScreen() {
   );
 }
 
-export default InventoryScreen;
+export default requireAuthentication(InventoryScreen);

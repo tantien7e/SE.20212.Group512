@@ -7,6 +7,7 @@ import drinksReducer from '@app/app/features/drinks/drinks-slice';
 import booksReducer from '@app/app/features/books/books-slice';
 import customersReducer from '@app/app/features/customers/customers-slice';
 import ordersReducer from '@app/app/features/orders/orders-slice';
+import authenticationReducer from '@app/app/features/authentication/authentication-slice';
 
 const sagaMiddleware = createSagaMiddleware();
 export const store = configureStore({
@@ -15,6 +16,7 @@ export const store = configureStore({
     books: booksReducer,
     customers: customersReducer,
     orders: ordersReducer,
+    authentication: authenticationReducer,
     [bookApi.reducerPath]: bookApi.reducer,
     [drinkApi.reducerPath]: drinkApi.reducer,
   },
