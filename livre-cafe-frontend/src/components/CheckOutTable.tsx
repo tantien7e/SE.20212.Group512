@@ -31,7 +31,7 @@ interface CartRowInterface {
   stock: number;
   author?: string;
   quantity: number;
-  additionalRequirement: string;
+  additionalRequirements: string;
 }
 
 export default function CheckOutTable() {
@@ -74,7 +74,7 @@ export default function CheckOutTable() {
 
   const handleEdit = (params: GridRenderCellParams<any, any, any>) => {
     const quantity = params.row.quantity;
-    const additionalRequirement = params.row.additionalRequirement;
+    const additionalRequirements = params.row.additionalRequirements;
     setCurrentItem(params.row);
     setOpenEditModal(true);
   };
@@ -95,7 +95,7 @@ export default function CheckOutTable() {
       renderCell: (params) => <>${params.row.cost}</>,
     },
     {
-      field: 'additionalRequirement',
+      field: 'additionalRequirements',
       headerName: 'Additional Requirements',
       sortable: false,
       minWidth: 200,
@@ -125,8 +125,8 @@ export default function CheckOutTable() {
       price: item.price,
       quantity,
       cost: quantity * item.price,
-      additionalRequirement: item.additionalRequirement
-        ? item.additionalRequirement
+      additionalRequirements: item.additionalRequirements
+        ? item.additionalRequirements
         : 'None',
       stock: item.stock,
     };

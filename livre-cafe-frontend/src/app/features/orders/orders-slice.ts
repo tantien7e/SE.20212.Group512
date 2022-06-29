@@ -52,7 +52,7 @@ const ordersSlice = createSlice({
       toastError(action.payload);
     },
     //Update
-    updateOrder(state, action: PayloadAction<OrderInterface>) {
+    updateOrder(state, action: PayloadAction<OrderPostData>) {
       state.updateLoading = true;
     },
     updateOrderSucceeded(state) {

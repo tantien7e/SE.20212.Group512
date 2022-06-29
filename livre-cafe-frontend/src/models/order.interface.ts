@@ -27,7 +27,7 @@ export interface OrderInterface {
 export interface ItemOrdered {
   product: ProductInterface;
   quantity: number;
-  additionalRequirement: string;
+  additionalRequirements: string;
   productType: ProductType;
 }
 
@@ -36,7 +36,7 @@ export interface OrderPostData
   itemsOrdered: {
     product: string;
     quantity: number;
-    additionalRequirement: string;
+    additionalRequirements: string;
     productType: ProductType;
   }[];
   customer?: string;

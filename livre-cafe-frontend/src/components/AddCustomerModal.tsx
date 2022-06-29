@@ -123,7 +123,13 @@ export default function AddCustomerModal(props: AddModalProps) {
     country?: CountryData,
   ) => {
     setCustomerState((prevState) => {
-      return { ...prevState, [field]: e.target.value };
+      let value = e.target.value;
+      if (field === 'gender' && e.target.value === CustomerGender.NA)
+        value = '';
+      return {
+        ...prevState,
+        [field]: value,
+      };
     });
     let phoneValue = '';
     if (field === 'phone') {
@@ -139,9 +145,7 @@ export default function AddCustomerModal(props: AddModalProps) {
     });
   };
 
-  const generatePostData = (
-    body: CustomerStateInterface,
-  ): CustomerPostData => {
+  const generatePostData = (body: CustomerStateInterface): CustomerPostData => {
     return {
       firstName: body.firstName,
       lastName: body.lastName,
@@ -170,6 +174,7 @@ export default function AddCustomerModal(props: AddModalProps) {
     const passable = !(Object.values(error).findIndex((item) => item) > -1);
     if (!passable) return;
     const customerData = generatePostData(customerState);
+    console.log;
     dispatch(addCustomer(customerData as CustomerInterface));
     setAddSuccess(true);
   };

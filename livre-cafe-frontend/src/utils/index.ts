@@ -98,7 +98,7 @@ export const genOrderPostItems = (
   return cartItems.map((item) => ({
     product: item._id,
     quantity: item.quantity,
-    additionalRequirement: item.additionalRequirement,
+    additionalRequirements: item.additionalRequirements,
     productType: item.title ? ProductType.BOOK : ProductType.DRINK,
   }));
 };
