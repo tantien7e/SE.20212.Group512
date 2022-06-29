@@ -71,13 +71,6 @@ OrdersRouter.route('/')
 .get(OrdersController.getAllOrders)
 .post(OrdersController.createOrder);
 
-/**
- * @swagger
- * /orders/history:
- *  get:
- *      summary: Returns the list of all completed orders
- *      tags: [Orders]
- */
 
 OrdersRouter.route('/history')
 .get(OrdersController.getOrdersHistory);
