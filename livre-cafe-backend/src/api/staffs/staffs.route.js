@@ -35,7 +35,7 @@ StaffsRouter.post('/login', StaffsController.login);
 
 /**
  * @swagger
- * /staffs/staffId:
+ * /staffs/{id}:
  *  delete:
  *      summary: Manager delete staff account
  *      tags: [Staffs]
