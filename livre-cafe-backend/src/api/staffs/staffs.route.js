@@ -7,6 +7,35 @@ const passport = require('passport');
 
 /**
  * @swagger
+ * components:
+ *  schemas:
+ *      Staff:
+ *          type: object
+ *          required:
+ *              - username
+ *              - hash
+ *              - salt
+ *          properties:
+ *              id:
+ *                  type: string
+ *                  description: the auto-generated id
+ *              username:
+ *                  type: string
+ *                  description: the unique username
+ *              hash:
+ *                  type: string
+ *                  description: the hashed password
+ *              salt:
+ *                  type: string
+ *                  description: the random string created for password hashing
+ *              isManager:
+ *                  type: boolean
+ *                  default: false
+ *                  description: true if this account is manager's account
+ */
+
+/**
+ * @swagger
  * tags:
  *  name: Staffs
  *  description: Staffs API
