@@ -1,6 +1,6 @@
 const Router = require('express').Router;
 const StaffsRouter = Router();
-const isManager = require('../../auth/authorize');
+const isManager = require('../../middleware/authorize');
 const StaffsController = require('./staffs.controller');
 const passport = require('passport');
 
@@ -51,16 +51,6 @@ const passport = require('passport');
 
 StaffsRouter.route('/')
 .post(passport.authenticate('jwt', { session: false }), isManager, StaffsController.createNewStaff);
-
-/**
- * @swagger
- * /staffs/login:
- *  post:
- *      summary: Login in with username and password
- *      tags: [Staffs]
- */
-
-StaffsRouter.post('/login', StaffsController.login);
 
 /**
  * @swagger
