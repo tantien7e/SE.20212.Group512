@@ -1,6 +1,5 @@
 const express = require('express');
 const OrdersController = require('./orders.controller');
-const isManager = require('../../auth/authorize');
 
 const OrdersRouter = express.Router();
 

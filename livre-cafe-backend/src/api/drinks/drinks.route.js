@@ -1,7 +1,7 @@
 const express = require('express');
 
 const DrinksController = require('./drinks.controller');
-const isManager = require('../../auth/authorize');
+const isManager = require('../../middleware/authorize');
 
 /**
  * @swagger
