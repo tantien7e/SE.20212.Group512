@@ -206,7 +206,6 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
     console.log(error);
     if (!passable) return;
     const newItem = genPostItem(productState);
-    console.log(newItem);
     dispatch({ type: CartAction.CART_UPDATE_ITEM_QUANTITY, payload: newItem });
     if (newItem.quantity > newItem.stock) {
       toastError('Out of stock');

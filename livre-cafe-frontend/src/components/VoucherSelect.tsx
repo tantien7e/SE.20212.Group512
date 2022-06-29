@@ -75,8 +75,6 @@ export default function VoucherSelect(props: VoucherSelectProps) {
     const existingVoucher = selectedVouchers?.findIndex(
       (e) => e.name === option.name,
     );
-    console.log(existingVoucher);
-    console.log(selectedVouchers);
     const newSelectedVouchers = selectedVouchers.slice();
     if (existingVoucher > -1) {
       newSelectedVouchers.splice(existingVoucher, 1);

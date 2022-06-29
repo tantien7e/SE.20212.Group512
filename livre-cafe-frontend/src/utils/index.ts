@@ -102,3 +102,11 @@ export const genOrderPostItems = (
     productType: item.title ? ProductType.BOOK : ProductType.DRINK,
   }));
 };
+
+export const authorizedHeader = () => {
+  const token = localStorage.getItem('token') || '';
+  return {
+    Authorization: `${token}`,
+    'Content-Type': 'application/json',
+  };
+};

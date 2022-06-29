@@ -3,6 +3,7 @@ import {
   selectOrders,
 } from '@app/app/features/orders/orders-slice';
 import OrdersTable from '@app/components/OrdersTable';
+import requireAuthentication from '@app/hocs/requireAuthentication';
 import { stableSort } from '@app/utils';
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -47,4 +48,4 @@ function OrdersScreen() {
   );
 }
 
-export default OrdersScreen;
+export default requireAuthentication(OrdersScreen);

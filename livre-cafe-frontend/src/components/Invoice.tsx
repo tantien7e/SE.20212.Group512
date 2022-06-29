@@ -37,7 +37,7 @@ function Invoice(props: InvoiceProps) {
             variant="h3"
             sx={{ fontFamily: 'Caveat, cursive', fontWeight: 600 }}
           >
-            Livre Café
+            Lirve Café
           </Typography>
         </Grid>
         <Grid item xs={12} container justifyContent="center">

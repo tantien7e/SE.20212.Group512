@@ -81,7 +81,7 @@ export default function BasicOrdersHistoryTable(props: BasicTableProps) {
                     )}
                   </TableCell>
                   <TableCell align="left">
-                    {moment(row.bookedAt).format('DD.MM.YYYY')}
+                    {moment(row.createdAt).format('DD.MM.YYYY')}
                   </TableCell>
                   <TableCell align="left">
                     <OrderStatusBadge status={row.status} />

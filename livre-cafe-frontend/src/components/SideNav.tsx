@@ -1,4 +1,6 @@
+import { selectUser, signOut } from '@app/app/features/authentication/authentication-slice';
 import navList from '@app/components/navListItems';
+import { LOGIN_PATH } from '@app/constants';
 import { Store } from '@app/context/Store';
 import MenuIcon from '@mui/icons-material/Menu';
 import StorefrontIcon from '@mui/icons-material/Storefront';
@@ -9,6 +11,7 @@ import {
   Button,
   Chip,
   Drawer,
+  Link,
   List,
   ListItemButton,
   ListItemIcon,
@@ -20,6 +23,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React, { useContext, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const drawerWidth = 240;
@@ -83,14 +87,24 @@ function SideNav() {
   const navigate = useNavigate();
   const [open, setOpen] = useState<boolean>(true);
   const refFocus = useRef<any>(null);
+  const user = localStorage.getItem('user')
+    ? JSON.parse(localStorage.getItem('user') || '')
+    : '';
   const handleDrawerClose = () => {
     setOpen(!open);
   };
 
-  const { state, dispatch } = useContext(Store);
+  const { state } = useContext(Store);
   const location = useLocation();
   const handleChangePath = (target: string) => {
     navigate(target, { replace: true });
+  };
+  const dispatch = useDispatch();
+
+  const handleSignOut = () => {
+    localStorage.clear();
+    navigate(LOGIN_PATH);
+    dispatch(signOut());
   };
 
   const drawerContent = (
@@ -105,14 +119,13 @@ function SideNav() {
           margin: '14px 14px',
           padding: '12px 0px',
           borderBottom: '1px solid lightgray',
-          alignItems: 'flex-end',
+          alignItems: 'center',
         }}
       >
         <Box
           sx={{
             flexShrink: 0,
             display: open ? 'none' : { xs: 'none', sm: 'initial' },
-            marginBottom: '7px',
           }}
         >
           <StorefrontIcon
@@ -122,15 +135,14 @@ function SideNav() {
         <Typography
           variant="h1"
           noWrap={true}
-          gutterBottom
           sx={{
             display: { xs: 'none', sm: 'initial' },
-            fontSize: '18px',
+            fontSize: '20px',
             fontWeight: 600,
             color: theme.palette.primary.main,
             width: '154px',
             marginLeft: open ? '0px' : '8px',
-            paddingBottom: '3px',
+            marginBottom: '4px',
           }}
         >
           Lirve Café
@@ -275,7 +287,7 @@ function SideNav() {
             // color="primary"
             variant="h4"
           >
-            S{!open && ' '}E
+            <Avatar />
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
@@ -292,7 +304,7 @@ function SideNav() {
             }}
             // color="primary"
           >
-            Group 512
+            {user?.isManager ? 'Manager' : 'Staff'}
           </Typography>
           <Typography
             component="span"
@@ -304,10 +316,28 @@ function SideNav() {
               // color: theme.status.inActive,
             }}
             // color="primary"
-
           >
-            Software Engineering
+            {user?.username || ''}
           </Typography>
+          <Link
+            variant="button"
+            onClick={handleSignOut}
+            sx={{ textTransform: 'none', cursor: 'pointer' }}
+          >
+            <Typography
+              component="span"
+              variant="body2"
+              sx={{
+                display: 'block',
+                whiteSpace: 'nowrap',
+                lineHeight: 'inherit',
+                // color: theme.status.inActive,
+              }}
+              // color="primary"
+            >
+              Sign out
+            </Typography>
+          </Link>
         </Box>
       </Box>
     </>

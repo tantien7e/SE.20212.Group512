@@ -22,6 +22,7 @@ export interface OrderInterface {
   id?: string;
   _id?: string;
   totalCost: number;
+  createdAt: Date;
 }
 
 export interface ItemOrdered {

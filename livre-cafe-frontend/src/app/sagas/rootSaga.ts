@@ -1,3 +1,4 @@
+import loginSaga from '@app/app/sagas/authentication/loginSaga';
 import addBookSaga from '@app/app/sagas/books/addBookSaga';
 import deleteBookSaga from '@app/app/sagas/books/deleteBookSaga';
 import getListBooksSaga from '@app/app/sagas/books/getListBooksSaga';
@@ -40,5 +41,6 @@ export default function* rootSaga() {
     addOrderSaga(),
     updateOrderSaga(),
     deleteOrderSaga(),
+    loginSaga(),
   ]);
 }

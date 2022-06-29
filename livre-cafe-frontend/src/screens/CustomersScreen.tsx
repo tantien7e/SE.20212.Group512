@@ -3,6 +3,7 @@ import {
   selectCustomers,
 } from '@app/app/features/customers/customers-slice';
 import DataCustomersTable from '@app/components/DataCustomersTable';
+import requireAuthentication from '@app/hocs/requireAuthentication';
 import { CustomerGender, RankType } from '@app/models/customer.interface';
 import { stableSort } from '@app/utils';
 import { Box, Typography } from '@mui/material';
@@ -119,4 +120,4 @@ function CustomersScreen() {
   );
 }
 
-export default CustomersScreen;
+export default requireAuthentication(CustomersScreen);
