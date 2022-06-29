@@ -1,6 +1,7 @@
 const express = require('express');
 
 const DrinksController = require('./drinks.controller');
+const isManager = require('../../auth/authorize');
 
 /**
  * @swagger
@@ -53,7 +54,7 @@ const DrinksRouter = express.Router();
 
 DrinksRouter.route('/')
 .get(DrinksController.getAllDrinks)
-.post(DrinksController.addDrink);
+.post(isManager, DrinksController.addDrink);
 
 /**
  * @swagger
@@ -71,7 +72,7 @@ DrinksRouter.route('/')
 
 DrinksRouter.route('/:drinkId')
 .get(DrinksController.getDrink)
-.put(DrinksController.editDrink)
-.delete(DrinksController.deleteDrink);
+.put(isManager, DrinksController.editDrink)
+.delete(isManager, DrinksController.deleteDrink);
 
 module.exports = DrinksRouter;

@@ -1,6 +1,7 @@
 const express = require('express');
 
 const BooksController = require('./books.controller');
+const isManager = require('../../auth/authorize');
 
 /**
  * @swagger
@@ -54,7 +55,7 @@ const BooksRouter = express.Router();
 
 BooksRouter.route('/')
 .get(BooksController.getAllBooks)
-.post(BooksController.addBook);
+.post(isManager, BooksController.addBook);
 
 /**
  * @swagger
@@ -72,7 +73,7 @@ BooksRouter.route('/')
 
 BooksRouter.route('/:bookId')
 .get(BooksController.getBook)
-.put(BooksController.editBook)
-.delete(BooksController.deleteBook);
+.put(isManager, BooksController.editBook)
+.delete(isManager, BooksController.deleteBook);
 
 module.exports = BooksRouter;
