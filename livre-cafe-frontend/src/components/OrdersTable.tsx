@@ -2,13 +2,9 @@ import { updateOrder } from '@app/app/features/orders/orders-slice';
 import ConfirmModal from '@app/components/ConfirmModal';
 import ViewOrderModal from '@app/components/ViewOrderModal';
 import { ModalType, OrderTabIndex } from '@app/constants';
-import { Store } from '@app/context/Store';
 import { OrderInterface, OrderPostData, OrderStatusType } from '@app/models';
-import { RankType } from '@app/models/customer.interface';
 import {
-  a11yProps,
-  genOrderPostItems,
-  numberWithCommasRound2,
+  a11yProps, numberWithCommasRound2
 } from '@app/utils';
 import { Search } from '@mui/icons-material';
 import DoneIcon from '@mui/icons-material/Done';
@@ -23,7 +19,7 @@ import {
   OutlinedInput,
   Tab,
   Tabs,
-  Tooltip,
+  Tooltip
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -42,7 +38,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import moment from 'moment';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 interface Data extends OrderInterface {
@@ -369,7 +365,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
   ): OrderPostData => {
     return {
       ...orderItem,
-      customer: orderItem.customer?._id || '',
+      customer: orderItem.customer?._id || null,
       itemsOrdered: orderItem.itemsOrdered.map((item) => {
         return { ...item, product: item.product._id };
       }),
