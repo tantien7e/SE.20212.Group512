@@ -35,7 +35,7 @@ const OrdersSchema = new Schema({
 
     customer: {
         type: Schema.Types.ObjectId,
-        ref: 'customers',
+        ref: 'customers'
     },
 
     totalCost: {

@@ -45,8 +45,8 @@ app.use(express.json({limit: '25mb'}));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 app.use('/auth', AuthRouter);
-app.use('/staffs', StaffsRouter);
 app.use(passport.authenticate('jwt', { session: false }));
+app.use('/staffs', StaffsRouter);
 app.use('/books', BooksRouter);
 app.use('/drinks', DrinksRouter);
 app.use('/orders', OrdersRouter);

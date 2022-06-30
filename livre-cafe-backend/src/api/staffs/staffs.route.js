@@ -2,7 +2,7 @@ const Router = require('express').Router;
 const StaffsRouter = Router();
 const isManager = require('../../middleware/authorize');
 const StaffsController = require('./staffs.controller');
-const passport = require('passport');
+
 
 
 /**
@@ -50,7 +50,7 @@ const passport = require('passport');
  */
 
 StaffsRouter.route('/')
-.post(passport.authenticate('jwt', { session: false }), isManager, StaffsController.createNewStaff);
+.post(isManager, StaffsController.createNewStaff);
 
 /**
  * @swagger
@@ -62,6 +62,6 @@ StaffsRouter.route('/')
 
 
 StaffsRouter.route('/:staffId')
-.delete(passport.authenticate('jwt', { session: false }), isManager, StaffsController.deleteStaff);
+.delete(isManager, StaffsController.deleteStaff);
 
 module.exports = StaffsRouter;
