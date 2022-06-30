@@ -40,5 +40,5 @@ export interface OrderPostData
     additionalRequirements: string;
     productType: ProductType;
   }[];
-  customer?: string;
+  customer?: string | null;
 }
