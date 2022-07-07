@@ -9,12 +9,15 @@ import {
   INVENTORY_PATH,
   LOGIN_PATH,
   ORDERS_PATH,
+  STAFFS_PATH,
 } from '@app/constants';
+import { StaffResponse } from '@app/models/user.interface';
 import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
 import CustomersScreen from '@app/screens/CustomersScreen';
 import InventoryScreen from '@app/screens/InventoryScreen';
 import LoginScreen from '@app/screens/LoginScreen';
 import OrdersScreen from '@app/screens/OrdersScreen';
+import StaffsScreen from '@app/screens/StaffsScreen';
 import '@app/styles/main.scss';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -27,8 +30,12 @@ function App() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const isVerified = useSelector(selectVerify);
-  const dispatch = useDispatch();
+  const user = localStorage.getItem('user')
+    ? (JSON.parse(localStorage.getItem('user') || '') as StaffResponse)
+    : null;
+  // const dispatch = useDispatch();
   useEffect(() => {
+    // dispatch(verify({ callback: (success) => {} }));
     if (pathname === '/') {
       navigate('/inventory');
     }
@@ -50,7 +57,9 @@ function App() {
           <Route path={CUSTOMERS_PATH} element={<CustomersScreen />} />
           <Route path={ORDERS_PATH} element={<OrdersScreen />} />
           <Route path={LOGIN_PATH} element={<LoginScreen />} />
-
+          {user?.isManager && (
+            <Route path={STAFFS_PATH} element={<StaffsScreen />} />
+          )}
           {/* <Route path="/products/:slug" element={<ProductScreen />} />
           <Route path="/cart" element={<CartScreen />} />
           <Route path="/signin" element={<SigninScreen />} /> */}
