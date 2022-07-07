@@ -197,6 +197,9 @@ interface EnhancedTableToolbarProps {
 
 const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
   const { handleOpenModal } = props;
+  const user = localStorage.getItem('user')
+    ? JSON.parse(localStorage.getItem('user') || '')
+    : null;
   return (
     <Toolbar
       sx={{
@@ -213,15 +216,17 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarProps) => {
         Drinks
       </Typography>
 
-      <Tooltip title="New Product">
-        <Button
-          endIcon={<AddIcon />}
-          variant="contained"
-          onClick={() => handleOpenModal(ModalType.ADD_PRODUCT)}
-        >
-          Add
-        </Button>
-      </Tooltip>
+      {user?.isManager && (
+        <Tooltip title="New Product">
+          <Button
+            endIcon={<AddIcon />}
+            variant="contained"
+            onClick={() => handleOpenModal(ModalType.ADD_PRODUCT)}
+          >
+            Add
+          </Button>
+        </Tooltip>
+      )}
     </Toolbar>
   );
 };
@@ -253,6 +258,9 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
   const [currentCartItem, setCurrentCartItem] = useState<DrinkInterface>();
   const theme = useTheme();
+  const user = localStorage.getItem('user')
+    ? JSON.parse(localStorage.getItem('user') || '')
+    : null;
 
   const handleOpenModal = (type: ModalType, item?: DrinkInterface) => {
     switch (type) {
@@ -482,23 +490,27 @@ export default function EnhancedTable(props: EnhancedTableProps) {
                           >
                             Add To Cart
                           </Button>
-                          <Button
-                            variant="outlined"
-                            onClick={() =>
-                              handleOpenModal(ModalType.EDIT_INVENTORY, row)
-                            }
-                            sx={{ marginRight: 2 }}
-                          >
-                            Edit
-                          </Button>
-                          <IconButton
-                            color="error"
-                            onClick={() =>
-                              handleOpenModal(ModalType.DELETE_PRODUCT, row)
-                            }
-                          >
-                            <DeleteOutlineOutlinedIcon />
-                          </IconButton>
+                          {user?.isManager && (
+                            <Button
+                              variant="outlined"
+                              onClick={() =>
+                                handleOpenModal(ModalType.EDIT_INVENTORY, row)
+                              }
+                              sx={{ marginRight: 2 }}
+                            >
+                              Edit
+                            </Button>
+                          )}
+                          {user?.isManager && (
+                            <IconButton
+                              color="error"
+                              onClick={() =>
+                                handleOpenModal(ModalType.DELETE_PRODUCT, row)
+                              }
+                            >
+                              <DeleteOutlineOutlinedIcon />
+                            </IconButton>
+                          )}
                         </TableCell>
                       </TableRow>
                     );

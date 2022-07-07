@@ -5,6 +5,7 @@ export const CUSTOMERS_PATH = '/customers';
 export const ORDERS_PATH = '/orders';
 export const VOUCHERS_PATH = '/vouchers';
 export const LOGIN_PATH = '/login';
+export const STAFFS_PATH = '/staffs';
 // API Constants
 export const BASE_URL = '/api/';
 export const BASE_URL_MOCK = '/api-mock/';

@@ -3,11 +3,14 @@ import {
   CUSTOMERS_PATH,
   INVENTORY_PATH,
   ORDERS_PATH,
+  STAFFS_PATH
 } from '@app/constants';
+import EventNoteIcon from '@mui/icons-material/EventNote';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import Person from '@mui/icons-material/Person';
 import PriceCheckIcon from '@mui/icons-material/PriceCheck';
-import EventNoteIcon from '@mui/icons-material/EventNote';
+
 
 const navbarList = [
   // {
@@ -47,6 +50,14 @@ const navbarList = [
     desc: 'Orders',
     secondDesc: '',
     to: ORDERS_PATH,
+  },
+
+  {
+    icon: PeopleAltIcon,
+    desc: 'Staffs',
+    secondDesc: '',
+    to: STAFFS_PATH,
+    isOnlyManager: true,
   },
   // {
   //   icon: Analytics,

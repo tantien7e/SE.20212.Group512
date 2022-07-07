@@ -1,7 +1,11 @@
-import { selectUser, signOut } from '@app/app/features/authentication/authentication-slice';
+import {
+  selectUser,
+  signOut,
+} from '@app/app/features/authentication/authentication-slice';
 import navList from '@app/components/navListItems';
 import { LOGIN_PATH } from '@app/constants';
 import { Store } from '@app/context/Store';
+import { StaffResponse } from '@app/models/user.interface';
 import MenuIcon from '@mui/icons-material/Menu';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import {
@@ -88,8 +92,8 @@ function SideNav() {
   const [open, setOpen] = useState<boolean>(true);
   const refFocus = useRef<any>(null);
   const user = localStorage.getItem('user')
-    ? JSON.parse(localStorage.getItem('user') || '')
-    : '';
+    ? (JSON.parse(localStorage.getItem('user') || '') as StaffResponse)
+    : ({} as StaffResponse);
   const handleDrawerClose = () => {
     setOpen(!open);
   };
@@ -182,6 +186,7 @@ function SideNav() {
                 0,
               )
             : 0;
+          if (key.isOnlyManager && !user?.isManager) return;
           return (
             <div key={`list-item-${index}`}>
               <Tooltip
