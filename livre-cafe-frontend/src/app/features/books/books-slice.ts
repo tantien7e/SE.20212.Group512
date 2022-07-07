@@ -101,6 +101,8 @@ export const {
 //Selectors
 export const selectBooks = (state: RootState) => state.books;
 export const selectBooksLoading = (state: RootState) => state.books.loading;
+export const selectBooksAddLoading = (state: RootState) =>
+  state.books.addLoading;
 export const selectBooksError = (state: RootState) => state.books.error;
 export const selectBooksData = (state: RootState) => state.books.books;
 export const selectBooksUpdateLoading = (state: RootState) =>

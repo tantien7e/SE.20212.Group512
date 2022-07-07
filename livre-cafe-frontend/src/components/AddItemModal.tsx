@@ -1,10 +1,10 @@
 import {
   addBook,
-  selectBooksLoading,
+  selectBooksAddLoading
 } from '@app/app/features/books/books-slice';
 import {
   addDrink,
-  selectDrinksAddLoading,
+  selectDrinksAddLoading
 } from '@app/app/features/drinks/drinks-slice';
 import { InventoryType } from '@app/constants';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
@@ -17,7 +17,7 @@ import {
   Divider,
   FormHelperText,
   Grid,
-  TextField,
+  TextField
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -79,7 +79,7 @@ export interface ErrorStateInterface {
 export default function AddItemModal(props: EditCartModalPropsInterface) {
   const dispatch = useDispatch();
   const drinksLoading = useSelector(selectDrinksAddLoading);
-  const booksLoading = useSelector(selectBooksLoading);
+  const booksLoading = useSelector(selectBooksAddLoading);
   const [addSuccess, setAddSuccess] = useState(false);
   const { open, handleClose, type } = props;
 
@@ -248,6 +248,11 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                 Upload New Image
               </Button>
             </label>
+            {errorState.imageUrl && (
+              <FormHelperText error={errorState.imageUrl}>
+                Image must not be empty
+              </FormHelperText>
+            )}
           </Box>
           <Divider />
           <Typography
