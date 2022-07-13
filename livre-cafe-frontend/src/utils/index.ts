@@ -99,6 +99,21 @@ export const genAvatarImage = (gender: CustomerGender) => {
   }
 };
 
+export const getRankColor = (rank: RankType) => {
+  switch (rank) {
+    case RankType.DIAMOND:
+      return 'info';
+    case RankType.PLATINUM:
+      return 'success';
+    case RankType.GOLD:
+      return 'warning';
+    case RankType.SILVER:
+      return 'default';
+    default:
+      return 'default';
+  }
+};
+
 export const getTotalCost = (state: CartStateInterface) => {
   const { cart, vouchers, reservation } = state;
   const voucherCost = vouchers ? getVouchersTotal(vouchers) : 0;

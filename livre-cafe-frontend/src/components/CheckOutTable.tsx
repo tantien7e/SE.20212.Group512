@@ -190,6 +190,7 @@ export default function CheckOutTable() {
         />
       )}
       <DataGrid
+        stickyHeader
         rows={rows}
         columns={columns}
         pageSize={5}

@@ -5,6 +5,7 @@ import {
   ORDERS_PATH,
   STAFFS_PATH,
   WORKSPACES_PATH,
+  VOUCHERS_PATH
 } from '@app/constants';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -12,6 +13,8 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import Person from '@mui/icons-material/Person';
 import PriceCheckIcon from '@mui/icons-material/PriceCheck';
 import WorkspacesIcon from '@mui/icons-material/Workspaces';
+import MoneyIcon from '@mui/icons-material/Money';
+
 
 const navbarList = [
   // {
@@ -60,7 +63,14 @@ const navbarList = [
     secondDesc: '',
     to: ORDERS_PATH,
   },
-
+  {
+    icon: MoneyIcon,
+    desc: 'Vouchers',
+    secondDesc: '',
+    badge: 0,
+    subList: [],
+    to: VOUCHERS_PATH,
+  },
   {
     icon: PeopleAltIcon,
     desc: 'Staffs',
@@ -68,6 +78,7 @@ const navbarList = [
     to: STAFFS_PATH,
     isOnlyManager: true,
   },
+
   // {
   //   icon: Analytics,
   //   desc: 'Analytics',

@@ -1,3 +1,4 @@
+import { VoucherInterface } from '@app/models';
 import { CustomerInterface } from '@app/models/customer.interface';
 import { OrderInterface } from '@app/models/order.interface';
 import { useState, useEffect } from 'react';
@@ -11,7 +12,7 @@ interface OptionInterface {
 }
 
 export const useFetch = (url: string, method = 'GET') => {
-  const [data, setData] = useState<(CustomerInterface | OrderInterface)[]>();
+  const [data, setData] = useState<(VoucherInterface)[]>();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string>('');
   const [option, setOptions] = useState<OptionInterface>({
@@ -23,7 +24,7 @@ export const useFetch = (url: string, method = 'GET') => {
   });
 
   const postData = (
-    newData: Omit<CustomerInterface | OrderInterface, '_id'>,
+    newData: Omit<VoucherInterface, '_id'>,
   ) => {
     setOptions({
       method: 'POST',

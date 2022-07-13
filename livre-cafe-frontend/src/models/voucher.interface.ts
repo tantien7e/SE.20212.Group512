@@ -1,8 +1,9 @@
 export interface VoucherInterface {
   _id?: string;
   id?: string;
-  name: string;
-  color: string;
-  points: number;
-  discount: number;
+  voucherName: string;
+  correspondingRanking: string;
+  available: boolean;
+  pointLoss: number;
+  amount: number;
 }
