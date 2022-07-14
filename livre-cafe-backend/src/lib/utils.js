@@ -43,7 +43,7 @@ const issueJWT = user => {
 const genDate = () => {
     const weekDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const date = new Date();
-    return `${weekDay[date.getDay]}, ${date.getDate()} - ${date.getMonth()} - ${date.getFullYear()}`;
+    return `${weekDay[date.getDay()]}, ${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
 }
 
 module.exports = {
