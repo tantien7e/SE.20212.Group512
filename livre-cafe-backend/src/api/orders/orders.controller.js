@@ -2,6 +2,8 @@ const Orders = require('../../models/orders/orders.model');
 const Customers = require('../../models/customers/customers.model');
 const Books = require('../../models/books/books.model');
 const Drinks = require('../../models/drinks/drinks.model');
+const Staffs = require('../../models/staffs/staffs.model');
+const { genDate } = require('../../lib/utils');
 
 const getAllOrders = async (req, res, next) => {
     try {
@@ -70,6 +72,9 @@ const createOrder = async (req, res, next) => {
             ...req.body,
             //totalCost: totalCost
         });
+
+        const staff = Staffs.findById(req.user._id);
+        console.log(staff);
 
         if (order.customer) {
             const customer = await Customers.findById(order.customer);
@@ -231,6 +236,16 @@ const editOrder = async (req, res, next) => {
                 }
                 customer.ordersHistory.push(order);
                 await customer.save();
+
+                const staff = await Staffs.findById(req.user._id);
+                const todayDate = genDate();
+                const todayOrdersHandled = staff.ordersHandled.get(todayDate);
+                if (todayOrdersHandled) {
+                    todayOrdersHandled.push(order._id);
+                } else {
+                    staff.ordersHandled.set(todayDate, [order._id]);
+                }
+                await staff.save();
             }
 
             res.status(200).json(order);
