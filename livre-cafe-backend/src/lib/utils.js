@@ -23,11 +23,10 @@ const genHashAndSalt = (password) => {
 }
 
 const issueJWT = user => {
-    const expriresIn = '1d';
+    const expriresIn = "2h";
 
     const payload = {
-        sub: user._id,
-        iat: Date.now()
+        sub: user._id
     };
 
     const signedToken = jsonwebtoken.sign(payload, PRIV_KEY, {
@@ -41,8 +40,15 @@ const issueJWT = user => {
     }
 }
 
+const genDate = () => {
+    const weekDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const date = new Date();
+    return `${weekDay[date.getDay]}, ${date.getDate()} - ${date.getMonth()} - ${date.getFullYear()}`;
+}
+
 module.exports = {
     validatePassword,
     genHashAndSalt,
-    issueJWT
+    issueJWT,
+    genDate
 }

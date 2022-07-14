@@ -4,21 +4,53 @@ const Schema = mongoose.Schema;
 const StaffsSchema = new Schema({
     username: {
         type: String,
-        unique: true,
+        unique: true
+    },
+
+    firstName: {
+        type: String,
+        require: true
+    },
+
+    lastName: {
+        type: String,
         required: true
+    },
+
+    phone: {
+        type: String,
+        required: true
+    },
+
+    imageUrl: {
+        type: String,
+        required: true
+    },
+
+    ordersHandled: {
+        type: Map,
+        of: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'orders'
+            }
+        ]
     },
 
     hash: {
-        type: String,
-        required: true
+        type: String
     },
 
     salt: {
-        type: String,
-        required: true
+        type: String
     },
 
     isManager: {
+        type: Boolean,
+        default: false
+    },
+
+    accountActivated: {
         type: Boolean,
         default: false
     }
