@@ -8,6 +8,7 @@ import booksReducer from '@app/app/features/books/books-slice';
 import customersReducer from '@app/app/features/customers/customers-slice';
 import ordersReducer from '@app/app/features/orders/orders-slice';
 import authenticationReducer from '@app/app/features/authentication/authentication-slice';
+import staffsReducer from '@app/app/features/staffs/staffs-slice';
 
 const sagaMiddleware = createSagaMiddleware();
 export const store = configureStore({
@@ -17,11 +18,21 @@ export const store = configureStore({
     customers: customersReducer,
     orders: ordersReducer,
     authentication: authenticationReducer,
+    staffs: staffsReducer,
     [bookApi.reducerPath]: bookApi.reducer,
     [drinkApi.reducerPath]: drinkApi.reducer,
   },
   middleware: (getDefaultMiddleWare) =>
-    getDefaultMiddleWare()
+    getDefaultMiddleWare({
+      serializableCheck: {
+        // Ignore these action types
+        // ignoredActions: ['your/action/type'],
+        // Ignore these field paths in all actions
+        ignoredActionPaths: ['meta.arg', 'payload.callback'],
+        // Ignore these paths in the state
+        // ignoredPaths: ['items.dates'],
+      },
+    })
       .concat(bookApi.middleware)
       .concat(drinkApi.middleware)
       .concat(sagaMiddleware),

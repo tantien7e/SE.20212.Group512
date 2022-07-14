@@ -65,7 +65,7 @@ const customersSlice = createSlice({
       toastError(action.payload);
     },
     //Delete
-    deleteCustomer(state, action: PayloadAction<CustomerInterface>) {
+    deleteCustomer(state, action: PayloadAction<string>) {
       state.deleteLoading = true;
     },
     deleteCustomerSucceeded(state) {

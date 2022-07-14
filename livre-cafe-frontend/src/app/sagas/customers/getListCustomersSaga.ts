@@ -5,6 +5,8 @@ import {
   fetchCustomersSucceeded,
 } from '@app/app/features/customers/customers-slice';
 import { CustomerInterface } from '@app/models';
+import { getErrorMessage } from '@app/utils';
+import { AxiosError } from 'axios';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 function* getListCustomers() {
@@ -13,7 +15,7 @@ function* getListCustomers() {
     const data = (yield call(customersApi.getAll)) as CustomerInterface[];
     yield put(fetchCustomersSucceeded(data));
   } catch (error) {
-    const { message } = error as Error;
+    const message = getErrorMessage(error as AxiosError);
     yield put(fetchCustomersFailed(message));
   }
 }

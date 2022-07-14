@@ -18,6 +18,7 @@ export const CUSTOMERS_URL = 'customers';
 export const ORDERS_URL = 'orders';
 export const LOGIN_URL = 'auth/login';
 export const VERIFY_URL = 'auth/verify';
+export const STAFFS_URL = 'staffs';
 export const IMAGE_BASE = '@app';
 
 // Modal Type
@@ -33,6 +34,10 @@ export enum ModalType {
   VIEW_ORDER = 'VIEW_ORDER',
   CONFIRM_COMPLETE_ORDER = 'CONFIRM_COMPLETE_ORDER',
   CONFIRM_CANCEL_ORDER = 'CONFIRM_CANCEL_ORDER',
+  ADD_STAFF = 'ADD_STAFF',
+  EDIT_STAFF = 'EDIT_STAFF',
+  DELETE_STAFF = 'DELETE_STAFF',
+  VIEW_STAFF = 'VIEW_STAFF',
 }
 
 export enum InventoryType {

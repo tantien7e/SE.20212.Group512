@@ -39,6 +39,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
 import { CustomerInterface } from '@app/models';
+import { AllModel } from '@app/models/common';
+import { deleteBook } from '@app/app/features/books/books-slice';
 
 interface Data extends BookInterface {}
 
@@ -267,24 +269,24 @@ export default function DataBooksTable(props: EnhancedTableProps) {
     ? JSON.parse(localStorage.getItem('user') || '')
     : null;
 
-  const [currentCartItem, setCurrentCartItem] = useState<BookInterface>();
+  const [currentBookItem, setCurrentBookItem] = useState<BookInterface>();
   const handleOpenModal = (type: ModalType, item?: BookInterface) => {
     switch (type) {
       case ModalType.ADD_TO_CART:
         setAddToCartModalOpen(true);
-        setCurrentCartItem(item);
+        setCurrentBookItem(item);
         break;
       case ModalType.EDIT_INVENTORY:
         setEditModalOpen(true);
-        setCurrentCartItem(item);
+        setCurrentBookItem(item);
         break;
       case ModalType.ADD_PRODUCT:
         setAddProductModalOpen(true);
-        setCurrentCartItem(undefined);
+        setCurrentBookItem(undefined);
         break;
       case ModalType.DELETE_PRODUCT:
         setDeleteProductModalOpen(true);
-        setCurrentCartItem(item);
+        setCurrentBookItem(item);
         break;
       default:
         return;
@@ -307,7 +309,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
       default:
         return;
     }
-    setCurrentCartItem(undefined);
+    setCurrentBookItem(undefined);
   };
 
   const handleRequestSort = (
@@ -378,6 +380,21 @@ export default function DataBooksTable(props: EnhancedTableProps) {
     toastInformSuccess('Successfully added!');
   };
 
+  const handleDeleteBook = (
+    confirmText: string,
+    setDeleteError: React.Dispatch<React.SetStateAction<boolean>>,
+    setDeleteSuccess: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
+    setDeleteSuccess(false);
+    if (!currentBookItem) return;
+    if (currentBookItem?.title !== confirmText) {
+      setDeleteError(true);
+      return;
+    }
+    dispatch(deleteBook(currentBookItem._id));
+    setDeleteSuccess(true);
+  };
+
   useEffect(() => {
     if (rows) {
       const newRows = rows.filter((row) => {
@@ -394,12 +411,8 @@ export default function DataBooksTable(props: EnhancedTableProps) {
         <DeleteConfirmModal
           open={deleteProductModalOpen}
           handleClose={() => handleCloseModal(ModalType.DELETE_PRODUCT)}
-          item={
-            currentCartItem as DrinkInterface &
-              BookInterface &
-              CustomerInterface
-          }
-          type={InventoryType.BOOK}
+          item={{ name: currentBookItem?.title || '' }}
+          handleDelete={handleDeleteBook}
         />
       )}
       {addProductModalOpen && (
@@ -409,20 +422,20 @@ export default function DataBooksTable(props: EnhancedTableProps) {
           type={InventoryType.BOOK}
         />
       )}
-      {editModalOpen && currentCartItem && (
+      {editModalOpen && currentBookItem && (
         <EditInventoryModal
           open={editModalOpen}
           handleClose={() => handleCloseModal(ModalType.EDIT_INVENTORY)}
-          item={currentCartItem as DrinkInterface & BookInterface}
+          item={currentBookItem as DrinkInterface & BookInterface}
           type={InventoryType.BOOK}
         />
       )}
 
-      {addToCartModalOpen && currentCartItem && (
+      {addToCartModalOpen && currentBookItem && (
         <AddToCartModal
           open={addToCartModalOpen}
           handleClose={() => handleCloseModal(ModalType.ADD_TO_CART)}
-          item={currentCartItem as DrinkInterface & BookInterface}
+          item={currentBookItem as DrinkInterface & BookInterface}
         />
       )}
       <Paper sx={{ width: '100%', mb: 2 }}>

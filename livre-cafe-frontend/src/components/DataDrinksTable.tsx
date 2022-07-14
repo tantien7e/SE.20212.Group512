@@ -1,3 +1,4 @@
+import { deleteDrink } from '@app/app/features/drinks/drinks-slice';
 import AddItemModal from '@app/components/AddItemModal';
 import AddToCartModal from '@app/components/AddToCartModal';
 import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
@@ -37,6 +38,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import React, { useContext, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 interface Data extends DrinkInterface {}
 
@@ -256,29 +258,31 @@ export default function EnhancedTable(props: EnhancedTableProps) {
   const [deleteProductModalOpen, setDeleteProductModalOpen] = useState(false);
 
   const [addToCartModalOpen, setAddToCartModalOpen] = useState(false);
-  const [currentCartItem, setCurrentCartItem] = useState<DrinkInterface>();
+  const [currentDrinkItem, setCurrentDrinkItem] = useState<DrinkInterface>();
   const theme = useTheme();
   const user = localStorage.getItem('user')
     ? JSON.parse(localStorage.getItem('user') || '')
     : null;
 
+  const dispatch = useDispatch();
+
   const handleOpenModal = (type: ModalType, item?: DrinkInterface) => {
     switch (type) {
       case ModalType.ADD_TO_CART:
         setAddToCartModalOpen(true);
-        setCurrentCartItem(item);
+        setCurrentDrinkItem(item);
         break;
       case ModalType.EDIT_INVENTORY:
         setEditModalOpen(true);
-        setCurrentCartItem(item);
+        setCurrentDrinkItem(item);
         break;
       case ModalType.ADD_PRODUCT:
         setAddProductModalOpen(true);
-        setCurrentCartItem(undefined);
+        setCurrentDrinkItem(undefined);
         break;
       case ModalType.DELETE_PRODUCT:
         setDeleteProductModalOpen(true);
-        setCurrentCartItem(item);
+        setCurrentDrinkItem(item);
         break;
       default:
         return;
@@ -301,7 +305,7 @@ export default function EnhancedTable(props: EnhancedTableProps) {
       default:
         return;
     }
-    setCurrentCartItem(undefined);
+    setCurrentDrinkItem(undefined);
   };
 
   const handleRequestSort = (
@@ -344,8 +348,20 @@ export default function EnhancedTable(props: EnhancedTableProps) {
     setFilteredRows(newRows);
   };
 
-  const { state, dispatch } = useContext(Store);
-  // console.log(state);
+  const handleDeleteDrink = (
+    confirmText: string,
+    setDeleteError: React.Dispatch<React.SetStateAction<boolean>>,
+    setDeleteSuccess: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
+    setDeleteSuccess(false);
+    if (!currentDrinkItem) return;
+    if (currentDrinkItem?.name !== confirmText) {
+      setDeleteError(true);
+      return;
+    }
+    dispatch(deleteDrink(currentDrinkItem._id));
+    setDeleteSuccess(true);
+  };
 
   useEffect(() => {
     if (rows) {
@@ -363,12 +379,8 @@ export default function EnhancedTable(props: EnhancedTableProps) {
         <DeleteConfirmModal
           open={deleteProductModalOpen}
           handleClose={() => handleCloseModal(ModalType.DELETE_PRODUCT)}
-          item={
-            currentCartItem as DrinkInterface &
-              BookInterface &
-              CustomerInterface
-          }
-          type={InventoryType.DRINK}
+          item={{ name: currentDrinkItem?.name || '' }}
+          handleDelete={handleDeleteDrink}
         />
       )}
       {addProductModalOpen && (
@@ -379,20 +391,20 @@ export default function EnhancedTable(props: EnhancedTableProps) {
         />
       )}
 
-      {editModalOpen && currentCartItem && (
+      {editModalOpen && currentDrinkItem && (
         <EditInventoryModal
           open={editModalOpen}
           handleClose={() => handleCloseModal(ModalType.EDIT_INVENTORY)}
-          item={currentCartItem as DrinkInterface & BookInterface}
+          item={currentDrinkItem as DrinkInterface & BookInterface}
           type={InventoryType.DRINK}
         />
       )}
 
-      {addToCartModalOpen && currentCartItem && (
+      {addToCartModalOpen && currentDrinkItem && (
         <AddToCartModal
           open={addToCartModalOpen}
           handleClose={() => handleCloseModal(ModalType.ADD_TO_CART)}
-          item={currentCartItem as DrinkInterface & BookInterface}
+          item={currentDrinkItem as DrinkInterface & BookInterface}
         />
       )}
       <Paper sx={{ width: '100%', mb: 2 }}>

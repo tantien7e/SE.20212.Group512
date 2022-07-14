@@ -30,7 +30,7 @@ export interface CustomerInterface {
   ranking: RankType;
   rankingPoints: number;
   exchangeablePoints: number;
-  _id?: string;
+  _id: string;
   ordersHistory: OrderInterface[];
   // id: string;
 }

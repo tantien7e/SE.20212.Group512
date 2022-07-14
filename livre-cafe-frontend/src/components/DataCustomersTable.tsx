@@ -1,3 +1,4 @@
+import { deleteCustomer } from '@app/app/features/customers/customers-slice';
 import AddCustomerModal from '@app/components/AddCustomerModal';
 import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
 import EditCustomerModal from '@app/components/EditCustomerModal';
@@ -6,7 +7,6 @@ import { ModalType } from '@app/constants';
 import { Store } from '@app/context/Store';
 import {
   CUSTOMER,
-  CustomerGender,
   CustomerInterface,
   RankIndex,
   RankType,
@@ -395,6 +395,21 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
     }
   };
 
+  const handleDeleteCustomer = (
+    confirmText: string,
+    setDeleteError: React.Dispatch<React.SetStateAction<boolean>>,
+    setDeleteSuccess: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
+    setDeleteSuccess(false);
+    if (!currentCustomer) return;
+    if (currentCustomer?.firstName !== confirmText) {
+      setDeleteError(true);
+      return;
+    }
+    dispatch(deleteCustomer(currentCustomer._id));
+    setDeleteSuccess(true);
+  };
+
   useEffect(() => {
     if (rows) {
       const tabRows = handleChangeTab(1 as any, tabIndex);
@@ -418,7 +433,7 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
               BookInterface &
               CustomerInterface
           }
-          type={CUSTOMER}
+          handleDelete={handleDeleteCustomer}
         />
       )}
       {addCustomerModalOpen && (

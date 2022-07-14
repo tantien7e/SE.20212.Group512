@@ -539,7 +539,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
             mt={-1}
             mb={3}
           >
-            <Invoice vouchers={vouchers} />
+            <Invoice vouchers={vouchers} customer={state.customer} />
           </TabPanel>
           <Divider />
           <Grid

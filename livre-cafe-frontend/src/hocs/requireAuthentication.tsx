@@ -23,7 +23,7 @@ function requireAuthentication(Component: any) {
       dispatch(
         verify({
           callback: (success: boolean) => {
-            if (success) navigate(LOGIN_PATH);
+            if (!success) navigate(LOGIN_PATH);
           },
         }),
       );

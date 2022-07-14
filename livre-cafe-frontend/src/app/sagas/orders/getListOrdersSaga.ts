@@ -5,6 +5,8 @@ import {
   fetchOrdersSucceeded,
 } from '@app/app/features/orders/orders-slice';
 import { OrderInterface } from '@app/models';
+import { getErrorMessage } from '@app/utils';
+import { AxiosError } from 'axios';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 type OrderResponse = OrderInterface & { createdAt: Date };
@@ -19,7 +21,7 @@ function* getListOrders() {
     }));
     yield put(fetchOrdersSucceeded(convertedData as OrderInterface[]));
   } catch (error) {
-    const { message } = error as Error;
+    const message = getErrorMessage(error as AxiosError);
     yield put(fetchOrdersFailed(message));
   }
 }
