@@ -3,8 +3,7 @@ const Schema = mongoose.Schema;
 
 const StaffsSchema = new Schema({
     username: {
-        type: String,
-        unique: true
+        type: String        
     },
 
     firstName: {
@@ -19,8 +18,7 @@ const StaffsSchema = new Schema({
 
     phone: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
 
     imageUrl: {
