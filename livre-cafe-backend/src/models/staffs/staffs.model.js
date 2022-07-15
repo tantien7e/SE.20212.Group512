@@ -26,19 +26,12 @@ const StaffsSchema = new Schema({
         required: true
     },
 
-    ordersHandled: {
-        type: Map,
-        of: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'orders'
-            }
-        ]
-    },
-
-    hash: {
-        type: String,
-    },
+    ordersHandled: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'orders'
+        },
+    ],
 
     salt: {
         type: String,

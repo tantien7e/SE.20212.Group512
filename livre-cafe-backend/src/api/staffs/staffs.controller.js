@@ -31,7 +31,7 @@ const createNewStaff = async (req, res, next) => {
 
 const getAllStaffs = async (req, res, next) => {
     try {
-        const staffs = await Staffs.find({}).populate('ordersHandled.$*');
+        const staffs = await Staffs.find({});
         res.status(200).json(staffs);
     } catch (err) {
         next(err);
@@ -41,7 +41,7 @@ const getAllStaffs = async (req, res, next) => {
 
 const getStaff = async (req, res, next) => {
     try {
-        const staff = await Staffs.findById(req.params.staffId).populate('ordersHandled.$*');
+        const staff = await Staffs.findById(req.params.staffId);
         if (staff) {
             res.status(200).json(staff);
         } else {
