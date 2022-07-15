@@ -34,7 +34,8 @@ const getAllStaffs = async (req, res, next) => {
         const staffs = await Staffs.find({}).populate({
             path: 'ordersHandled',
             populate: {
-                path: 'itemsOrdered.product'
+                path: 'itemsOrdered.product',
+                path: 'customer'
             }
         });
         res.status(200).json(staffs);
