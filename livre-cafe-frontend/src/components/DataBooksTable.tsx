@@ -41,6 +41,7 @@ import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
 import { CustomerInterface } from '@app/models';
 import { AllModel } from '@app/models/common';
 import { deleteBook } from '@app/app/features/books/books-slice';
+import { useDispatch } from 'react-redux';
 
 interface Data extends BookInterface {}
 
@@ -270,6 +271,7 @@ export default function DataBooksTable(props: EnhancedTableProps) {
     : null;
 
   const [currentBookItem, setCurrentBookItem] = useState<BookInterface>();
+  const dispatch = useDispatch();
   const handleOpenModal = (type: ModalType, item?: BookInterface) => {
     switch (type) {
       case ModalType.ADD_TO_CART:
@@ -349,36 +351,12 @@ export default function DataBooksTable(props: EnhancedTableProps) {
       const { title } = row;
       return title.toLowerCase().includes(text);
     });
-    console.log(newRows);
     setFilteredRows(newRows);
   };
 
-  const { state, dispatch } = useContext(Store);
+  const { state } = useContext(Store);
   // console.log(state);
   const { cart } = state;
-
-  const handleAddToCart = (product: BookInterface) => {
-    console.log(state);
-    const existItem = cart?.cartItems?.find(
-      (item: BookInterface & { quantity: number }) =>
-        item.author === product?.author && item._id === product?._id,
-    );
-    const quantity = existItem ? existItem.quantity + 1 : 1;
-
-    dispatch({
-      type: 'CART_UPDATE_ITEM_QUANTITY',
-      payload: {
-        ...product,
-        quantity,
-      },
-    });
-    if (quantity > product.stock) {
-      console.log('Bigger');
-      toastError('Out of stock!');
-      return;
-    }
-    toastInformSuccess('Successfully added!');
-  };
 
   const handleDeleteBook = (
     confirmText: string,

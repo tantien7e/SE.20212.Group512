@@ -23,6 +23,6 @@ function* updateStaffrData(action: PayloadAction<StaffResponse>) {
   }
 }
 
-export default function* updateCustomerSaga(): Generator {
+export default function* updateStaffSaga(): Generator {
   yield takeEvery(updateStaff.toString(), updateStaffrData);
 }

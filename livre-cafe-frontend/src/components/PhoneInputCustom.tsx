@@ -1,7 +1,6 @@
 import { FormHelperText } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import React from 'react';
-import PhoneInput, { CountryData, PhoneInputProps } from 'react-phone-input-2';
+import PhoneInput, { PhoneInputProps } from 'react-phone-input-2';
 
 interface PhoneInputCustomProps extends PhoneInputProps {
   error?: boolean;

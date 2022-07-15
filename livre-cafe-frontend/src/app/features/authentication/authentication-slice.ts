@@ -12,12 +12,20 @@ interface IInitialState {
   error: string;
   isVerified?: boolean;
   verifyLoading: boolean;
+  phoneLoading?: boolean;
+  verifiedStaff?: StaffResponse;
 }
 
 export interface LoginBody {
   username: string;
   password: string;
 }
+
+export interface SignupBody extends LoginBody {
+  _id: string;
+}
+
+export interface SignupResponse extends LoginResponse {}
 
 export interface VerifyResponse {
   success: boolean;
@@ -67,6 +75,24 @@ const authenticationSlice = createSlice({
       toastError(action.payload || "Something's wrong!");
       state.isVerified = false;
     },
+    submitSignup(state, action: PayloadAction<SignupBody>) {
+      state.error = '';
+      state.loading = true;
+    },
+    submitSignupSucceeded(state, action: PayloadAction<SignupResponse>) {
+      state.loading = false;
+      toastInformSuccess('Signed up successfully and logged in!');
+      localStorage.setItem('user', JSON.stringify(action.payload.staff));
+      state.staff = action.payload.staff;
+      state.isVerified = true;
+    },
+
+    submitSignupFailed(state, action: PayloadAction<string>) {
+      state.loading = false;
+      state.error = action.payload;
+      toastError(action.payload || "Something's wrong!");
+      state.isVerified = false;
+    },
     verify(state, action: PayloadAction<VerifyPayload>) {
       state.verifyLoading = true;
     },
@@ -85,6 +111,21 @@ const authenticationSlice = createSlice({
       state.isVerified = false;
       state.staff = undefined;
     },
+    verifyPhone(state, action: PayloadAction<string>) {
+      state.phoneLoading = true;
+    },
+    verifyPhoneSucceeded(state, action: PayloadAction<StaffResponse>) {
+      state.phoneLoading = false;
+      state.verifiedStaff = action.payload;
+      toastInformSuccess('Staff found!');
+    },
+    verifyPhoneFailed(state, action: PayloadAction<string>) {
+      state.phoneLoading = false;
+      toastError(action.payload || 'Phone not found');
+    },
+    clearPhone(state) {
+      state.verifiedStaff = undefined;
+    },
   },
 });
 
@@ -96,6 +137,13 @@ export const {
   verifySucceeded,
   verifyFailed,
   signOut,
+  submitSignup,
+  submitSignupSucceeded,
+  submitSignupFailed,
+  verifyPhone,
+  verifyPhoneSucceeded,
+  verifyPhoneFailed,
+  clearPhone,
 } = authenticationSlice.actions;
 
 export const selectUser = (state: RootState) => state.authentication.staff;
@@ -105,6 +153,10 @@ export const selectVerifyLoading = (state: RootState) =>
   state.authentication.verifyLoading;
 export const selectVerify = (state: RootState) =>
   state.authentication.isVerified;
+export const selectVerifiedStaff = (state: RootState) =>
+  state.authentication.verifiedStaff;
+export const selectVerifyPhoneLoading = (state: RootState) =>
+  state.authentication.phoneLoading;
 
 const authenticationReducer = authenticationSlice.reducer;
 export default authenticationReducer;

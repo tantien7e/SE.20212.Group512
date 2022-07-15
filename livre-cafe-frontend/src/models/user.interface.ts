@@ -11,6 +11,7 @@ export interface StaffResponse {
   ordersHandled?: OrderInterface[];
   firstName: string;
   lastName?: string;
+  accountActivated?: boolean;
 }
 
 export type StaffPostData = Omit<StaffResponse, 'username' | 'passcode'>;

@@ -1,3 +1,9 @@
+import {
+  deleteStaff,
+  fetchStaffs,
+  selectStaffsData,
+  selectStaffsLoading,
+} from '@app/app/features/staffs/staffs-slice';
 import AddStaffModal from '@app/components/AddStaffModal';
 import DataTable, { HeadCell } from '@app/components/DataTable';
 import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
@@ -24,9 +30,9 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/system';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const headCells: HeadCell<StaffResponse>[] = [
   {
@@ -79,6 +85,8 @@ function StaffsScreen() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [currentStaff, setCurrentStaff] = useState<StaffResponse>();
   const [tabIndex, setTabIndex] = useState(0);
+  const staffs = useSelector(selectStaffsData);
+  const staffLoading = useSelector(selectStaffsLoading);
   const handleOpenModal = (type: ModalType, item?: StaffResponse) => {
     switch (type) {
       case ModalType.DELETE_STAFF:
@@ -212,9 +220,13 @@ function StaffsScreen() {
       setDeleteError(true);
       return;
     }
-    // dispatch(deleteBook(currentBookItem._id));
+    dispatch(deleteStaff(currentStaff._id || ''));
     setDeleteSuccess(true);
   };
+
+  useEffect(() => {
+    if (!staffs) dispatch(fetchStaffs());
+  }, [staffs]);
 
   return (
     <Box
@@ -265,14 +277,14 @@ function StaffsScreen() {
       <DataTable
         rows={staffs || []}
         stableSort={stableSort}
-        isLoading={false}
+        isLoading={staffLoading}
         headCells={headCells}
         dataRow={dataRow}
         handleOpenAddModal={() => handleOpenModal(ModalType.ADD_STAFF)}
         handleChangeTab={handleChangeTab}
         searchTarget={(row: StaffResponse) => {
-          const { username, phone } = row;
-          return username + phone;
+          const { firstName, lastName = '', phone } = row;
+          return firstName + lastName + phone;
         }}
         defaultOrderBy="firstName"
         tabs={() => tabs()}

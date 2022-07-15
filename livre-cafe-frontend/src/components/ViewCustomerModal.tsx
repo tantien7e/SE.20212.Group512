@@ -24,6 +24,7 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { parsePhoneNumber } from 'libphonenumber-js';
 import moment from 'moment';
 import * as React from 'react';
 import { useState } from 'react';
@@ -224,7 +225,9 @@ export default function ViewCustomerModal(props: AddModalProps) {
                   <Grid xs sx={{ maxWidth: 400 }}>
                     <Typography fontWeight={600}>
                       {' '}
-                      {customerState?.phone}
+                      {parsePhoneNumber(
+                        '+' + customerState?.phone || '',
+                      ).formatInternational()}
                     </Typography>
                   </Grid>
                 </Grid>

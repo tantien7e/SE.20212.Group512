@@ -3,9 +3,7 @@ import ConfirmModal from '@app/components/ConfirmModal';
 import ViewOrderModal from '@app/components/ViewOrderModal';
 import { ModalType, OrderTabIndex } from '@app/constants';
 import { OrderInterface, OrderPostData, OrderStatusType } from '@app/models';
-import {
-  a11yProps, numberWithCommasRound2
-} from '@app/utils';
+import { a11yProps, numberWithCommasRound2 } from '@app/utils';
 import { Search } from '@mui/icons-material';
 import DoneIcon from '@mui/icons-material/Done';
 import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
@@ -19,7 +17,7 @@ import {
   OutlinedInput,
   Tab,
   Tabs,
-  Tooltip
+  Tooltip,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -428,11 +426,11 @@ export default function OrdersTable(props: EnhancedTableProps) {
         const idText = id || _id || '';
         const name = !customer
           ? 'Guest'
-          : customer.firstName + customer.lastName;
+          : customer.firstName + (customer.lastName || '');
         const hasConflict = textTokens.find(
           (token) =>
             !(
-              name.toLowerCase().includes(token) ||
+              name.toString().toLowerCase().includes(token) ||
               itemsName.toLowerCase().includes(token) ||
               String(idText).toLowerCase().includes(token)
             ),

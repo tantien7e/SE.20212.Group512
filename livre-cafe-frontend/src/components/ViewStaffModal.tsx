@@ -18,6 +18,7 @@ import {
 import Box from '@mui/material/Box';
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { parsePhoneNumber } from 'libphonenumber-js';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -144,6 +145,33 @@ export default function ViewStaffModal(props: ViewModalProps) {
           </Typography>
         </BootstrapDialogTitle>
         <DialogContent dividers>
+          <Box
+            sx={{
+              padding: `${theme.spacing(2)} 0`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              width: '600px',
+              minWidth: 'none',
+            }}
+          >
+            {item?.imageUrl && (
+              <img
+                src={item.imageUrl}
+                alt={'item image'}
+                style={{
+                  height: '256px',
+                  maxHeight: '50vh',
+                  borderRadius: '8px',
+                  margin: `${theme.spacing(2)} 0`,
+                }}
+              />
+            )}
+            <br />
+            <Typography variant="body1">
+              <strong>{item.firstName}</strong> {item.lastName || ''}
+            </Typography>
+          </Box>
           <Typography
             variant="body1"
             style={{ padding: ` ${theme.spacing(1)} 0` }}
@@ -155,7 +183,7 @@ export default function ViewStaffModal(props: ViewModalProps) {
           <Divider />
           <Box my={2}>
             <Grid container spacing={2}>
-              <Grid container item alignItems="center">
+              {/* <Grid container item alignItems="center">
                 <Grid xs={3}>
                   <label htmlFor="first-name">
                     <Grid container>
@@ -177,7 +205,7 @@ export default function ViewStaffModal(props: ViewModalProps) {
                     {item?.lastName || ''}
                   </Typography>
                 </Grid>
-              </Grid>
+              </Grid> */}
               <Grid container item alignItems="center">
                 <Grid xs={3}>
                   <label htmlFor="phone">
@@ -187,7 +215,11 @@ export default function ViewStaffModal(props: ViewModalProps) {
                   </label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
-                  <Typography fontWeight={600}> {item?.phone}</Typography>
+                  <Typography fontWeight={600}>
+                    {parsePhoneNumber(
+                      '+' + item?.phone || '',
+                    ).formatInternational()}
+                  </Typography>
                 </Grid>
               </Grid>
             </Grid>
@@ -200,7 +232,7 @@ export default function ViewStaffModal(props: ViewModalProps) {
             color={theme.palette.secondary.contrastText}
             fontWeight={600}
           >
-            Order History
+            Orders Handled
           </Typography>
           {item.ordersHandled && item.ordersHandled.length > 0 && (
             <BasicOrdersHistoryTable

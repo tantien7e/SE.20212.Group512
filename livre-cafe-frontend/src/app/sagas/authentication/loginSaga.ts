@@ -34,7 +34,7 @@ function* verifyAuth(action: PayloadAction<VerifyPayload>) {
   const token = localStorage.getItem('token') || '';
   try {
     const data = (yield call(
-      authenticationApi.verify,
+      authenticationApi.verifyToken,
       token,
     )) as VerifyResponse;
     yield put(verifySucceeded());

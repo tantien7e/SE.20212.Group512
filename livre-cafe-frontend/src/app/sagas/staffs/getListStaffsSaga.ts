@@ -2,7 +2,7 @@ import staffsApi from '@app/api/staffsApi';
 import {
   fetchStaffs,
   fetchStaffsFailed,
-  fetchStaffsSucceeded
+  fetchStaffsSucceeded,
 } from '@app/app/features/staffs/staffs-slice';
 import { StaffResponse } from '@app/models/user.interface';
 import { getErrorMessage } from '@app/utils';

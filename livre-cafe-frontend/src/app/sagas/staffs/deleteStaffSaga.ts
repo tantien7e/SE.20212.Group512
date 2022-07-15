@@ -22,6 +22,6 @@ function* deleteStaffData(action: PayloadAction<string>) {
   }
 }
 
-export default function* deleteCustomerSaga(): Generator {
+export default function* deleteStaffSaga(): Generator {
   yield takeEvery(deleteStaff.toString(), deleteStaffData);
 }

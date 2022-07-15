@@ -298,7 +298,7 @@ export default function DataTable(props: EnhancedTableProps) {
     const text = e.target.value.toLowerCase();
     setFilterText(text);
     const newRows = rows.filter((row) => {
-      return searchTarget(row).toLowerCase().includes(text);
+      return searchTarget(row)?.toLowerCase().includes(text);
     });
     setFilteredRows(newRows);
   };
@@ -309,7 +309,7 @@ export default function DataTable(props: EnhancedTableProps) {
     if (rows && handleChangeTab) {
       const tabRows = handleChangeTab(1 as any, tabIndex || 0);
       const newRows = tabRows?.filter((row: any) => {
-        return searchTarget(row).toLowerCase().includes(filterText);
+        return searchTarget(row)?.toLowerCase().includes(filterText);
       });
       setFilteredRows(newRows);
     }

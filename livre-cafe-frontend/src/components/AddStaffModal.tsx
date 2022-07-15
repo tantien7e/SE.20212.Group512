@@ -1,4 +1,8 @@
 import { selectCustomersAddLoading } from '@app/app/features/customers/customers-slice';
+import {
+  addStaff,
+  selectStaffsAddLoading,
+} from '@app/app/features/staffs/staffs-slice';
 import PhoneInputCustom from '@app/components/PhoneInputCustom';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { StaffPostData } from '@app/models/user.interface';
@@ -67,7 +71,7 @@ export interface ErrorStateInterface {
 
 export default function AddStaffModal(props: AddModalProps) {
   const dispatch = useDispatch();
-  const customersLoading = useSelector(selectCustomersAddLoading);
+  const staffLoading = useSelector(selectStaffsAddLoading);
   const [addSuccess, setAddSuccess] = useState(false);
   const { open, handleClose } = props;
 
@@ -159,16 +163,15 @@ export default function AddStaffModal(props: AddModalProps) {
     setErrorState({ ...error });
     const passable = !(Object.values(error).findIndex((item) => item) > -1);
     if (!passable) return;
-    // dispatch(addCustomer(staffState as CustomerInterface));
+    dispatch(addStaff(staffState as StaffPostData));
     setAddSuccess(true);
   };
 
   useEffect(() => {
-    const loading = customersLoading;
-    if (addSuccess && !customersLoading) {
+    if (addSuccess && !staffLoading) {
       handleClose();
     }
-  }, [addSuccess, customersLoading]);
+  }, [addSuccess, staffLoading]);
 
   return (
     <div>
@@ -359,7 +362,7 @@ export default function AddStaffModal(props: AddModalProps) {
               {' '}
               <LoadingButton
                 variant="contained"
-                loading={customersLoading}
+                loading={staffLoading}
                 loadingPosition="end"
                 onClick={() => handleAdd()}
                 endIcon={<AddIcon />}

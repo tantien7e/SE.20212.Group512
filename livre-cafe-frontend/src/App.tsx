@@ -9,6 +9,7 @@ import {
   INVENTORY_PATH,
   LOGIN_PATH,
   ORDERS_PATH,
+  SIGNUP_PATH,
   STAFFS_PATH,
 } from '@app/constants';
 import { StaffResponse } from '@app/models/user.interface';
@@ -17,6 +18,7 @@ import CustomersScreen from '@app/screens/CustomersScreen';
 import InventoryScreen from '@app/screens/InventoryScreen';
 import LoginScreen from '@app/screens/LoginScreen';
 import OrdersScreen from '@app/screens/OrdersScreen';
+import SignupScreen from '@app/screens/SignupScreen';
 import StaffsScreen from '@app/screens/StaffsScreen';
 import '@app/styles/main.scss';
 import { Box } from '@mui/material';
@@ -57,6 +59,8 @@ function App() {
           <Route path={CUSTOMERS_PATH} element={<CustomersScreen />} />
           <Route path={ORDERS_PATH} element={<OrdersScreen />} />
           <Route path={LOGIN_PATH} element={<LoginScreen />} />
+          <Route path={SIGNUP_PATH} element={<SignupScreen />} />
+
           {user?.isManager && (
             <Route path={STAFFS_PATH} element={<StaffsScreen />} />
           )}

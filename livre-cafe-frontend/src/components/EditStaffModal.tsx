@@ -1,4 +1,8 @@
 import { selectCustomersAddLoading } from '@app/app/features/customers/customers-slice';
+import {
+  selectStaffsUpdateLoading,
+  updateStaff,
+} from '@app/app/features/staffs/staffs-slice';
 import PhoneInputCustom from '@app/components/PhoneInputCustom';
 import { StaffPostData, StaffResponse } from '@app/models/user.interface';
 import SaveIcon from '@mui/icons-material/Save';
@@ -10,7 +14,7 @@ import {
   FormHelperText,
   Grid,
   SelectChangeEvent,
-  TextField
+  TextField,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -20,7 +24,6 @@ import React, { useEffect, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { CountryData } from 'react-phone-input-2';
 import { useDispatch, useSelector } from 'react-redux';
-
 
 const style = {
   // position: 'absolute' as 'absolute',
@@ -67,7 +70,7 @@ export interface ErrorStateInterface {
 
 export default function EditStaffModal(props: EditModalProps) {
   const dispatch = useDispatch();
-  const customersLoading = useSelector(selectCustomersAddLoading);
+  const staffLoading = useSelector(selectStaffsUpdateLoading);
   const [addSuccess, setAddSuccess] = useState(false);
   const { open, handleClose, item } = props;
 
@@ -77,6 +80,7 @@ export default function EditStaffModal(props: EditModalProps) {
     lastName: item.lastName || '',
     phone: item.phone,
     isManager: item.isManager,
+    imageUrl: item.imageUrl,
   });
 
   const [errorState, setErrorState] = useState<ErrorStateInterface>({
@@ -160,16 +164,15 @@ export default function EditStaffModal(props: EditModalProps) {
     setErrorState({ ...error });
     const passable = !(Object.values(error).findIndex((item) => item) > -1);
     if (!passable) return;
-    // dispatch(addCustomer(staffState as CustomerInterface));
+    dispatch(updateStaff(staffState as StaffPostData));
     setAddSuccess(true);
   };
 
   useEffect(() => {
-    const loading = customersLoading;
-    if (addSuccess && !customersLoading) {
+    if (addSuccess && !staffLoading) {
       handleClose();
     }
-  }, [addSuccess, customersLoading]);
+  }, [addSuccess, staffLoading]);
 
   return (
     <div>
@@ -334,6 +337,7 @@ export default function EditStaffModal(props: EditModalProps) {
                       handleChangeText(event as any, 'phone', country);
                     }}
                     error={errorState.phone}
+                    value={item?.phone || ''}
                   />
                 </Grid>
               </Grid>
@@ -373,7 +377,7 @@ export default function EditStaffModal(props: EditModalProps) {
             <Grid>
               <LoadingButton
                 variant="contained"
-                loading={false}
+                loading={staffLoading}
                 loadingPosition="end"
                 onClick={() => handleSave()}
                 endIcon={<SaveIcon />}

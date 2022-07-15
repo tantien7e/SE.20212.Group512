@@ -5,6 +5,7 @@ export const CUSTOMERS_PATH = '/customers';
 export const ORDERS_PATH = '/orders';
 export const VOUCHERS_PATH = '/vouchers';
 export const LOGIN_PATH = '/login';
+export const SIGNUP_PATH = '/signup';
 export const STAFFS_PATH = '/staffs';
 // API Constants
 export const BASE_URL = '/api/';
@@ -17,9 +18,11 @@ export const BOOKS_URL = 'books';
 export const CUSTOMERS_URL = 'customers';
 export const ORDERS_URL = 'orders';
 export const LOGIN_URL = 'auth/login';
-export const VERIFY_URL = 'auth/verify';
+export const VERIFY_TOKEN_URL = 'auth/verify-token';
+export const VERIFY_PHONE_URL = 'auth/verify-phone-number';
 export const STAFFS_URL = 'staffs';
 export const IMAGE_BASE = '@app';
+export const SIGNUP_URL = 'auth/signup';
 
 // Modal Type
 export enum ModalType {
