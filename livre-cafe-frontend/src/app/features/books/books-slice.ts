@@ -67,7 +67,7 @@ const booksSlice = createSlice({
       toastError(action.payload);
     },
     //Delete
-    deleteBook(state, action: PayloadAction<BookInterface>) {
+    deleteBook(state, action: PayloadAction<string>) {
       state.deleteLoading = true;
     },
     deleteBookSucceeded(state) {

@@ -1,4 +1,5 @@
 import loginSaga from '@app/app/sagas/authentication/loginSaga';
+import signupSaga from '@app/app/sagas/authentication/signupSaga';
 import addBookSaga from '@app/app/sagas/books/addBookSaga';
 import deleteBookSaga from '@app/app/sagas/books/deleteBookSaga';
 import getListBooksSaga from '@app/app/sagas/books/getListBooksSaga';
@@ -15,6 +16,10 @@ import addOrderSaga from '@app/app/sagas/orders/addOrderSaga';
 import deleteOrderSaga from '@app/app/sagas/orders/deleteOrderSaga';
 import getListOrdersSaga from '@app/app/sagas/orders/getListOrdersSaga';
 import updateOrderSaga from '@app/app/sagas/orders/updateOrderSaga';
+import addStaffSaga from '@app/app/sagas/staffs/addStaffSaga';
+import deleteStaffSaga from '@app/app/sagas/staffs/deleteStaffSaga';
+import getListStaffsSaga from '@app/app/sagas/staffs/getListStaffsSaga';
+import updateStaffSaga from '@app/app/sagas/staffs/updateStaffSaga';
 import { all } from 'redux-saga/effects';
 
 function* helloSaga() {
@@ -42,5 +47,10 @@ export default function* rootSaga() {
     updateOrderSaga(),
     deleteOrderSaga(),
     loginSaga(),
+    signupSaga(),
+    getListStaffsSaga(),
+    addStaffSaga(),
+    updateStaffSaga(),
+    deleteStaffSaga(),
   ]);
 }

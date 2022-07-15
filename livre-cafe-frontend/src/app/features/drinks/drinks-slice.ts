@@ -70,7 +70,7 @@ const drinksSlice = createSlice({
       toastError(action.payload);
     },
     //Delete
-    deleteDrink(state, action: PayloadAction<DrinkInterface>) {
+    deleteDrink(state, action: PayloadAction<string>) {
       state.deleteLoading = true;
     },
     deleteDrinkSucceeded(state) {

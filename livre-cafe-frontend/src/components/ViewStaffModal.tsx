@@ -3,13 +3,8 @@ import { selectDrinksAddLoading } from '@app/app/features/drinks/drinks-slice';
 import BasicOrdersHistoryTable from '@app/components/BasicOrdersHistoryTable';
 import { OrderStatusBadge } from '@app/components/OrdersTable';
 import { BootstrapDialogTitle } from '@app/components/ViewOrderModal';
-import { InventoryType } from '@app/constants';
-import {
-  CUSTOMER,
-  CustomerInterface,
-  RankType,
-} from '@app/models/customer.interface';
 import { OrderInterface } from '@app/models/order.interface';
+import { StaffResponse } from '@app/models/user.interface';
 import { numberWithCommasRound2 } from '@app/utils';
 import {
   Dialog,
@@ -21,13 +16,11 @@ import {
   Tooltip,
 } from '@mui/material';
 import Box from '@mui/material/Box';
-import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { parsePhoneNumber } from 'libphonenumber-js';
+import { isValidPhoneNumber, parsePhoneNumber } from 'libphonenumber-js';
 import moment from 'moment';
-import * as React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 const style = {
@@ -51,51 +44,29 @@ const Input = styled('input')({
   display: 'none',
 });
 
-interface AddModalProps {
+interface ViewModalProps {
   open: boolean;
   handleClose: () => void;
-  item?: CustomerInterface;
-  type: 'CUSTOMER';
+  item: StaffResponse;
 }
 
-interface CustomerStateInterface {
-  customerId: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  points: number;
-  ranking: RankType;
-  orders: OrderInterface[];
-}
-
-export default function ViewCustomerModal(props: AddModalProps) {
+export default function ViewStaffModal(props: ViewModalProps) {
   const dispatch = useDispatch();
   const drinksLoading = useSelector(selectDrinksAddLoading);
   const booksLoading = useSelector(selectBooksLoading);
   const [addSuccess, setAddSuccess] = useState(false);
-  const { open, handleClose, type, item } = props;
-  const isProduct = Object.values(InventoryType).includes(
-    type as InventoryType,
-  );
-  const isCustomer = type === CUSTOMER;
-
-  const [customerState, setCustomerState] = useState<CustomerStateInterface>({
-    customerId: item?._id || '',
-    firstName: item?.firstName || '',
-    lastName: item?.lastName || '',
-    phone: item?.phone || '',
-    email: item?.email || '',
-    points: item?.exchangeablePoints || 0,
-    ranking: item?.ranking || RankType.SILVER,
-    orders: item?.ordersHistory || [],
-  });
-
+  const { open, handleClose, item } = props;
   const theme = useTheme();
   const headerPadding = `${theme.spacing(2)} 0`;
 
+  useEffect(() => {
+    const loading = drinksLoading || booksLoading;
+    if (addSuccess && !loading) {
+      handleClose();
+    }
+  }, [addSuccess, drinksLoading, booksLoading]);
   const rowData = (row: OrderInterface, index: number) => {
-    // const { customer } = row;
+    const { customer } = row;
     const labelId = `enhanced-table-checkbox-${index}`;
     return (
       <TableRow
@@ -119,6 +90,13 @@ export default function ViewCustomerModal(props: AddModalProps) {
             >{`${row._id} `}</Typography>
           </Tooltip>
         </TableCell>
+        {customer ? (
+          <TableCell align="left">
+            <strong>{customer?.firstName}</strong> {customer?.lastName}
+          </TableCell>
+        ) : (
+          <TableCell align="left">Guest</TableCell>
+        )}
         <TableCell align="left">
           {row.itemsOrdered.reduce(
             (a, c, cIndex) =>
@@ -128,6 +106,7 @@ export default function ViewCustomerModal(props: AddModalProps) {
             '',
           )}
         </TableCell>
+
         <TableCell align="left">
           {moment(row.createdAt).format('DD.MM.YYYY')}
         </TableCell>
@@ -140,13 +119,6 @@ export default function ViewCustomerModal(props: AddModalProps) {
       </TableRow>
     );
   };
-
-  React.useEffect(() => {
-    const loading = drinksLoading || booksLoading;
-    if (addSuccess && !loading) {
-      handleClose();
-    }
-  }, [addSuccess, drinksLoading, booksLoading]);
 
   return (
     <div>
@@ -170,101 +142,117 @@ export default function ViewCustomerModal(props: AddModalProps) {
             color={theme.palette.secondary.contrastText}
             style={{ padding: ` ${theme.spacing(1)} 0` }}
           >
-            <strong style={{ textTransform: 'capitalize' }}>
-              View {type.toLowerCase()}
-            </strong>
+            <strong style={{ textTransform: 'capitalize' }}>View Staff</strong>
           </Typography>
         </BootstrapDialogTitle>
         <DialogContent dividers>
+          <Box
+            sx={{
+              padding: `${theme.spacing(2)} 0`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              minWidth: '600px',
+            }}
+          >
+            {item?.imageUrl && (
+              <img
+                src={item.imageUrl}
+                alt={'item image'}
+                style={{
+                  height: '256px',
+                  maxHeight: '50vh',
+                  borderRadius: '8px',
+                  margin: `${theme.spacing(2)} 0`,
+                }}
+              />
+            )}
+            <br />
+            <Typography variant="body1">
+              <strong>{item.firstName}</strong> {item.lastName || ''}
+            </Typography>
+          </Box>
           <Typography
             variant="body1"
             style={{ padding: ` ${theme.spacing(1)} 0` }}
             color={theme.palette.secondary.contrastText}
             fontWeight={600}
           >
-            Customer's Info
+            Staff's Info
           </Typography>
           <Divider />
-          {isCustomer && (
-            <Box my={2}>
-              <Grid container spacing={2}>
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="first-name">
-                      <Grid container>
-                        <Typography>First Name</Typography>{' '}
-                      </Grid>
-                    </label>
-                  </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <Typography fontWeight={600}>
-                      {' '}
-                      {customerState?.firstName}
-                    </Typography>
-                  </Grid>
+          <Box my={2}>
+            <Grid container spacing={2}>
+              {/* <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="first-name">
+                    <Grid container>
+                      <Typography>First Name</Typography>{' '}
+                    </Grid>
+                  </label>
                 </Grid>
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="last-name">Last Name</label>
-                  </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <Typography fontWeight={600}>
-                      {' '}
-                      {customerState?.lastName || ''}
-                    </Typography>
-                  </Grid>
-                </Grid>
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="phone">
-                      <Grid container>
-                        <Typography>Phone</Typography>{' '}
-                      </Grid>
-                    </label>
-                  </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <Typography fontWeight={600}>
-                      {' '}
-                      {parsePhoneNumber(
-                        '+' + customerState?.phone || '',
-                      ).formatInternational()}
-                    </Typography>
-                  </Grid>
-                </Grid>
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="email">
-                      <Grid container>
-                        <Typography>Email</Typography>{' '}
-                      </Grid>
-                    </label>
-                  </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <Typography fontWeight={600}>
-                      {' '}
-                      {customerState?.email}
-                    </Typography>
-                  </Grid>
-                </Grid>
-
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="points">
-                      <Grid container>
-                        <Typography>Points</Typography>{' '}
-                      </Grid>
-                    </label>
-                  </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <Typography fontWeight={600}>
-                      {' '}
-                      {customerState?.points}
-                    </Typography>
-                  </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <Typography fontWeight={600}> {item?.firstName}</Typography>
                 </Grid>
               </Grid>
-            </Box>
-          )}
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="last-name">Last Name</label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <Typography fontWeight={600}>
+                    {' '}
+                    {item?.lastName || ''}
+                  </Typography>
+                </Grid>
+              </Grid> */}
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="phone">
+                    <Grid container>
+                      <Typography>Phone</Typography>{' '}
+                    </Grid>
+                  </label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <Typography fontWeight={600}>
+                    {isValidPhoneNumber('+' + item?.phone || '')
+                      ? parsePhoneNumber(
+                          '+' + item?.phone || '',
+                        ).formatInternational()
+                      : item?.phone}
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="username">
+                    <Grid container>
+                      <Typography>Username</Typography>{' '}
+                    </Grid>
+                  </label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <Typography fontWeight={600}>{item.username}</Typography>
+                </Grid>
+              </Grid>
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="Role">
+                    <Grid container>
+                      <Typography>Role</Typography>{' '}
+                    </Grid>
+                  </label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <Typography fontWeight={600}>
+                    {item.isManager ? 'Manager' : 'Staff'}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Box>
+
           <Divider />
           <Typography
             variant="body1"
@@ -272,14 +260,15 @@ export default function ViewCustomerModal(props: AddModalProps) {
             color={theme.palette.secondary.contrastText}
             fontWeight={600}
           >
-            Order History
+            Orders Handled
           </Typography>
-          {customerState.orders && customerState.orders.length > 0 && (
+          {item.ordersHandled && item.ordersHandled.length > 0 && (
             <BasicOrdersHistoryTable
-              rows={customerState.orders || []}
+              rows={item.ordersHandled || []}
               rowData={rowData}
               headCells={[
                 <TableCell align="left">Order ID</TableCell>,
+                <TableCell align="left">Customer</TableCell>,
                 <TableCell align="left">Items</TableCell>,
                 <TableCell align="left">Booked At</TableCell>,
                 <TableCell align="left">Status</TableCell>,

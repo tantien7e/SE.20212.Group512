@@ -6,7 +6,9 @@ import {
   updateCustomerSucceeded,
 } from '@app/app/features/customers/customers-slice';
 import { CustomerInterface } from '@app/models';
+import { getErrorMessage } from '@app/utils';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 function* updateCustomerData(action: PayloadAction<CustomerInterface>) {
@@ -16,7 +18,7 @@ function* updateCustomerData(action: PayloadAction<CustomerInterface>) {
     yield put(updateCustomerSucceeded());
     yield put(fetchCustomers());
   } catch (error) {
-    const { message } = error as Error;
+    const message = getErrorMessage(error as AxiosError);
     yield put(updateCustomerFailed(message));
   }
 }

@@ -1,22 +1,22 @@
 import ordersApi from '@app/api/ordersApi';
 import {
-  fetchOrders,
   deleteOrder,
   deleteOrderFailed,
-  deleteOrderSucceeded,
+  deleteOrderSucceeded, fetchOrders
 } from '@app/app/features/orders/orders-slice';
-import { OrderInterface } from '@app/models';
+import { getErrorMessage } from '@app/utils';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
-function* deleteOrderData(action: PayloadAction<OrderInterface>) {
+function* deleteOrderData(action: PayloadAction<string>) {
   //   const token = localStorage.getItem('token');
   try {
-    yield call(ordersApi.remove, action.payload?._id);
+    yield call(ordersApi.remove, action.payload);
     yield put(deleteOrderSucceeded());
     yield put(fetchOrders());
   } catch (error) {
-    const { message } = error as Error;
+    const message = getErrorMessage(error as AxiosError);
     yield put(deleteOrderFailed(message));
   }
 }

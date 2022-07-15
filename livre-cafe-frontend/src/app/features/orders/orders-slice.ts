@@ -65,7 +65,7 @@ const ordersSlice = createSlice({
       toastError(action.payload);
     },
     //Delete
-    deleteOrder(state, action: PayloadAction<OrderInterface>) {
+    deleteOrder(state, action: PayloadAction<string>) {
       state.deleteLoading = true;
     },
     deleteOrderSucceeded(state) {

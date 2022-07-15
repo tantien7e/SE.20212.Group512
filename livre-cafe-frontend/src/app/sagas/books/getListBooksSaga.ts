@@ -5,6 +5,8 @@ import {
   fetchBooksSucceeded,
 } from '@app/app/features/books/books-slice';
 import { BookInterface } from '@app/models';
+import { getErrorMessage } from '@app/utils';
+import { AxiosError } from 'axios';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 function* getListBooks() {
@@ -13,8 +15,7 @@ function* getListBooks() {
     const data = (yield call(booksApi.getAll)) as BookInterface[];
     yield put(fetchBooksSucceeded(data));
   } catch (error) {
-    const { message } = error as Error;
-    yield put(fetchBooksFailed(message));
+    yield put(fetchBooksFailed(getErrorMessage(error as AxiosError)));
   }
 }
 

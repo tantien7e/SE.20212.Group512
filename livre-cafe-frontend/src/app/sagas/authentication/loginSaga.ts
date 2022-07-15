@@ -11,7 +11,9 @@ import {
   VerifyResponse,
   verifySucceeded,
 } from '@app/app/features/authentication/authentication-slice';
+import { getErrorMessage } from '@app/utils';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 function* login(action: PayloadAction<LoginBody>) {
@@ -23,8 +25,7 @@ function* login(action: PayloadAction<LoginBody>) {
     localStorage.setItem('token', data.token);
     yield put(submitLoginSucceeded(data));
   } catch (error) {
-    const { message } = error as Error;
-    yield put(submitLoginFailed(message));
+    yield put(submitLoginFailed(getErrorMessage(error as AxiosError)));
   }
 }
 
@@ -33,13 +34,13 @@ function* verifyAuth(action: PayloadAction<VerifyPayload>) {
   const token = localStorage.getItem('token') || '';
   try {
     const data = (yield call(
-      authenticationApi.verify,
+      authenticationApi.verifyToken,
       token,
     )) as VerifyResponse;
     yield put(verifySucceeded());
     yield call(callback, data.success);
   } catch (error) {
-    yield put(verifyFailed('Not authorized'));
+    yield put(verifyFailed(getErrorMessage(error as AxiosError)));
     yield call(callback, false);
   }
 }

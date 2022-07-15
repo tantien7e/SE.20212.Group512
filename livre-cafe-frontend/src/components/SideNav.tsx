@@ -292,7 +292,7 @@ function SideNav() {
             // color="primary"
             variant="h4"
           >
-            <Avatar />
+            <Avatar src={user.imageUrl} />
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>

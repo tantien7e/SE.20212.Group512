@@ -6,7 +6,9 @@ import {
   updateBookSucceeded,
 } from '@app/app/features/books/books-slice';
 import { BookInterface } from '@app/models';
+import { getErrorMessage } from '@app/utils';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 function* updateBookData(action: PayloadAction<BookInterface>) {
@@ -16,8 +18,7 @@ function* updateBookData(action: PayloadAction<BookInterface>) {
     yield put(updateBookSucceeded());
     yield put(fetchBooks());
   } catch (error) {
-    const { message } = error as Error;
-    yield put(updateBookFailed(message));
+    yield put(updateBookFailed(getErrorMessage(error as AxiosError)));
   }
 }
 

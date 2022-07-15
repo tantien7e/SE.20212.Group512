@@ -1,12 +1,15 @@
 import IMAGES from '@app/assets/images';
 import { CartItemInterface, CartStateInterface } from '@app/context/Store';
 import { OrderPostData, ProductType, VoucherInterface } from '@app/models';
+import { ErrorResponse } from '@app/models/common';
 import { CustomerGender, RankType } from '@app/models/customer.interface';
+import { AxiosError } from 'axios';
 
 export function stableSort<T>(
   array: readonly T[],
   comparator: (a: T, b: T) => number,
 ) {
+  if (!array) return [];
   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -109,4 +112,25 @@ export const authorizedHeader = () => {
     Authorization: `${token}`,
     'Content-Type': 'application/json',
   };
+};
+
+export const getRankColor = (rank: RankType) => {
+  switch (rank) {
+    case RankType.DIAMOND:
+      return 'info';
+    case RankType.PLATINUM:
+      return 'success';
+    case RankType.GOLD:
+      return 'warning';
+    case RankType.SILVER:
+      return 'default';
+    default:
+      return 'default';
+  }
+};
+
+export const getErrorMessage = (error: AxiosError) => {
+  return error.response
+    ? (error.response.data as ErrorResponse).message
+    : error.message;
 };

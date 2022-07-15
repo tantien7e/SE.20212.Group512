@@ -1,23 +1,23 @@
 import booksApi from '@app/api/booksApi';
 import {
-  fetchBooks,
   deleteBook,
   deleteBookFailed,
   deleteBookSucceeded,
+  fetchBooks,
 } from '@app/app/features/books/books-slice';
-import { BookInterface } from '@app/models';
+import { getErrorMessage } from '@app/utils';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
-function* deleteBookData(action: PayloadAction<BookInterface>) {
+function* deleteBookData(action: PayloadAction<string>) {
   //   const token = localStorage.getItem('token');
   try {
-    yield call(booksApi.remove, action.payload?._id);
+    yield call(booksApi.remove, action.payload);
     yield put(deleteBookSucceeded());
     yield put(fetchBooks());
   } catch (error) {
-    const { message } = error as Error;
-    yield put(deleteBookFailed(message));
+    yield put(deleteBookFailed(getErrorMessage(error as AxiosError)));
   }
 }
 

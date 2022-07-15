@@ -1,8 +1,9 @@
 import BasicTable from '@app/components/BasicTable';
 import { Store } from '@app/context/Store';
-import { VoucherInterface } from '@app/models';
+import { CustomerInterface, VoucherInterface } from '@app/models';
 import {
   getCartTotal,
+  getSalutation,
   getTotalCost,
   getVouchersTotal,
   numberWithCommasRound2,
@@ -21,10 +22,11 @@ import React, { useContext } from 'react';
 
 interface InvoiceProps extends BoxProps {
   vouchers?: VoucherInterface[];
+  customer?: CustomerInterface;
 }
 
 function Invoice(props: InvoiceProps) {
-  const { vouchers } = props;
+  const { vouchers, customer } = props;
   const theme = useTheme();
   const { state } = useContext(Store);
   const { cart } = state;
@@ -68,6 +70,14 @@ function Invoice(props: InvoiceProps) {
               Date: {moment().format('MMMM D, YYYY HH:mm:ss')}
             </Typography>
           </Grid>
+          {customer && (
+            <Grid item>
+              <Typography>
+                Customer: {getSalutation(customer.gender)}{' '}
+                <strong>{customer.firstName}</strong> {customer.lastName}
+              </Typography>
+            </Grid>
+          )}
           <Divider sx={{ margin: `${theme.spacing(2)} 0` }} />
           <Grid item sx={{ margin: `0` }}>
             <BasicTable

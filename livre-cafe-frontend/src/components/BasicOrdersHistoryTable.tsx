@@ -1,24 +1,21 @@
-import { OrderStatusBadge } from '@app/components/OrdersTable';
 import { OrderInterface } from '@app/models';
-import { numberWithCommasRound2 } from '@app/utils';
-import { TablePagination, Tooltip, Typography } from '@mui/material';
+import { TablePagination } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Table, { TableProps } from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import moment from 'moment';
 import { useState } from 'react';
 
 interface BasicTableProps extends TableProps {
   headCells: JSX.Element[];
   rows: OrderInterface[];
+  rowData: (row: OrderInterface, index: number) => JSX.Element;
 }
 
 export default function BasicOrdersHistoryTable(props: BasicTableProps) {
-  const { headCells, rows, ...tableProps } = props;
+  const { headCells, rows, rowData, ...tableProps } = props;
 
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
@@ -47,50 +44,7 @@ export default function BasicOrdersHistoryTable(props: BasicTableProps) {
           </TableHead>
           <TableBody>
             {rows.map((row, index) => {
-              const { customer } = row;
-              const labelId = `enhanced-table-checkbox-${index}`;
-              return (
-                <TableRow
-                  key={row._id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell
-                    component="th"
-                    id={labelId}
-                    scope="row"
-                    padding="normal"
-                    align="left"
-                    width={100}
-                  >
-                    <Tooltip title={row._id || ''}>
-                      <Typography
-                        overflow="hidden"
-                        textOverflow="ellipsis"
-                        width={100}
-                        whiteSpace="nowrap"
-                      >{`${row._id} `}</Typography>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="left">
-                    {row.itemsOrdered.reduce(
-                      (a, c, cIndex) =>
-                        a +
-                        (c.product.title || c.product.name) +
-                        (cIndex < row.itemsOrdered.length - 1 ? ', ' : '.'),
-                      '',
-                    )}
-                  </TableCell>
-                  <TableCell align="left">
-                    {moment(row.createdAt).format('DD.MM.YYYY')}
-                  </TableCell>
-                  <TableCell align="left">
-                    <OrderStatusBadge status={row.status} />
-                  </TableCell>
-                  <TableCell align="right">
-                    ${numberWithCommasRound2(row.totalCost)}
-                  </TableCell>
-                </TableRow>
-              );
+              return rowData(row, index);
             })}
           </TableBody>
         </Table>

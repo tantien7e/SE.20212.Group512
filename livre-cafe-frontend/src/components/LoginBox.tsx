@@ -1,4 +1,13 @@
 import {
+  selectAuthLoading,
+  selectVerify,
+  submitLogin,
+  submitSignup,
+} from '@app/app/features/authentication/authentication-slice';
+import { INVENTORY_PATH } from '@app/constants';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { LoadingButton } from '@mui/lab';
+import {
   Box,
   BoxProps,
   Button,
@@ -8,19 +17,10 @@ import {
   OutlinedInput,
   Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  selectAuthLoading,
-  selectUser,
-  selectVerify,
-  submitLogin,
-} from '@app/app/features/authentication/authentication-slice';
-import { LoadingButton } from '@mui/lab';
 import { useNavigate } from 'react-router-dom';
-import { INVENTORY_PATH } from '@app/constants';
 
 interface LoginBoxProps extends BoxProps {}
 interface InputState {
@@ -83,7 +83,26 @@ function LoginBox(props: LoginBoxProps) {
       {...props}
       display="flex"
       alignItems="center"
+      position="relative"
     >
+      {/* <Box
+        position="absolute"
+        top={0}
+        left={0}
+        p={1}
+        display="flex"
+        justifyContent="center"
+        m="auto"
+        width="calc(100% - 16px)"
+        sx={{ backgroundColor: '#f2f1f2' }}
+      >
+        Don't have an account?{' '}
+        <Link to="/signup">
+          <Typography ml={1} mb={1} color={theme.palette.primary.main}>
+            Signup
+          </Typography>
+        </Link>
+      </Box> */}
       <Grid
         container
         direction="column"
@@ -96,10 +115,24 @@ function LoginBox(props: LoginBoxProps) {
             Agent Login
           </Typography>
         </Grid>
-        <Grid item>
+        <Grid item display="flex" alignItems="center">
           <Typography mt={2} variant="body1">
-            Enter your details to get signed in
+            Enter your details to get signed in or
           </Typography>
+
+          <Button
+            onClick={() => navigate('/signup')}
+            sx={{ textTransform: 'none', marginTop: 2 }}
+          >
+            <Typography
+              color={theme.palette.primary.main}
+              variant="body1"
+              textAlign="center"
+              sx={{ textDecoration: 'underline' }}
+            >
+              Signup
+            </Typography>
+          </Button>
         </Grid>
         <Grid
           item

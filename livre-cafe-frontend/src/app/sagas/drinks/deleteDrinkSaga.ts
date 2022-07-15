@@ -6,17 +6,19 @@ import {
   deleteDrinkSucceeded,
 } from '@app/app/features/drinks/drinks-slice';
 import { DrinkInterface } from '@app/models/drinks';
+import { getErrorMessage } from '@app/utils';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
-function* deleteDrinkData(action: PayloadAction<DrinkInterface>) {
+function* deleteDrinkData(action: PayloadAction<string>) {
   //   const token = localStorage.getItem('token');
   try {
-    yield call(drinksApi.remove, action.payload?._id);
+    yield call(drinksApi.remove, action.payload);
     yield put(deleteDrinkSucceeded());
     yield put(fetchDrinks());
   } catch (error) {
-    const { message } = error as Error;
+    const message = getErrorMessage(error as AxiosError);
     yield put(deleteDrinkFailed(message));
   }
 }

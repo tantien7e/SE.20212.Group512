@@ -6,10 +6,12 @@ import {
   fetchOrders,
   updateOrder,
   updateOrderFailed,
-  updateOrderSucceeded
+  updateOrderSucceeded,
 } from '@app/app/features/orders/orders-slice';
 import { OrderPostData } from '@app/models';
+import { getErrorMessage } from '@app/utils';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import { call, put, takeEvery } from 'redux-saga/effects';
 
 function* updateOrderData(action: PayloadAction<OrderPostData>) {
@@ -22,7 +24,7 @@ function* updateOrderData(action: PayloadAction<OrderPostData>) {
     yield put(fetchDrinks());
     yield put(fetchBooks());
   } catch (error) {
-    const { message } = error as Error;
+    const message = getErrorMessage(error as AxiosError);
     yield put(updateOrderFailed(message));
   }
 }
