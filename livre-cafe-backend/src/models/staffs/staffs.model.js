@@ -4,7 +4,6 @@ const Schema = mongoose.Schema;
 const StaffsSchema = new Schema({
     username: {
         type: String,
-        unique: true
     },
 
     firstName: {
@@ -38,11 +37,11 @@ const StaffsSchema = new Schema({
     },
 
     hash: {
-        type: String
+        type: String,
     },
 
     salt: {
-        type: String
+        type: String,
     },
 
     isManager: {
