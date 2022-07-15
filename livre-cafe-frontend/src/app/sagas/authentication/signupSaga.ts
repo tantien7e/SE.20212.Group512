@@ -1,7 +1,9 @@
 import authenticationApi from '@app/api/authenticationApi';
 import {
+  clearPhone,
   SignupBody,
   SignupResponse,
+  submitLogin,
   submitSignup,
   submitSignupFailed,
   submitSignupSucceeded,
@@ -23,6 +25,13 @@ function* signup(action: PayloadAction<SignupBody>) {
     )) as SignupResponse;
     localStorage.setItem('token', data.token);
     yield put(submitSignupSucceeded(data));
+    yield put(
+      submitLogin({
+        username: data.staff.username,
+        password: data.staff.passcode,
+      }),
+    );
+    yield put(clearPhone());
   } catch (error) {
     yield put(submitSignupFailed(getErrorMessage(error as AxiosError)));
   }

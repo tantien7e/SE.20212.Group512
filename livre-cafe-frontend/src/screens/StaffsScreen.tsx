@@ -61,6 +61,12 @@ const headCells: HeadCell<StaffResponse>[] = [
     disablePadding: false,
     label: 'Role',
   },
+  {
+    id: 'accountActivated',
+    numeric: false,
+    disablePadding: false,
+    label: 'Status',
+  },
 ];
 const staffs: StaffResponse[] = [
   {
@@ -163,6 +169,10 @@ function StaffsScreen() {
         <TableCell align="left">{row.phone}</TableCell>
         <TableCell align="left">
           {row.isManager ? UserRole.MANAGER : UserRole.STAFF}
+        </TableCell>
+
+        <TableCell align="left">
+          <StaffStatusBadge accountActivated={!!row.accountActivated} />
         </TableCell>
 
         <TableCell align="right" sx={{ minWidth: 200 }} width="220px">
@@ -295,4 +305,53 @@ function StaffsScreen() {
   );
 }
 
+export interface StaffStatusBadgeProps {
+  accountActivated: boolean;
+}
+
 export default requireAuthentication(StaffsScreen);
+export function StaffStatusBadge(props: StaffStatusBadgeProps) {
+  const theme = useTheme();
+  const themeBlock = theme.block;
+  const { accountActivated } = props;
+  if (!accountActivated)
+    return (
+      <Box
+        minWidth={100}
+        sx={{
+          backgroundColor: themeBlock?.pending.backgroundColor,
+          borderRadius: theme.spacing(1),
+        }}
+        p={1}
+        textAlign="center"
+      >
+        <Typography
+          fontWeight={600}
+          color={themeBlock?.pending.fontColor}
+          textTransform="capitalize"
+        >
+          Inactivated
+        </Typography>
+      </Box>
+    );
+  else
+    return (
+      <Box
+        minWidth={100}
+        sx={{
+          backgroundColor: themeBlock?.completed.backgroundColor,
+          borderRadius: theme.spacing(1),
+        }}
+        p={1}
+        textAlign="center"
+      >
+        <Typography
+          fontWeight={600}
+          color={themeBlock?.completed.fontColor}
+          textTransform="capitalize"
+        >
+          Activated
+        </Typography>
+      </Box>
+    );
+}

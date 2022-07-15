@@ -18,7 +18,7 @@ import {
 import Box from '@mui/material/Box';
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { parsePhoneNumber } from 'libphonenumber-js';
+import { isValidPhoneNumber, parsePhoneNumber } from 'libphonenumber-js';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -90,6 +90,13 @@ export default function ViewStaffModal(props: ViewModalProps) {
             >{`${row._id} `}</Typography>
           </Tooltip>
         </TableCell>
+        {customer ? (
+          <TableCell align="left">
+            <strong>{customer?.firstName}</strong> {customer?.lastName}
+          </TableCell>
+        ) : (
+          <TableCell align="left">Guest</TableCell>
+        )}
         <TableCell align="left">
           {row.itemsOrdered.reduce(
             (a, c, cIndex) =>
@@ -99,13 +106,7 @@ export default function ViewStaffModal(props: ViewModalProps) {
             '',
           )}
         </TableCell>
-        {customer ? (
-          <TableCell align="left">
-            <strong>{customer?.firstName}</strong> {customer?.lastName}
-          </TableCell>
-        ) : (
-          <TableCell align="left">Guest</TableCell>
-        )}
+
         <TableCell align="left">
           {moment(row.createdAt).format('DD.MM.YYYY')}
         </TableCell>
@@ -151,8 +152,7 @@ export default function ViewStaffModal(props: ViewModalProps) {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              width: '600px',
-              minWidth: 'none',
+              minWidth: '600px',
             }}
           >
             {item?.imageUrl && (
@@ -216,9 +216,37 @@ export default function ViewStaffModal(props: ViewModalProps) {
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
                   <Typography fontWeight={600}>
-                    {parsePhoneNumber(
-                      '+' + item?.phone || '',
-                    ).formatInternational()}
+                    {isValidPhoneNumber('+' + item?.phone || '')
+                      ? parsePhoneNumber(
+                          '+' + item?.phone || '',
+                        ).formatInternational()
+                      : item?.phone}
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="username">
+                    <Grid container>
+                      <Typography>Username</Typography>{' '}
+                    </Grid>
+                  </label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <Typography fontWeight={600}>{item.username}</Typography>
+                </Grid>
+              </Grid>
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="Role">
+                    <Grid container>
+                      <Typography>Role</Typography>{' '}
+                    </Grid>
+                  </label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <Typography fontWeight={600}>
+                    {item.isManager ? 'Manager' : 'Staff'}
                   </Typography>
                 </Grid>
               </Grid>

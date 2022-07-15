@@ -1,5 +1,8 @@
 import { RootState } from '@app/app/store';
-import { CustomerInterface } from '@app/models/customer.interface';
+import {
+  CustomerInterface,
+  CustomerPostData,
+} from '@app/models/customer.interface';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -10,6 +13,7 @@ export interface CustomersState {
   deleteLoading: boolean;
   customers?: CustomerInterface[];
   error?: string;
+  latestCustomer?: CustomerInterface;
 }
 
 const initialState: CustomersState = {
@@ -44,6 +48,7 @@ const customersSlice = createSlice({
       state.addLoading = false;
       if (!state.customers) state.customers = [];
       state.customers.push(action.payload);
+      state.latestCustomer = action.payload;
       toastInformSuccess('Item was added successfully');
     },
     addCustomerFailed(state, action: PayloadAction<string>) {
@@ -110,6 +115,8 @@ export const selectCustomersDeleteLoading = (state: RootState) =>
 export const selectCustomersError = (state: RootState) => state.customers.error;
 export const selectCustomersData = (state: RootState) =>
   state.customers.customers;
+export const selectLatestCustomer = (state: RootState) =>
+  state.customers.latestCustomer;
 //Reducer
 
 const customersReducer = customersSlice.reducer;

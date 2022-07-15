@@ -2,6 +2,8 @@ import {
   addCustomer,
   fetchCustomers,
   selectCustomers,
+  selectCustomersAddLoading,
+  selectLatestCustomer,
 } from '@app/app/features/customers/customers-slice';
 import {
   addOrder,
@@ -106,6 +108,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
 
   const orderLoading = useSelector(selectOrdersAddLoading);
   const orderError = useSelector(selectOrdersError);
+  const addCustomerLoading = useSelector(selectCustomersAddLoading);
   const [addSuccess, setAddSuccess] = useState(false);
   const { open, handleClose } = props;
   const { state, dispatch: ctxDispatch } = useContext(Store);
@@ -209,27 +212,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
   };
 
   const handleAddCustomerToCart = () => {
-    if (!selectedCustomer) {
-      const { firstName, phone, email } = customerState;
-      const error = {
-        firstName: !firstName,
-        phone: !phone,
-        email: !email,
-        points: false,
-        ranking: false,
-        lastName: false,
-        gender: false,
-        customerId: false,
-      };
-      setErrorState(error);
-      const passable = !(Object.values(error).findIndex((item) => item) > -1);
-      if (!passable) return;
-      const customerData = generatePostData(customerState);
-      dispatch(addCustomer(customerData as CustomerInterface));
-      setAddSuccess(true);
-
-      return;
-    }
+    if (!selectedCustomer) return;
 
     ctxDispatch({
       type: CartAction.SELECT_CUSTOMER,
@@ -237,6 +220,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     });
 
     toastInformSuccess('Select customer successfully!');
+    return true;
   };
 
   const handleAddVouchersToCart = () => {
@@ -260,6 +244,28 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     setIsPost(true);
   };
 
+  const handleAddNewCustomer = () => {
+    if (!isAddNew) return false;
+    const { firstName, phone, email } = customerState;
+    const error = {
+      firstName: !firstName,
+      phone: !phone,
+      email: !email,
+      points: false,
+      ranking: false,
+      lastName: false,
+      gender: false,
+      customerId: false,
+    };
+    setErrorState(error);
+    const passable = !(Object.values(error).findIndex((item) => item) > -1);
+    if (!passable) return false;
+    const customerData = generatePostData(customerState);
+    dispatch(addCustomer(customerData as CustomerInterface));
+    setAddSuccess(true);
+    return true;
+  };
+
   useEffect(() => {
     if (!orderLoading && isPost && !orderError) {
       ctxDispatch({ type: CartAction.CART_CLEAR });
@@ -268,7 +274,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     }
   }, [orderLoading, isPost, orderError]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!customers) {
       dispatch(fetchCustomers());
     }
@@ -589,8 +595,11 @@ export default function NormalCheckoutModal(props: AddModalProps) {
                 setTabIndex={setTabIndex}
                 handlePlaceOrder={handlePlaceOrder}
                 handleAddCustomerToCart={handleAddCustomerToCart}
-                disabled={!selectedCustomer}
+                disabled={!isAddNew && !selectedCustomer}
                 handleAddVouchersToCart={handleAddVouchersToCart}
+                handleAddNewCustomer={handleAddNewCustomer}
+                isAddNew={isAddNew}
+                setIsAddNew={setIsAddNew}
               />
             </Grid>
           </Grid>
@@ -608,6 +617,9 @@ interface TabButtonProps {
   handlePlaceOrder: () => void;
   handleAddCustomerToCart: () => void;
   handleAddVouchersToCart: () => void;
+  handleAddNewCustomer: () => void;
+  isAddNew: boolean;
+  setIsAddNew: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function TabButton(props: TabButtonProps) {
@@ -619,7 +631,34 @@ function TabButton(props: TabButtonProps) {
     handlePlaceOrder,
     handleAddCustomerToCart,
     handleAddVouchersToCart,
+    handleAddNewCustomer,
+    isAddNew,
+    setIsAddNew,
   } = props;
+
+  const addCustomerLoading = useSelector(selectCustomersAddLoading);
+  const latestCustomer = useSelector(selectLatestCustomer);
+  const { dispatch: ctxDispatch } = useContext(Store);
+  const [isNewCustomer, setIsNewCustomer] = useState(false);
+
+  useEffect(() => {
+    if (
+      isAddNew &&
+      !addCustomerLoading &&
+      !!latestCustomer &&
+      tabIndex === NormalCheckoutTabIndex.CUSTOMER &&
+      isNewCustomer
+    ) {
+      ctxDispatch({
+        type: CartAction.SELECT_CUSTOMER,
+        payload: latestCustomer,
+      });
+      setIsAddNew(false);
+      toastInformSuccess('Select customer successfully!');
+      setTabIndex(tabIndex + 1);
+    }
+  }, [isAddNew, addCustomerLoading, isNewCustomer]);
+
   switch (tabIndex) {
     case NormalCheckoutTabIndex.CUSTOMER:
       return (
@@ -628,7 +667,13 @@ function TabButton(props: TabButtonProps) {
           <LoadingButton
             variant="contained"
             loadingPosition="end"
+            loading={addCustomerLoading}
             onClick={() => {
+              if (isAddNew) {
+                handleAddNewCustomer();
+                setIsNewCustomer(true);
+                return;
+              }
               setTabIndex(tabIndex + 1);
               handleAddCustomerToCart();
             }}
@@ -645,6 +690,7 @@ function TabButton(props: TabButtonProps) {
           <LoadingButton
             variant="contained"
             loadingPosition="end"
+            endIcon={<></>}
             onClick={() => {
               setTabIndex(tabIndex + 1);
               handleAddVouchersToCart();
