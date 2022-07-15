@@ -17,7 +17,9 @@
     "nodemon": "^2.0.16",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
+    "redis": "^4.2.0",
     "swagger-jsdoc": "^6.2.1",
-    "swagger-ui-express": "^4.4.0"
+    "swagger-ui-express": "^4.4.0",
+    "twilio": "^3.79.0"
   }
 }

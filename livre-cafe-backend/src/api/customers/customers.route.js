@@ -62,7 +62,7 @@ const CustomerRouter = express.Router();
 
 /**
  * @swagger
- * /Customer:
+ * /customers:
  *  get:
  *      summary: Returns the list of all Customers
  *      tags: [Customer]
@@ -77,7 +77,7 @@ CustomerRouter.route('/')
 
 /**
  * @swagger
- * /Customer/{id}:
+ * /customers/{id}:
  *  get:
  *      summary: Get the customer by id
  *      tags: [Customer]

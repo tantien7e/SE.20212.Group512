@@ -2,6 +2,7 @@ const Staffs = require('../../models/staffs/staffs.model');
 
 const createNewStaff = async (req, res, next) => {
     try {
+        console.log(req.body.phone);
         const staff = await Staffs.findOne({ phone: req.body.phone });
 
         if (staff) {
