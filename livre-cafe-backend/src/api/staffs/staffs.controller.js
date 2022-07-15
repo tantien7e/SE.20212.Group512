@@ -2,7 +2,7 @@ const Staffs = require('../../models/staffs/staffs.model');
 
 const createNewStaff = async (req, res, next) => {
     try {
-        const staff = await Staffs.findOne({ "phone": { $regex: new RegExp(req.body.phone) } });
+        const staff = await Staffs.findOne({ phone: req.body.phone });
 
         if (staff) {
             res.status(401).json({
