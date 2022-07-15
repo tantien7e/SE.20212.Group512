@@ -53,7 +53,6 @@ app.use('/orders', OrdersRouter);
 app.use('/customers', CustomerRouter);
 app.use('/staffs', isManager, StaffsRouter);
 
-
 app.use('/*', (err, req, res, next) => {
     console.log(err);
     res.json(err);

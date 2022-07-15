@@ -33,6 +33,10 @@ const StaffsSchema = new Schema({
         },
     ],
 
+    hash: {
+        type: String
+    },
+
     salt: {
         type: String,
     },
