@@ -143,4 +143,8 @@ AuthRouter.post('/verify-phone-number', async (req, res, next) => {
     }
 });
 
+AuthRouter.post('/verify-code', async (req, res, next) => {
+
+});
+
 module.exports = AuthRouter;
