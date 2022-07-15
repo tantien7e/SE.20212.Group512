@@ -31,7 +31,12 @@ const createNewStaff = async (req, res, next) => {
 
 const getAllStaffs = async (req, res, next) => {
     try {
-        const staffs = await Staffs.find({});
+        const staffs = await Staffs.find({}).populate({
+            path: 'ordersHandled',
+            populate: {
+                path: 'itemsOrdered.product'
+            }
+        });
         res.status(200).json(staffs);
     } catch (err) {
         next(err);
@@ -41,7 +46,12 @@ const getAllStaffs = async (req, res, next) => {
 
 const getStaff = async (req, res, next) => {
     try {
-        const staff = await Staffs.findById(req.params.staffId);
+        const staff = await Staffs.findById(req.params.staffId).populate({
+            path: 'ordersHandled',
+            populate: {
+                path: 'itemsOrdered.product'
+            }
+        });
         if (staff) {
             res.status(200).json(staff);
         } else {
