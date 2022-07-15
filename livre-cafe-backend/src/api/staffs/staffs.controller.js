@@ -9,7 +9,7 @@ const createNewStaff = async (req, res, next) => {
                 success: false,
                 message: "Staff's profile with this phone number already exists"
             });
-        } else {           
+        } else {
             const newStaff = await Staffs.create({
                 phone: req.body.phone,
                 firstName: req.body.firstName,
@@ -33,25 +33,34 @@ const getAllStaffs = async (req, res, next) => {
     try {
         const staffs = await Staffs.find({}).populate({
             path: 'ordersHandled',
-            populate: {
+            populate: [{
                 path: 'itemsOrdered.product',
+
+            },
+            {
                 path: 'customer'
             }
+            ]
         });
         res.status(200).json(staffs);
     } catch (err) {
         next(err);
     }
-    
+
 }
 
 const getStaff = async (req, res, next) => {
     try {
         const staff = await Staffs.findById(req.params.staffId).populate({
             path: 'ordersHandled',
-            populate: {
-                path: 'itemsOrdered.product'
+            populate: [{
+                path: 'itemsOrdered.product',
+
+            },
+            {
+                path: 'customer'
             }
+            ]
         });
         if (staff) {
             res.status(200).json(staff);
@@ -70,9 +79,9 @@ const editStaff = async (req, res, next) => {
         const staff = await Staffs.findByIdAndUpdate(req.params.staffId, {
             $set: req.body
         },
-        {
-            new: true
-        });
+            {
+                new: true
+            });
 
         if (staff) {
             res.status(200).json(staff);
@@ -89,7 +98,7 @@ const editStaff = async (req, res, next) => {
 const deleteStaff = async (req, res, next) => {
     const staff = await Staffs.findByIdAndDelete(req.params.staffId);
     if (staff) {
-        res.status(200).json({ message: "Successfully deleted" }); 
+        res.status(200).json({ message: "Successfully deleted" });
     } else {
         res.status(404).json({ message: "Staff not found" });
     }
