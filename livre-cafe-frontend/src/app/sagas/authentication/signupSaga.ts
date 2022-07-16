@@ -23,12 +23,12 @@ function* signup(action: PayloadAction<SignupBody>) {
       authenticationApi.signup,
       action.payload,
     )) as SignupResponse;
-    localStorage.setItem('token', data.token);
+    console.log(data);
     yield put(submitSignupSucceeded(data));
     yield put(
       submitLogin({
-        username: data.staff.username,
-        password: data.staff.passcode,
+        username: action.payload.username,
+        password: action.payload.password,
       }),
     );
     yield put(clearPhone());
