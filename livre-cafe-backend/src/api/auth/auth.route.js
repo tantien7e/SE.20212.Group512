@@ -1,7 +1,15 @@
 const passport = require('passport');
+const Redis = require('ioredis');
+const redis = new Redis({
+    host: "redis-12858.c291.ap-southeast-2-1.ec2.cloud.redislabs.com",
+    port: 12858,
+    password: "C9BKMwqEdLXmonnRdFyjgHrsHBnTvfjL"
+});
+
 const AuthRouter = require('express').Router();
 const Staffs = require('../../models/staffs/staffs.model');
 const utils = require('../../lib/utils');
+const { sendVerificationCode } = require('../../lib/twilio');
 
 /**
  * @swagger
@@ -86,7 +94,7 @@ AuthRouter.post('/signup', async (req, res, next) => {
                 hash: hash,
                 salt: salt,
                 phone: req.body.phone,
-                accountActivated: true                
+                accountActivated: true
             });
 
             res.status(200).json({
@@ -108,11 +116,11 @@ AuthRouter.post('/signup', async (req, res, next) => {
  *      tags: [Auth]
  */
 
-AuthRouter.get('/verify-token', passport.authenticate('jwt', { session: false}), (req, res, next) => {
+AuthRouter.get('/verify-token', passport.authenticate('jwt', { session: false }), (req, res, next) => {
     res.status(200).json({
         message: "valid token"
     });
-}); 
+});
 
 /**
  * @swagger
@@ -124,27 +132,61 @@ AuthRouter.get('/verify-token', passport.authenticate('jwt', { session: false}),
 
 AuthRouter.post('/verify-phone-number', async (req, res, next) => {
     try {
-        const staff = await Staffs.findOne({phone: req.body.phone});
+        const staff = await Staffs.findOne({ phone: req.body.phone });
         if (staff) {
             if (staff.accountActivated) {
                 res.status(401).json({
                     message: "Account associated with this phone number already exists."
                 });
             } else {
+                const verificationCode = utils.genVerificationCode();
+                await redis.set(staff.phone, verificationCode, "EX", 30000);
+                sendVerificationCode(req.body.phone, verificationCode);
                 res.status(200).json(staff);
             }
         } else {
             res.status(404).json({
                 message: "Wrong phone number or your profile have not been registered by the manager yet."
             });
-        }        
+        }
     } catch (err) {
         next(err);
     }
 });
 
-AuthRouter.post('/verify-code', async (req, res, next) => {
+/**
+ * @swagger
+ * /auth/verify-code:
+ *  post:
+ *      summary: Verify the code sent to the staff's phone 
+ *      tags: [Auth]
+ */
 
+AuthRouter.post('/verify-code', async (req, res, next) => {
+    try {
+        const value = await redis.get(req.body.phone);
+
+        if (value !== null) {
+            if (value === req.body.code) {
+                await redis.del(req.body.phone);
+                res.status(200).json({
+                    success: true
+                });
+            } else {
+                res.status(404).json({
+                    success: false,
+                    message: "Wrong verification code."
+                });
+            }
+        } else {
+            res.status(404).json({
+                success: false,
+                message: "Expired verification code."
+            });
+        }
+    } catch (err) {
+        next(err);
+    }
 });
 
 module.exports = AuthRouter;

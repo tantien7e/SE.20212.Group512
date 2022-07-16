@@ -7,8 +7,8 @@ module.exports.sendVerificationCode = (phoneNumber, verificationCode) => {
         .create({
             from: "+19705489497",
             to: `+${phoneNumber}`,
-            
+            body: `Livre Café\nYour verification code is: ${verificationCode}`
         })
-        .then(message => console.log(message))
-        .catch(err =>  console.log(err));
+        .then(message => console.log(message.body))
+        .catch(err => console.log(err));
 }
