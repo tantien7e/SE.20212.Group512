@@ -1,14 +1,19 @@
 import {
   selectBooksUpdateLoading,
-  updateBook
+  updateBook,
 } from '@app/app/features/books/books-slice';
 import {
   selectDrinksUpdateLoading,
-  updateDrink
+  updateDrink,
 } from '@app/app/features/drinks/drinks-slice';
+import { updateSnack } from '@app/app/features/snacks/snacks-slice';
 import { ErrorStateInterface } from '@app/components/AddItemModal';
 import { InventoryType, PREFIX_URL } from '@app/constants';
-import { BookInterface, DrinkInterface } from '@app/models/product.interface';
+import {
+  BookInterface,
+  DrinkInterface,
+  SnackInterface,
+} from '@app/models/product.interface';
 import { round2 } from '@app/utils';
 import SaveIcon from '@mui/icons-material/Save';
 import { LoadingButton } from '@mui/lab';
@@ -18,7 +23,7 @@ import {
   Divider,
   FormHelperText,
   Grid,
-  TextField
+  TextField,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -150,6 +155,12 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
         price,
         imageUrl,
       };
+    } else if (type === InventoryType.SNACK) {
+      return {
+        name: productName,
+        price,
+        imageUrl,
+      };
     }
     return {};
   };
@@ -176,6 +187,9 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
     }
     if (type === InventoryType.BOOK) {
       dispatch(updateBook(data as BookInterface));
+    }
+    if (type === InventoryType.SNACK) {
+      dispatch(updateSnack(data as SnackInterface));
     }
     setUpdateSuccess(true);
   };
@@ -341,30 +355,32 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
                   />
                 </Grid>
               </Grid>
-              <Grid container item alignItems="center">
-                <Grid xs={3}>
-                  <label htmlFor="product-stock">Stock Quantity</label>
+              {type !== InventoryType.SNACK && (
+                <Grid container item alignItems="center">
+                  <Grid xs={3}>
+                    <label htmlFor="product-stock">Stock Quantity</label>
+                  </Grid>
+                  <Grid xs sx={{ maxWidth: 400 }}>
+                    <TextField
+                      variant="outlined"
+                      id="product-stock"
+                      aria-describedby="my-helper-text"
+                      fullWidth
+                      value={productState?.stockQuantity}
+                      onChange={(e) => handleChangeText(e, 'stockQuantity')}
+                      InputProps={{
+                        // inputMode: 'numeric',
+                        inputComponent: NumberFormatCustom as any,
+                      }}
+                      error={errorState.stockQuantity}
+                      helperText={
+                        errorState.stockQuantity &&
+                        'Stock must not be less than or equal to 0'
+                      }
+                    />
+                  </Grid>
                 </Grid>
-                <Grid xs sx={{ maxWidth: 400 }}>
-                  <TextField
-                    variant="outlined"
-                    id="product-stock"
-                    aria-describedby="my-helper-text"
-                    fullWidth
-                    value={productState?.stockQuantity}
-                    onChange={(e) => handleChangeText(e, 'stockQuantity')}
-                    InputProps={{
-                      // inputMode: 'numeric',
-                      inputComponent: NumberFormatCustom as any,
-                    }}
-                    error={errorState.stockQuantity}
-                    helperText={
-                      errorState.stockQuantity &&
-                      'Stock must not be less than or equal to 0'
-                    }
-                  />
-                </Grid>
-              </Grid>
+              )}
             </Grid>
           </Container>
 

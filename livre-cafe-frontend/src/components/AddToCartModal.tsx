@@ -37,6 +37,7 @@ interface EditCartModalPropsInterface {
   open: boolean;
   handleClose: () => void;
   item?: DrinkInterface & BookInterface;
+  hasNoStock?: boolean;
 }
 
 interface ProductCartStateInterface {
@@ -50,7 +51,7 @@ interface ProductCartStateInterface {
 }
 
 export default function AddToCartModal(props: EditCartModalPropsInterface) {
-  const { open, handleClose, item } = props;
+  const { open, handleClose, item, hasNoStock } = props;
   const { state, dispatch: ctxDispatch } = React.useContext(Store);
 
   const findCartItem = (
@@ -84,9 +85,10 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
         ...product,
         quantity,
         additionalRequirements,
+        hasNoStock,
       },
     });
-    if (quantity > product?.stock) {
+    if (quantity > product?.stock && !hasNoStock) {
       console.log('Bigger', quantity, product.stock);
       toastError('Out of stock!');
       return;
