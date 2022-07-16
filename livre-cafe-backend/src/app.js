@@ -10,6 +10,7 @@ const OrdersRouter = require('./api/orders/orders.route');
 const CustomerRouter = require('./api/customers/customers.route');
 const StaffsRouter = require('./api/staffs/staffs.route');
 const AuthRouter = require('./api/auth/auth.route');
+const VouchersRouter = require('./api/vouchers/vouchers.route');
 const isManager = require('./middleware/authorize');
 
 const app = express();
@@ -51,6 +52,7 @@ app.use('/books', BooksRouter);
 app.use('/drinks', DrinksRouter);
 app.use('/orders', OrdersRouter);
 app.use('/customers', CustomerRouter);
+app.use('/vouchers', VouchersRouter);
 app.use('/staffs', isManager, StaffsRouter);
 
 app.use('/*', (err, req, res, next) => {
