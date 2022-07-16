@@ -20,6 +20,7 @@ export const ORDERS_URL = 'orders';
 export const LOGIN_URL = 'auth/login';
 export const VERIFY_TOKEN_URL = 'auth/verify-token';
 export const VERIFY_PHONE_URL = 'auth/verify-phone-number';
+export const VERIFY_CODE_URL = 'auth/verify-code';
 export const STAFFS_URL = 'staffs';
 export const IMAGE_BASE = '@app';
 export const SIGNUP_URL = 'auth/signup';

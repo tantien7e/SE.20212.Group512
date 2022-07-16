@@ -6,6 +6,7 @@ import {
 import {
   LOGIN_URL,
   SIGNUP_URL,
+  VERIFY_CODE_URL,
   VERIFY_PHONE_URL,
   VERIFY_TOKEN_URL,
 } from '@app/constants';
@@ -31,6 +32,10 @@ const authenticationApi = {
   signup(body: SignupBody) {
     const url = SIGNUP_URL;
     return axiosClient.post(url, body);
+  },
+  verifyCode({ phone, code }: { phone: string; code: string }) {
+    const url = VERIFY_CODE_URL;
+    return axiosClient.post(url, { phone, code });
   },
 };
 

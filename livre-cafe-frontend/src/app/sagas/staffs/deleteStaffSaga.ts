@@ -1,4 +1,4 @@
-import customersApi from '@app/api/customersApi';
+import staffsApi from '@app/api/staffsApi';
 import {
   deleteStaff,
   deleteStaffFailed,
@@ -13,7 +13,7 @@ import { call, put, takeEvery } from 'redux-saga/effects';
 function* deleteStaffData(action: PayloadAction<string>) {
   //   const token = localStorage.getItem('token');
   try {
-    yield call(customersApi.remove, action.payload);
+    yield call(staffsApi.remove, action.payload);
     yield put(deleteStaffSucceeded());
     yield put(fetchStaffs());
   } catch (error) {
