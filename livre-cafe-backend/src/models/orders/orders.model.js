@@ -41,6 +41,11 @@ const OrdersSchema = new Schema({
     totalCost: {
         type: Number,
         default: 0
+    },
+
+    appliedVoucher: {
+        type: Schema.Types.ObjectId,
+        ref: 'vouchers'
     }
 },
     {

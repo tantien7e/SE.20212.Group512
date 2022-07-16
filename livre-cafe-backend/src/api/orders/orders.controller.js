@@ -8,7 +8,8 @@ const getAllOrders = async (req, res, next) => {
     try {
         const orders = await Orders.find({})
             .populate('itemsOrdered.product')
-            .populate('customer');
+            .populate('customer')
+            .populate('appliedVoucher');
 
         res.status(200).json(orders);
     } catch (err) {
@@ -86,7 +87,7 @@ const createOrder = async (req, res, next) => {
 
 const deleteOrder = async (req, res, next) => {
     try {
-        const order = await Orders.findByIdAndDelete(req.params.orderId).populate('itemsOrdered.product').populate('customer');
+        const order = await Orders.findByIdAndDelete(req.params.orderId).populate('itemsOrdered.product').populate('customer').populate('appliedVoucher');
         if (order) {
             if (order.customer) {
                 const customer = await Customers.findById(order.customer);
@@ -251,7 +252,7 @@ const editOrder = async (req, res, next) => {
 
 const getOrder = async (req, res, next) => {
     try {
-        const order = await Orders.findById(req.params.orderId).populate('customer').populate('itemsOrdered.product');
+        const order = await Orders.findById(req.params.orderId).populate('customer').populate('itemsOrdered.product').populate('appliedVoucher');
         if (order) {
             res.status(200).json(order);
         } else {
@@ -266,7 +267,8 @@ const getOrdersHistory = async (req, res, next) => {
     try {
         const ordersHistory = await Orders.find({ status: { $in: ['cancelled', 'completed'] } })
             .populate('itemsOrdered.product')
-            .populate('customer');
+            .populate('customer')
+            .populate('appliedVoucher');
 
         res.status(200).json(ordersHistory);
     } catch (err) {
