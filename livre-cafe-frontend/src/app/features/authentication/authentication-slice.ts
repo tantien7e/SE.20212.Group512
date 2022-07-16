@@ -82,7 +82,6 @@ const authenticationSlice = createSlice({
     submitSignupSucceeded(state, action: PayloadAction<SignupResponse>) {
       state.loading = false;
       toastInformSuccess('Signed up successfully and logged in!');
-      localStorage.setItem('user', JSON.stringify(action.payload.staff));
       state.staff = action.payload.staff;
       state.isVerified = true;
     },

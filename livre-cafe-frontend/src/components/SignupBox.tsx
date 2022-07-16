@@ -11,7 +11,7 @@ import {
 import PhoneInputCustom from '@app/components/PhoneInputCustom';
 import { INVENTORY_PATH } from '@app/constants';
 import { getErrorMessage } from '@app/utils';
-import { toastError } from '@app/utils/toast';
+import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import {
@@ -50,7 +50,7 @@ function SignupBox(props: SignupBoxProps) {
     username: '',
     passcode: '',
     showPasscode: false,
-    phone: '',
+    phone: '84',
     isPhoneVerified: false,
     otp: '',
   });
@@ -88,9 +88,10 @@ function SignupBox(props: SignupBoxProps) {
         code: values.otp,
       });
       console.log(response);
-      if (response?.data?.success) {
+      if ((response as any).success) {
         setIsOtpVerified(true);
       }
+      toastInformSuccess('Verified successfully');
       setIsOtpLoading(false);
     } catch (error) {
       const message = getErrorMessage(error as AxiosError);
