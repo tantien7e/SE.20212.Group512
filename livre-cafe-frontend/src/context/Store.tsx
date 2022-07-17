@@ -8,6 +8,7 @@ export interface CartItemInterface extends ProductInterface {
   quantity: number;
   additionalRequirements: string;
   cost: number;
+  hasNoStock?: boolean;
 }
 export interface CartStateInterface {
   cart: {
@@ -90,13 +91,15 @@ function reducer(
       const cartItems = existItem
         ? state.cart?.cartItems?.map((item) =>
             item._id === existItem._id &&
-            selectedItem?.quantity <= selectedItem.stock
+            (selectedItem?.quantity <= selectedItem.stock ||
+              selectedItem.hasNoStock)
               ? selectedItem
               : item,
           )
         : [...state.cart.cartItems, action.payload];
       const filteredCartItems = (cartItems as CartItemInterface[]).filter(
-        (item) => item.quantity > 0 && item.quantity <= item.stock,
+        (item) =>
+          item.quantity > 0 && (item.quantity <= item.stock || item.hasNoStock),
       );
       localStorage.setItem('cartItems', JSON.stringify(filteredCartItems));
       return {

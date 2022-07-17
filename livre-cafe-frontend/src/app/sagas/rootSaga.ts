@@ -16,6 +16,10 @@ import addOrderSaga from '@app/app/sagas/orders/addOrderSaga';
 import deleteOrderSaga from '@app/app/sagas/orders/deleteOrderSaga';
 import getListOrdersSaga from '@app/app/sagas/orders/getListOrdersSaga';
 import updateOrderSaga from '@app/app/sagas/orders/updateOrderSaga';
+import addSnackSaga from '@app/app/sagas/snacks/addSnackSaga';
+import deleteSnackSaga from '@app/app/sagas/snacks/deleteSnackSaga';
+import getListSnacksSaga from '@app/app/sagas/snacks/getListSnacksSaga';
+import updateSnackSaga from '@app/app/sagas/snacks/updateSnackSaga';
 import addStaffSaga from '@app/app/sagas/staffs/addStaffSaga';
 import deleteStaffSaga from '@app/app/sagas/staffs/deleteStaffSaga';
 import getListStaffsSaga from '@app/app/sagas/staffs/getListStaffsSaga';
@@ -34,6 +38,10 @@ export default function* rootSaga() {
     addDrinkSaga(),
     updateDrinkSaga(),
     deleteDrinkSaga(),
+    getListSnacksSaga(),
+    addSnackSaga(),
+    updateSnackSaga(),
+    deleteSnackSaga(),
     getListBooksSaga(),
     addBookSaga(),
     updateBookSaga(),

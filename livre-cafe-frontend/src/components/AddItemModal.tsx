@@ -1,13 +1,18 @@
 import {
   addBook,
-  selectBooksAddLoading
+  selectBooksAddLoading,
 } from '@app/app/features/books/books-slice';
 import {
   addDrink,
-  selectDrinksAddLoading
+  selectDrinksAddLoading,
 } from '@app/app/features/drinks/drinks-slice';
+import { addSnack } from '@app/app/features/snacks/snacks-slice';
 import { InventoryType } from '@app/constants';
-import { BookInterface, DrinkInterface } from '@app/models/product.interface';
+import {
+  BookInterface,
+  DrinkInterface,
+  SnackInterface,
+} from '@app/models/product.interface';
 import { round2 } from '@app/utils';
 import AddIcon from '@mui/icons-material/Add';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -17,7 +22,7 @@ import {
   Divider,
   FormHelperText,
   Grid,
-  TextField
+  TextField,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
@@ -88,7 +93,7 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
     productId: '',
     productName: '',
     price: 0,
-    stockQuantity: 0,
+    stockQuantity: 1,
     author: '',
   });
 
@@ -158,6 +163,12 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
         price,
         imageUrl,
       };
+    } else if (type === InventoryType.SNACK) {
+      return {
+        name: productName,
+        price,
+        imageUrl,
+      };
     }
     return {};
   };
@@ -181,6 +192,9 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
     }
     if (type === InventoryType.BOOK) {
       dispatch(addBook(data as BookInterface));
+    }
+    if (type === InventoryType.SNACK) {
+      dispatch(addSnack(data as SnackInterface));
     }
     setAddSuccess(true);
   };
@@ -332,30 +346,32 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                   />
                 </Grid>
               </Grid>
-              <Grid container item alignItems="center">
-                <Grid xs={3}>
-                  <label htmlFor="product-stock">Stock Quantity</label>
+              {type !== InventoryType.SNACK && (
+                <Grid container item alignItems="center">
+                  <Grid xs={3}>
+                    <label htmlFor="product-stock">Stock Quantity</label>
+                  </Grid>
+                  <Grid xs sx={{ maxWidth: 400 }}>
+                    <TextField
+                      variant="outlined"
+                      id="product-stock"
+                      aria-describedby="my-helper-text"
+                      fullWidth
+                      value={productState?.stockQuantity}
+                      onChange={(e) => handleChangeText(e, 'stockQuantity')}
+                      InputProps={{
+                        // inputMode: 'numeric',
+                        inputComponent: NumberFormatCustom as any,
+                      }}
+                      error={errorState.stockQuantity}
+                      helperText={
+                        errorState.stockQuantity &&
+                        'Stock must not be less than or equal to 0'
+                      }
+                    />
+                  </Grid>
                 </Grid>
-                <Grid xs sx={{ maxWidth: 400 }}>
-                  <TextField
-                    variant="outlined"
-                    id="product-stock"
-                    aria-describedby="my-helper-text"
-                    fullWidth
-                    value={productState?.stockQuantity}
-                    onChange={(e) => handleChangeText(e, 'stockQuantity')}
-                    InputProps={{
-                      // inputMode: 'numeric',
-                      inputComponent: NumberFormatCustom as any,
-                    }}
-                    error={errorState.stockQuantity}
-                    helperText={
-                      errorState.stockQuantity &&
-                      'Stock must not be less than or equal to 0'
-                    }
-                  />
-                </Grid>
-              </Grid>
+              )}
             </Grid>
           </Container>
 

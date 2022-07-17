@@ -14,6 +14,7 @@ export const BASE_URL_MOCK = '/api-mock/';
 export const PREFIX_URL =
   'https://raw.githubusercontent.com/benoitvallon/100-best-books/master/static/';
 export const DRINKS_URL = 'drinks';
+export const SNACKS_URL = 'snacks';
 export const BOOKS_URL = 'books';
 export const CUSTOMERS_URL = 'customers';
 export const ORDERS_URL = 'orders';
@@ -47,6 +48,7 @@ export enum ModalType {
 export enum InventoryType {
   BOOK = 'BOOK',
   DRINK = 'DRINK',
+  SNACK = 'SNACK',
 }
 
 //Normal Checkout

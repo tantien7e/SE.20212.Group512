@@ -1,5 +1,5 @@
 import { Store } from '@app/context/Store';
-import { OrderInterface, ProductInterface } from '@app/models';
+import { OrderInterface, ProductInterface, SnackInterface } from '@app/models';
 import { CustomerInterface } from '@app/models/customer.interface';
 import { StaffResponse } from '@app/models/user.interface';
 import { Search } from '@mui/icons-material';
@@ -32,11 +32,14 @@ import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import React, { useContext, useEffect, useState } from 'react';
 
-type Data =
+type DataFull =
   | CustomerInterface
   | ProductInterface
   | OrderInterface
-  | StaffResponse;
+  | StaffResponse
+  | SnackInterface;
+
+type Data = Omit<DataFull, 'stock'>;
 
 type ExcludedKey = 'action' | 'orders';
 

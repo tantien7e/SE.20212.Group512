@@ -10,6 +10,7 @@ import ordersReducer from '@app/app/features/orders/orders-slice';
 import authenticationReducer from '@app/app/features/authentication/authentication-slice';
 import staffsReducer from '@app/app/features/staffs/staffs-slice';
 import { verifyApi } from '@app/app/services/authentication/verify-api-slice';
+import snacksReducer from '@app/app/features/snacks/snacks-slice';
 
 const sagaMiddleware = createSagaMiddleware();
 export const store = configureStore({
@@ -20,6 +21,7 @@ export const store = configureStore({
     orders: ordersReducer,
     authentication: authenticationReducer,
     staffs: staffsReducer,
+    snacks: snacksReducer,
     [bookApi.reducerPath]: bookApi.reducer,
     [drinkApi.reducerPath]: drinkApi.reducer,
     [verifyApi.reducerPath]: verifyApi.reducer,
