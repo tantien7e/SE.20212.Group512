@@ -19,5 +19,12 @@ export interface BookInterface {
   price: number;
   _id: string;
 }
+export interface SnackInterface {
+  imageUrl: string;
+  name: string;
+  price: number;
+  _id: string;
+  stock?: number;
+}
 
-export type ProductInterface = DrinkInterface & BookInterface;
+export type ProductInterface = DrinkInterface & BookInterface & SnackInterface;

@@ -12,6 +12,7 @@ const StaffsRouter = require('./api/staffs/staffs.route');
 const AuthRouter = require('./api/auth/auth.route');
 const VouchersRouter = require('./api/vouchers/vouchers.route');
 const ReservationsRouter = require('./api/reservations/reservations.route');
+const SnacksRouter = require('./api/snacks/snacks.route');
 const isManager = require('./middleware/authorize');
 
 const app = express();
@@ -51,6 +52,7 @@ app.use('/auth', AuthRouter);
 app.use(passport.authenticate('jwt', { session: false }));
 app.use('/books', BooksRouter);
 app.use('/drinks', DrinksRouter);
+app.use('./snacks', SnacksRouter);
 app.use('/orders', OrdersRouter);
 app.use('/customers', CustomerRouter);
 app.use('/vouchers', VouchersRouter);
