@@ -2,6 +2,7 @@ const Orders = require('../../models/orders/orders.model');
 const Customers = require('../../models/customers/customers.model');
 const Books = require('../../models/books/books.model');
 const Drinks = require('../../models/drinks/drinks.model');
+const Snacks = require('../../models/snacks/snacks.model');
 const Staffs = require('../../models/staffs/staffs.model');
 
 const getAllOrders = async (req, res, next) => {
@@ -35,6 +36,10 @@ const createOrder = async (req, res, next) => {
 
                 case 'drinks':
                     model = Drinks;
+                    break;
+
+                case 'snacks':
+                    model = Snacks;
                     break;
             }
 
@@ -204,6 +209,10 @@ const editOrder = async (req, res, next) => {
                         case 'drinks':
                             model = Drinks;
                             break;
+
+                        case 'snacks':
+                            model = Snacks;
+                            break;    
                     }
 
                     const product = await model.findById(item.product);

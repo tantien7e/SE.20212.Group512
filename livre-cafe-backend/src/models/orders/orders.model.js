@@ -7,7 +7,7 @@ const OrdersSchema = new Schema({
         {
             productType: {
                 type: String,
-                enum: ['books', 'drinks'],
+                enum: ['books', 'drinks', 'snacks'],
                 required: true
             },
 
