@@ -53,10 +53,23 @@ const genVerificationCode = () => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+const checkTimeConflict = (start1, end1, start2, end2) => {
+    if (start2 > start1 && start2 < end1) {
+        return true;
+    }
+
+    if (end2 > start1 && end2 < end1) {
+        return true;
+    }
+
+    return false;
+}
+
 module.exports = {
     validatePassword,
     genHashAndSalt,
     issueJWT,
     genDate,
-    genVerificationCode
+    genVerificationCode,
+    checkTimeConflict
 }
