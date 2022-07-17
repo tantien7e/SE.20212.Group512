@@ -136,6 +136,10 @@ const editOrder = async (req, res, next) => {
                         case 'drinks':
                             model = Drinks;
                             break;
+
+                        case 'snacks':
+                            model = Snacks;
+                            break;
                     }
 
                     const product = await model.findById(item.product);
