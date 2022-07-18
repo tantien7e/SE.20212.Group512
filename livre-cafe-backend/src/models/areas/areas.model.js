@@ -2,6 +2,14 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const AreasSchema = new Schema({
+    x: {
+        type: Number
+    },
+
+    y: {
+        type: Number
+    },
+
     costPerHour: {
         type: Number
     },

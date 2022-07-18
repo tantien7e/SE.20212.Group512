@@ -251,9 +251,7 @@ const editOrder = async (req, res, next) => {
                     await Reservations.findByIdAndUpdate(order.reservation._id, {
                         status: 'cancelled'
                     });
-                    const area = await Areas.findById(order.reservation.area);
-                    area.reservations = area.reservations.filter(element => element.toString() !== req.params.reservationId);
-                    promiseToAwait2.push(area.save());
+                    await Areas.findByIdAndUpdate(order.reservation.area, { $pull: { reservations: order.reservation._id } });
                 }
 
                 await Promise.all(promiseToAwait2);

@@ -13,6 +13,7 @@ const AuthRouter = require('./api/auth/auth.route');
 const VouchersRouter = require('./api/vouchers/vouchers.route');
 const ReservationsRouter = require('./api/reservations/reservations.route');
 const SnacksRouter = require('./api/snacks/snacks.route');
+const AreasRouter = require('./api/areas/areas.route');
 const isManager = require('./middleware/authorize');
 
 const app = express();
@@ -57,6 +58,7 @@ app.use('/orders', OrdersRouter);
 app.use('/customers', CustomerRouter);
 app.use('/vouchers', VouchersRouter);
 app.use('/reservations', ReservationsRouter);
+app.use('/areas', AreasRouter);
 app.use('/staffs', isManager, StaffsRouter);
 
 app.use('/*', (err, req, res, next) => {

@@ -69,6 +69,10 @@ const hoursToMilliseconds = hours => {
     return hours * 3600000;
 }
 
+const checkEqualDays = (day1, day2) => {
+    return (day1.getDate() === day2.getDate()) && (day1.getMonth() === day2.getMonth()) && (day1.getFullYear() === day2.getFullYear());
+}
+
 module.exports = {
     validatePassword,
     genHashAndSalt,
@@ -76,5 +80,6 @@ module.exports = {
     genDate,
     genVerificationCode,
     checkTimeConflict,
-    hoursToMilliseconds
+    hoursToMilliseconds,
+    checkEqualDays
 }

@@ -1,7 +1,6 @@
 const Reservations = require('../../models/reservations/reservations.model');
 const Areas = require('../../models/areas/areas.model');
-const Customers = require('../../models/customers/customers.model');
-const Staffs = require('../../models/staffs/staffs.model');
+const { checkTimeConflict, hoursToMilliseconds } = require('../../lib/utils');
 
 const getAllReservations = async (req, res, next) => {
     const reservations = await Reservations.find({}).populate('area')
@@ -19,7 +18,8 @@ const getAllReservations = async (req, res, next) => {
 }
 
 const editReservation = async (req, res, next) => {
-    const area = await Areas.findById(req.body.area).populate('reservations');
+    const reservation = await Reservations.findById(req.params.reservationId);
+    const area = await Areas.findById(reservation.area).populate('reservations');
 
     switch (req.body.status) {
         case 'seated':
@@ -27,28 +27,28 @@ const editReservation = async (req, res, next) => {
             break;
         case 'completed':
             area.status = 'free';
-            area.reservations = area.reservations.filter(element => element.toString() !== req.params.reservationId);
+            await Areas.findByIdAndUpdate(reservation.area, { $pull: { reservations: reservation._id } });
             break;
         case 'cancelled':
-            area.reservations = area.reservations.filter(element => element.toString() !== req.params.reservationId);
+            await Areas.findByIdAndUpdate(reservation.area, { $pull: { reservations: reservation._id } });
             break;
     }
 
     await area.save();
     for (let reservation of area.reservations) {
-        if (checkTimeConflict(reservation.startTime.getTime(), reservation.startTime.getTime() + hoursToMilliseconds(reservation.duration, req.body.reservation.startTime.getTime(), req.body.reservation.startTime.getTime() + hoursToMilliseconds(req.body.reservation.duration)))) {
+        if (checkTimeConflict(reservation.startTime.getTime(), reservation.startTime.getTime() + hoursToMilliseconds(reservation.duration, reservation.startTime.getTime(), reservation.startTime.getTime() + hoursToMilliseconds(reservation.duration)))) {
             return res.status(403).json({ message: "Time conflict." });
         }
     }
 
-    const reservation = Reservations.findByIdAndUpdate(req.params.reservationId, {
+    const newReservation = await Reservations.findByIdAndUpdate(req.params.reservationId, {
         $set: req.body
     }, {
         new: true
     });
 
-    if (reservation) {
-        res.status(200).json(reservation);
+    if (newReservation !== null) {
+        res.status(200).json(newReservation);
     } else {
         res.status(404).json({ message: "Reservation not found." });
     }
@@ -64,6 +64,8 @@ const getReservation = async (req, res, next) => {
             path: 'customer'
         }]
     });
+
+    console.log(reservation.startTime.getHours());
 
     if (reservation === null) {
         res.status(404).json({ message: "Reservation not found." });

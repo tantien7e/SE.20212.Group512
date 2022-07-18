@@ -11,7 +11,8 @@ const ReservationsSchema = new Schema({
     },
 
     area: {
-        type: Schema.Types.ObjectId
+        type: Schema.Types.ObjectId,
+        ref: 'areas'
     },
 
     numberOfPeople: {
@@ -25,7 +26,8 @@ const ReservationsSchema = new Schema({
     },
 
     order: {
-        type: Schema.Types.ObjectId
+        type: Schema.Types.ObjectId,
+        ref: 'orders'
     }
 },
     {

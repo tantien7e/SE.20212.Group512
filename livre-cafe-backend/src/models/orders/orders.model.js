@@ -29,6 +29,7 @@ const OrdersSchema = new Schema({
 
     reservation: {
         type: Schema.Types.ObjectId,
+        ref: 'reservations',
         default: null
     },
 
