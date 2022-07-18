@@ -65,11 +65,16 @@ const checkTimeConflict = (start1, end1, start2, end2) => {
     return false;
 }
 
+const hoursToMilliseconds = hours => {
+    return hours * 3600000;
+}
+
 module.exports = {
     validatePassword,
     genHashAndSalt,
     issueJWT,
     genDate,
     genVerificationCode,
-    checkTimeConflict
+    checkTimeConflict,
+    hoursToMilliseconds
 }

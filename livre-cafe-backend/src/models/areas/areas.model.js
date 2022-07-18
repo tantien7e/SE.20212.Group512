@@ -16,6 +16,11 @@ const AreasSchema = new Schema({
         type: Number
     },
 
+    available: {
+        type: Boolean,
+        default: true
+    },
+
     reservations: [
         {
             type: Schema.Types.ObjectId,

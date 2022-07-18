@@ -27,6 +27,11 @@ const OrdersSchema = new Schema({
         }
     ],
 
+    reservation: {
+        type: Schema.Types.ObjectId,
+        default: null
+    },
+
     status: {
         type: String,
         enum: ["processing", "completed", "cancelled"],

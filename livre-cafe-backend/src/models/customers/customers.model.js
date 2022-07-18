@@ -50,22 +50,10 @@ const CustomerSchema = new Schema({
         ref: 'orders'
 	},
 
-    reservation: {
-        type: Schema.Types.ObjectId,
-        ref: 'reservations'
-    },
-
     ordersHistory: [
         {
             type: Schema.Types.ObjectId,
             ref: 'orders'
-        }
-    ],
-
-    reservationsHistory: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'reservations'
         }
     ]
 },

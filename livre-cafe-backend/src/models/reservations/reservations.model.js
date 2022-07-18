@@ -2,53 +2,30 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ReservationsSchema = new Schema({
-    start: {
+    startTime: {
         type: Date
     },
 
-    end: {
-        type: Date
+    duration: {
+        type: Number
     },
 
     area: {
         type: Schema.Types.ObjectId
     },
 
-    itemsOrdered: [
-        {
-            productType: {
-                type: String,
-                enum: ['drinks', 'snacks'],
-                required: true
-            },
-
-            product: {
-                type: Schema.Types.ObjectId,
-                refPath: 'itemsOrdered.productType'
-            },
-
-            quantity: {
-                type: Number,
-                required: true
-            },
-
-            additionalRequirements: {
-                type: String
-            }
-        }
-    ],
-
-    customer: {
-        type: Schema.Types.ObjectId
+    numberOfPeople: {
+        type: Number
     },
 
     status: {
         type: String,
-        enum: ['pending', 'checked in', 'checked out']
+        enum: ['pending', 'confirmed', 'seated', 'completed', 'cancelled'],
+        default: 'pending'
     },
 
-    totalCost: {
-        type: Number
+    order: {
+        type: Schema.Types.ObjectId
     }
 },
     {

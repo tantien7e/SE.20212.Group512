@@ -52,7 +52,7 @@ app.use('/auth', AuthRouter);
 app.use(passport.authenticate('jwt', { session: false }));
 app.use('/books', BooksRouter);
 app.use('/drinks', DrinksRouter);
-app.use('./snacks', SnacksRouter);
+app.use('/snacks', SnacksRouter);
 app.use('/orders', OrdersRouter);
 app.use('/customers', CustomerRouter);
 app.use('/vouchers', VouchersRouter);

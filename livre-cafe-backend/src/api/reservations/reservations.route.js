@@ -3,8 +3,7 @@ const ReservationsRouter = express.Router();
 const ReservationsController = require('./reservations.controller');
 
 ReservationsRouter.route('/')
-.get(ReservationsController.getReservations)
-.post(ReservationsController.makeReservation);
+.get(ReservationsController.getAllReservations)
 
 ReservationsRouter.route('/:reservationId')
 .get(ReservationsController.getReservation)

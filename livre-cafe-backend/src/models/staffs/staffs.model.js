@@ -26,13 +26,6 @@ const StaffsSchema = new Schema({
         required: true
     },
 
-    reservationsHandled: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'reservations'
-        }
-    ],
-
     ordersHandled: [
         {
             type: Schema.Types.ObjectId,
