@@ -28,7 +28,7 @@ function OrdersScreen() {
       className="screen-container inventory-screen-container"
     >
       <Helmet>
-        <title>Inventory</title>
+        <title>Orders</title>
       </Helmet>
       <Box sx={{ marginBottom: theme.spacing(2) }}>
         <Typography

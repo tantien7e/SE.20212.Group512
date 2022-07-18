@@ -1,5 +1,6 @@
 //Routing Constants
 export const INVENTORY_PATH = '/inventory';
+export const WORKSPACES_PATH = '/workspaces';
 export const CART_CHECKOUT_PATH = '/cart-checkout';
 export const CUSTOMERS_PATH = '/customers';
 export const ORDERS_PATH = '/orders';

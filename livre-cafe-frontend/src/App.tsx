@@ -11,6 +11,7 @@ import {
   ORDERS_PATH,
   SIGNUP_PATH,
   STAFFS_PATH,
+  WORKSPACES_PATH,
 } from '@app/constants';
 import { StaffResponse } from '@app/models/user.interface';
 import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
@@ -20,6 +21,7 @@ import LoginScreen from '@app/screens/LoginScreen';
 import OrdersScreen from '@app/screens/OrdersScreen';
 import SignupScreen from '@app/screens/SignupScreen';
 import StaffsScreen from '@app/screens/StaffsScreen';
+import WorkSpacesScreen from '@app/screens/WorkSpacesScreen';
 import '@app/styles/main.scss';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -60,7 +62,7 @@ function App() {
           <Route path={ORDERS_PATH} element={<OrdersScreen />} />
           <Route path={LOGIN_PATH} element={<LoginScreen />} />
           <Route path={SIGNUP_PATH} element={<SignupScreen />} />
-
+          <Route path={WORKSPACES_PATH} element={<WorkSpacesScreen />} />
           {user?.isManager && (
             <Route path={STAFFS_PATH} element={<StaffsScreen />} />
           )}

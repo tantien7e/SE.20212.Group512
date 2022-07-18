@@ -6,7 +6,10 @@ import {
   addDrink,
   selectDrinksAddLoading,
 } from '@app/app/features/drinks/drinks-slice';
-import { addSnack } from '@app/app/features/snacks/snacks-slice';
+import {
+  addSnack,
+  selectSnacksAddLoading,
+} from '@app/app/features/snacks/snacks-slice';
 import { InventoryType } from '@app/constants';
 import {
   BookInterface,
@@ -85,6 +88,7 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
   const dispatch = useDispatch();
   const drinksLoading = useSelector(selectDrinksAddLoading);
   const booksLoading = useSelector(selectBooksAddLoading);
+  const snacksLoading = useSelector(selectSnacksAddLoading);
   const [addSuccess, setAddSuccess] = useState(false);
   const { open, handleClose, type } = props;
 
@@ -168,6 +172,7 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
         name: productName,
         price,
         imageUrl,
+        stock: stockQuantity,
       };
     }
     return {};
@@ -200,11 +205,11 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
   };
 
   React.useEffect(() => {
-    const loading = drinksLoading || booksLoading;
+    const loading = drinksLoading || booksLoading || snacksLoading;
     if (addSuccess && !loading) {
       handleClose();
     }
-  }, [addSuccess, drinksLoading, booksLoading]);
+  }, [addSuccess, drinksLoading, booksLoading, snacksLoading]);
 
   return (
     <div>
@@ -299,7 +304,6 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                   />
                 </Grid>
               </Grid>
-
               {type === InventoryType.BOOK && (
                 <Grid container item alignItems="center">
                   <Grid xs={3}>
@@ -321,7 +325,6 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                   </Grid>
                 </Grid>
               )}
-
               <Grid container item alignItems="center">
                 <Grid xs={3}>
                   <label htmlFor="product-price">Price</label>
@@ -346,32 +349,31 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
                   />
                 </Grid>
               </Grid>
-              {type !== InventoryType.SNACK && (
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="product-stock">Stock Quantity</label>
-                  </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <TextField
-                      variant="outlined"
-                      id="product-stock"
-                      aria-describedby="my-helper-text"
-                      fullWidth
-                      value={productState?.stockQuantity}
-                      onChange={(e) => handleChangeText(e, 'stockQuantity')}
-                      InputProps={{
-                        // inputMode: 'numeric',
-                        inputComponent: NumberFormatCustom as any,
-                      }}
-                      error={errorState.stockQuantity}
-                      helperText={
-                        errorState.stockQuantity &&
-                        'Stock must not be less than or equal to 0'
-                      }
-                    />
-                  </Grid>
+
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="product-stock">Stock Quantity</label>
                 </Grid>
-              )}
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <TextField
+                    variant="outlined"
+                    id="product-stock"
+                    aria-describedby="my-helper-text"
+                    fullWidth
+                    value={productState?.stockQuantity}
+                    onChange={(e) => handleChangeText(e, 'stockQuantity')}
+                    InputProps={{
+                      // inputMode: 'numeric',
+                      inputComponent: NumberFormatCustom as any,
+                    }}
+                    error={errorState.stockQuantity}
+                    helperText={
+                      errorState.stockQuantity &&
+                      'Stock must not be less than or equal to 0'
+                    }
+                  />
+                </Grid>
+              </Grid>
             </Grid>
           </Container>
 
@@ -394,7 +396,7 @@ export default function AddItemModal(props: EditCartModalPropsInterface) {
               {' '}
               <LoadingButton
                 variant="contained"
-                loading={drinksLoading || booksLoading}
+                loading={drinksLoading || booksLoading || snacksLoading}
                 loadingPosition="end"
                 onClick={() => handleAdd()}
                 endIcon={<AddIcon />}

@@ -316,6 +316,12 @@ export default function DataTable(props: EnhancedTableProps) {
       });
       setFilteredRows(newRows);
     }
+    if (rows && !handleChangeTab) {
+      const newRows = rows?.filter((row: any) => {
+        return searchTarget(row)?.toLowerCase().includes(filterText);
+      });
+      setFilteredRows(newRows);
+    }
   }, [rows, tabIndex]);
 
   return (

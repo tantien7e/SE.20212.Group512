@@ -81,6 +81,12 @@ const snacksHeadCells: HeadCell<SnackInterface>[] = [
   },
   { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
   {
+    id: 'stock',
+    numeric: true,
+    disablePadding: false,
+    label: 'Stock',
+  },
+  {
     id: 'price',
     numeric: true,
     disablePadding: false,
@@ -99,16 +105,16 @@ function InventoryScreen() {
   const snacksSelector = useSelector(selectSnacks);
   const { drinks, loading: drinksLoading } = drinksSelector;
   const { books, loading: booksLoading } = booksSelector;
-  // const { snacks, loading: snacksLoading } = snacksSelector;
-  const snacks = [
-    {
-      _id: '1',
-      name: 'Crab Chua',
-      price: 100,
-      imageUrl:
-        'https://pasgo.vn/Upload/anh-chi-tiet/nha-hang-queens-crab-crab-seafood-restaurant-hoang-dao-thuy-2-normal-543004715592.jpg',
-    },
-  ];
+  const { snacks, loading: snacksLoading } = snacksSelector;
+  // const snacks = [
+  //   {
+  //     _id: '1',
+  //     name: 'Crab Chua',
+  //     price: 100,
+  //     imageUrl:
+  //       'https://pasgo.vn/Upload/anh-chi-tiet/nha-hang-queens-crab-crab-seafood-restaurant-hoang-dao-thuy-2-normal-543004715592.jpg',
+  //   },
+  // ];
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addProductModalOpen, setAddProductModalOpen] = useState(false);
   const [deleteProductModalOpen, setDeleteProductModalOpen] = useState(false);
@@ -184,6 +190,9 @@ function InventoryScreen() {
         </TableCell>
         <TableCell component="th" id={labelId} scope="row" padding="none">
           {row.name}
+        </TableCell>
+        <TableCell component="th" id={labelId} scope="row" align='right'>
+          {row.stock}
         </TableCell>
         <TableCell align="right">
           ${numberWithCommasRound2(row.price)}
@@ -287,7 +296,6 @@ function InventoryScreen() {
           open={addToCartModalOpen}
           handleClose={() => handleCloseModal(ModalType.ADD_TO_CART)}
           item={currentSnackItem as ProductInterface}
-          hasNoStock
         />
       )}
       <Helmet>
@@ -345,7 +353,7 @@ function InventoryScreen() {
       </TabPanel>
       <TabPanel value={value} index={2}>
         <DataTable
-          isLoading={booksLoading}
+          isLoading={snacksLoading}
           rows={snacks || []}
           headCells={snacksHeadCells}
           stableSort={stableSort}

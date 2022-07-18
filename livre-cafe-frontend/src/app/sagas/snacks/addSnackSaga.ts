@@ -3,6 +3,7 @@ import {
   addSnack,
   addSnackFailed,
   addSnackSucceeded,
+  fetchSnacks,
 } from '@app/app/features/snacks/snacks-slice';
 import { SnackInterface } from '@app/models';
 import { getErrorMessage } from '@app/utils';
@@ -15,6 +16,7 @@ function* addNewSnack(action: PayloadAction<SnackInterface>) {
   try {
     const data = (yield call(snacksApi.add, action.payload)) as SnackInterface;
     yield put(addSnackSucceeded(data));
+    yield put(fetchSnacks());
   } catch (error) {
     const message = getErrorMessage(error as AxiosError);
     yield put(addSnackFailed(message));

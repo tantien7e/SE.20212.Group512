@@ -697,6 +697,7 @@ export function OrderStatusBadge(props: OrderStatusBadgeProps) {
       return (
         <Box
           minWidth={100}
+          maxWidth={200}
           sx={{
             backgroundColor: themeBlock?.pending.backgroundColor,
             borderRadius: theme.spacing(1),
@@ -717,6 +718,7 @@ export function OrderStatusBadge(props: OrderStatusBadgeProps) {
       return (
         <Box
           minWidth={100}
+          maxWidth={200}
           sx={{
             backgroundColor: themeBlock?.completed.backgroundColor,
             borderRadius: theme.spacing(1),
@@ -737,6 +739,7 @@ export function OrderStatusBadge(props: OrderStatusBadgeProps) {
       return (
         <Box
           minWidth={100}
+          maxWidth={200}
           sx={{
             backgroundColor: themeBlock?.cancelled.backgroundColor,
             borderRadius: theme.spacing(1),
