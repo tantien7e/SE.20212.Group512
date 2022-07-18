@@ -53,10 +53,33 @@ const genVerificationCode = () => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+const checkTimeConflict = (start1, end1, start2, end2) => {
+    if (start2 > start1 && start2 < end1) {
+        return true;
+    }
+
+    if (end2 > start1 && end2 < end1) {
+        return true;
+    }
+
+    return false;
+}
+
+const hoursToMilliseconds = hours => {
+    return hours * 3600000;
+}
+
+const checkEqualDays = (day1, day2) => {
+    return (day1.getDate() === day2.getDate()) && (day1.getMonth() === day2.getMonth()) && (day1.getFullYear() === day2.getFullYear());
+}
+
 module.exports = {
     validatePassword,
     genHashAndSalt,
     issueJWT,
     genDate,
-    genVerificationCode
+    genVerificationCode,
+    checkTimeConflict,
+    hoursToMilliseconds,
+    checkEqualDays
 }
