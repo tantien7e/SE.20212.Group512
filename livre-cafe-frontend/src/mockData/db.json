@@ -1,0 +1,60 @@
+{
+  "areas": [
+    {
+      "_id": "FountainBase",
+      "classSelector": "targets",
+      "name": "Fountain Base",
+      "width": 120,
+      "height": 120,
+      "top": 110,
+      "left": 590,
+      "rotate": 0,
+      "backgroundColor": "inherit",
+      "backgroundImage": "/src/assets/images/areas/FountainBase.png",
+      "fontColor": "black",
+      "id": "FountainBase"
+    },
+    {
+      "_id": "CroissantSpace",
+      "classSelector": "targets",
+      "name": "Croissant Space",
+      "width": 190,
+      "height": 190,
+      "top": 140,
+      "left": 280,
+      "rotate": 0,
+      "backgroundColor": "inherit",
+      "backgroundImage": "/src/assets/images/areas/CroissantSpace.png",
+      "fontColor": "black",
+      "id": "CroissantSpace"
+    },
+    {
+      "_id": "LiptionCell",
+      "classSelector": "targets",
+      "name": "Liption Cell",
+      "width": 110,
+      "height": 110,
+      "top": 330,
+      "left": 660,
+      "rotate": 0,
+      "backgroundColor": "inherit",
+      "backgroundImage": "/src/assets/images/areas/LiptionCell.png",
+      "fontColor": "black",
+      "id": "LiptionCell"
+    },
+    {
+      "_id": "MainHall",
+      "classSelector": "targets",
+      "name": "Main Hall",
+      "width": 290,
+      "height": 290,
+      "top": 160,
+      "left": 430,
+      "rotate": 0,
+      "backgroundColor": "inherit",
+      "backgroundImage": "/src/assets/images/areas/MainHall.png",
+      "fontColor": "black",
+      "id": "MainHall"
+    }
+  ]
+}

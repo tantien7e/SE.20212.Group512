@@ -17,6 +17,7 @@ export const PREFIX_URL =
 export const DRINKS_URL = 'drinks';
 export const SNACKS_URL = 'snacks';
 export const BOOKS_URL = 'books';
+export const AREAS_URL = 'areas';
 export const CUSTOMERS_URL = 'customers';
 export const ORDERS_URL = 'orders';
 export const LOGIN_URL = 'auth/login';

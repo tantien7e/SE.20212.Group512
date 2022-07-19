@@ -1,45 +1,37 @@
-import { AREA_IMAGES } from '@app/assets/images';
+import {
+  fetchAreas,
+  selectAreasData,
+  selectAreasLoading,
+  updateArea,
+} from '@app/app/features/areas/areas-slice';
 import FloorElement, { TargetProps } from '@app/components/Floor/FloorElement';
 import ListAction from '@app/components/Floor/ListAction';
+import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { Box, Popper } from '@mui/material';
-import React, { useRef, useState } from 'react';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import React, { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 
 function Floor() {
-  const [targets, setTargets] = useState([
-    {
-      id: 'target',
-      classSelector: 'targets',
-      name: 'Target1',
-      width: 100,
-      height: 100,
-      top: 100,
-      left: 100,
-      rotate: 0,
-      backgroundColor: 'inherit',
-      backgroundImage: AREA_IMAGES.FountainBase,
-      fontColor: 'black',
-    },
-    {
-      id: 'target2',
-      classSelector: 'targets',
-      name: 'Target2',
-      width: 200,
-      height: 200,
-      top: 220,
-      left: 500,
-      rotate: 0,
-      backgroundColor: 'inherit',
-      backgroundImage: AREA_IMAGES.CroissantSpace,
-      fontColor: 'black',
-    },
-  ]);
+  const areas = useSelector(selectAreasData);
+  const areaLoading = useSelector(selectAreasLoading);
+  const [targets, setTargets] = useState<TargetProps[]>([]);
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null,
   );
   const [currentTarget, setCurrentTarget] = useState<TargetProps>();
   const [open, setOpen] = React.useState(false);
+  const [isMoveable, setIsMoveable] = useState(false);
+  const dispatch = useDispatch();
+  const toggleMoveable = () => {
+    setIsMoveable(!isMoveable);
+  };
 
+  const handleSave = () => {
+    targets.forEach((target) => {
+      dispatch(updateArea(target));
+    });
+  };
   const handleClickElement = (
     event: React.MouseEvent<HTMLButtonElement>,
     target: TargetProps,
@@ -57,6 +49,24 @@ function Floor() {
   };
   const wrapperRef = useRef<HTMLElement>(null);
   const popperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!areas) {
+      dispatch(fetchAreas());
+    }
+  }, []);
+  useEffect(() => {
+    if (areas && !areaLoading) {
+      setTargets(
+        areas.map((area) => ({
+          ...area,
+          classSelector: 'targets',
+          backgroundColor: 'inherit',
+          fontColor: 'black',
+        })),
+      );
+    }
+  }, [areas, areaLoading]);
 
   return (
     <Box
@@ -122,10 +132,29 @@ function Floor() {
         initialPositionX={0}
         initialPositionY={0}
         maxScale={2}
-        disabled={currentTarget && open}
+        // minScale={0.5}
+        disabled={(currentTarget && open) || isMoveable}
       >
-        {({ zoomIn, zoomOut, resetTransform, setTransform, ...rest }) => (
+        {({
+          zoomIn,
+          zoomOut,
+          resetTransform,
+          setTransform,
+          instance,
+          ...rest
+        }) => (
           <React.Fragment>
+            <div className="tools">
+              {/* <button onClick={() => zoomIn()}>+</button>
+              <button onClick={() => zoomOut()}>-</button>
+              <button onClick={() => resetTransform()}>x</button> */}
+              <button style={{ marginLeft: '10px' }} onClick={toggleMoveable}>
+                Toggle Moveable
+              </button>
+              <button style={{ marginLeft: '10px' }} onClick={handleSave}>
+                Save Position
+              </button>
+            </div>
             <TransformComponent
               wrapperStyle={{
                 width: 'calc(100% + 64px)',
@@ -152,22 +181,27 @@ function Floor() {
               >
                 {targets.map((target: TargetProps) => (
                   <FloorElement
-                    key={target.id}
+                    key={target._id}
                     properties={target}
                     handleClickElement={(
                       event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
                       target: TargetProps,
                     ) => handleClickElement(event, target)}
-                    active={target.id === currentTarget?.id && open}
+                    active={target._id === currentTarget?._id && open}
+                    allowMoveable={isMoveable}
+                    updateTarget={(privateProps) => {
+                      setTargets((targetArr) => {
+                        return targetArr.map((targetState: any) => {
+                          if (targetState._id === target._id)
+                            return privateProps;
+                          return targetState;
+                        });
+                      });
+                    }}
                   />
                 ))}
               </div>
             </TransformComponent>
-            {/* <div className="tools">
-              <button onClick={() => zoomIn()}>+</button>
-              <button onClick={() => zoomOut()}>-</button>
-              <button onClick={() => resetTransform()}>x</button>
-            </div> */}
           </React.Fragment>
         )}
       </TransformWrapper>

@@ -1,3 +1,7 @@
+import addAreaSaga from '@app/app/sagas/areas/addAreaSaga';
+import deleteAreaSaga from '@app/app/sagas/areas/deleteAreaSaga';
+import getListAreasSaga from '@app/app/sagas/areas/getListAreasSaga';
+import updateAreaSaga from '@app/app/sagas/areas/updateAreaSaga';
 import loginSaga from '@app/app/sagas/authentication/loginSaga';
 import signupSaga from '@app/app/sagas/authentication/signupSaga';
 import addBookSaga from '@app/app/sagas/books/addBookSaga';
@@ -46,6 +50,10 @@ export default function* rootSaga() {
     addBookSaga(),
     updateBookSaga(),
     deleteBookSaga(),
+    getListAreasSaga(),
+    addAreaSaga(),
+    updateAreaSaga(),
+    deleteAreaSaga(),
     getListCustomersSaga(),
     addCustomerSaga(),
     updateCustomerSaga(),
