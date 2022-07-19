@@ -2,7 +2,12 @@ import { useTheme } from '@mui/material/styles';
 import { Box, Button } from '@mui/material';
 import React from 'react';
 
-function ListAction() {
+interface ListActionProps {
+  handleAddReservation: () => void;
+}
+
+function ListAction(props: ListActionProps) {
+  const { handleAddReservation } = props;
   const theme = useTheme();
   return (
     <Box
@@ -15,9 +20,13 @@ function ListAction() {
       display="flex"
       flexDirection="column"
       py={0.5}
-      mx = {1}
+      mx={1}
     >
-      <Button variant="outlined" sx={{ textTransform: 'none', m: 1, my: 0.5 }}>
+      <Button
+        variant="outlined"
+        sx={{ textTransform: 'none', m: 1, my: 0.5 }}
+        onClick={() => handleAddReservation()}
+      >
         Add Reservation
       </Button>
       <Button variant="outlined" sx={{ textTransform: 'none', m: 1, my: 0.5 }}>

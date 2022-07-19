@@ -4,6 +4,7 @@ import {
   selectAreasLoading,
   updateArea,
 } from '@app/app/features/areas/areas-slice';
+import AddReservationModal from '@app/components/AddReservationModal';
 import FloorElement, { TargetProps } from '@app/components/Floor/FloorElement';
 import ListAction from '@app/components/Floor/ListAction';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
@@ -22,6 +23,7 @@ function Floor() {
   const [currentTarget, setCurrentTarget] = useState<TargetProps>();
   const [open, setOpen] = React.useState(false);
   const [isMoveable, setIsMoveable] = useState(false);
+  const [openAddModal, setOpenAddModal] = useState(false);
   const dispatch = useDispatch();
   const toggleMoveable = () => {
     setIsMoveable(!isMoveable);
@@ -90,6 +92,13 @@ function Floor() {
         }
       }}
     >
+      {openAddModal && currentTarget && (
+        <AddReservationModal
+          open={openAddModal}
+          handleClose={() => setOpenAddModal(false)}
+          area={currentTarget}
+        />
+      )}
       <Popper
         open={open}
         placement="right-start"
@@ -125,7 +134,7 @@ function Floor() {
           // },
         ]}
       >
-        <ListAction />
+        <ListAction handleAddReservation={() => setOpenAddModal(true)} />
       </Popper>
       <TransformWrapper
         initialScale={1}

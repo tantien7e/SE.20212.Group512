@@ -20,11 +20,18 @@ interface GroupedSearchBarProps {
   filterText: string;
   handleSelect: (option: CustomerInterface) => void;
   selectedValue?: CustomerInterface;
+  width?: string | number;
 }
 
 export default function GroupedSearchBar(props: GroupedSearchBarProps) {
-  const { rows, onSearchChange, filterText, handleSelect, selectedValue } =
-    props;
+  const {
+    rows,
+    onSearchChange,
+    filterText,
+    handleSelect,
+    selectedValue,
+    width,
+  } = props;
   const theme = useTheme();
   const options = rows.map((row) => {
     const firstLetter = row.firstName[0];
@@ -40,8 +47,9 @@ export default function GroupedSearchBar(props: GroupedSearchBarProps) {
     (a, b) => -b.firstLetter.localeCompare(a.firstLetter),
   );
   return (
-    <ClickAwayListener onClickAway={() => setOpen(false)}>
+    <ClickAwayListener onClickAway={() => setOpen(false)} sx={{ width }}>
       <Autocomplete
+        fullWidth
         id="grouped-demo"
         options={sortedOptions}
         groupBy={(option) => option.firstLetter}
@@ -82,7 +90,7 @@ export default function GroupedSearchBar(props: GroupedSearchBarProps) {
         }}
         filterOptions={(options) => options}
         popupIcon={null}
-        sx={{ width: 400 }}
+        sx={{ width: width || 400 }}
         inputValue={filterText}
         renderInput={(params) => {
           const { InputProps } = params;

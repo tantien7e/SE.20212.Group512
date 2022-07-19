@@ -752,13 +752,15 @@ const NumberFormatCustom = React.forwardRef<NumberFormat<string>, CustomProps>(
 
 interface CustomerDetailsBlockProps extends BoxProps {
   selectedCustomer: CustomerInterface;
+  noImage?: boolean;
+  noTitle?: boolean;
 }
 export function CustomerDetailsBlock(props: CustomerDetailsBlockProps) {
-  const { selectedCustomer, ...boxProps } = props;
+  const { selectedCustomer, noImage, noTitle, ...boxProps } = props;
   const theme = useTheme();
   return (
     <Grid container spacing={2}>
-      <Grid item xs={6}>
+      <Grid item xs={noImage ? 12 : 6}>
         <Box
           my={2}
           sx={{
@@ -768,10 +770,14 @@ export function CustomerDetailsBlock(props: CustomerDetailsBlockProps) {
           p={2}
           {...boxProps}
         >
-          <Typography variant="h6" color={theme.palette.secondary.contrastText}>
-            Customer Details
-          </Typography>
-
+          {!noTitle && (
+            <Typography
+              variant="h6"
+              color={theme.palette.secondary.contrastText}
+            >
+              Customer Details
+            </Typography>
+          )}
           <Box my={2} mx={1}>
             <Grid container direction="column">
               <Typography mb={2}>
@@ -797,13 +803,21 @@ export function CustomerDetailsBlock(props: CustomerDetailsBlockProps) {
         </Box>
       </Grid>
 
-      <Grid item xs display="flex" justifyContent="center" alignItems="center">
-        <img
-          src={genAvatarImage(selectedCustomer.gender)}
-          alt="avatar"
-          width={200}
-        />
-      </Grid>
+      {!noImage && (
+        <Grid
+          item
+          xs
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <img
+            src={genAvatarImage(selectedCustomer.gender)}
+            alt="avatar"
+            width={200}
+          />
+        </Grid>
+      )}
     </Grid>
   );
 }
