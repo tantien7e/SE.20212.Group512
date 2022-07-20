@@ -6,11 +6,11 @@ import {
   selectDrinksUpdateLoading,
   updateDrink,
 } from '@app/app/features/drinks/drinks-slice';
-import { ErrorStateInterface } from '@app/components/AddItemModal';
 import { InventoryType, PREFIX_URL } from '@app/constants';
 import { CartAction, CartItemInterface, Store } from '@app/context/Store';
+import { VoucherInterface } from '@app/models';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
-import { round2 } from '@app/utils';
+import { round0, round2 } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import SaveIcon from '@mui/icons-material/Save';
 import { LoadingButton } from '@mui/lab';
@@ -30,6 +30,14 @@ import React, { useContext } from 'react';
 import { useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector } from 'react-redux';
+
+export interface ErrorStateInterface {
+  voucherName?: boolean;
+  correspondingRanking?: boolean;
+  pointLoss?: boolean;
+  percentageDiscount: boolean;
+  maxAmount: boolean;
+}
 
 const style = {
   // position: 'absolute' as 'absolute',
@@ -52,51 +60,37 @@ const Input = styled('input')({
   display: 'none',
 });
 
-interface EditCartModalPropsInterface {
+interface EditVoucherModalPropsInterface {
   open: boolean;
   handleClose: () => void;
-  item: CartItemInterface;
+  item: VoucherInterface;
 }
 
-interface ProductStateInterface {
-  _id: string;
-  imageUrl: string;
-  productId: string;
-  productName: string;
-  price: number;
-  cost: number;
-  stockQuantity: number;
-  author?: string;
-  quantity: number;
-  additionalRequirements?: string;
-}
-
-export default function EditCartModal(props: EditCartModalPropsInterface) {
+export default function EditVoucherModal(
+  props: EditVoucherModalPropsInterface,
+) {
   const { open, handleClose, item } = props;
-  const updateDrinkLoading = useSelector(selectDrinksUpdateLoading);
-  const updateBookLoading = useSelector(selectBooksUpdateLoading);
+  // const updateDrinkLoading = useSelector(selectDrinksUpdateLoading);
+  // const updateBookLoading = useSelector(selectBooksUpdateLoading);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const { dispatch } = useContext(Store);
-  const [productState, setProductState] = useState<ProductStateInterface>({
+  const [voucherState, setVoucherState] = useState<VoucherInterface>({
     _id: item?._id || '',
-    imageUrl: item?.imageUrl || '',
-    productId: item?._id || '',
-    productName: item?.name || item?.title || '',
-    cost: item?.cost || 0,
-    quantity: item?.quantity || 0,
-    stockQuantity: item?.stock || 0,
-    author: item?.author,
-    additionalRequirements: item?.additionalRequirements || '',
-    price: item?.price || 0,
+    id: item?.id || '0',
+    voucherName: item?.voucherName || '',
+    correspondingRanking: item?.correspondingRanking || '',
+    available: item?.available || false,
+    pointLoss: item?.pointLoss || 0,
+    percentageDiscount: item?.percentageDiscount || 0,
+    maxAmount: item?.maxAmount || 0,
   });
 
   const [errorState, setErrorState] = useState<ErrorStateInterface>({
-    productId: false,
-    productName: false,
-    cost: false,
-    stockQuantity: false,
-    author: false,
-    quantity: false,
+    voucherName: false,
+    correspondingRanking: false,
+    pointLoss: false,
+    percentageDiscount: false,
+    maxAmount: false,
   });
 
   const theme = useTheme();
@@ -104,10 +98,11 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
 
   const handleChangeText = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
-    field: keyof ProductStateInterface,
+    field: keyof VoucherInterface,
   ) => {
-    const isNumberField = field === 'cost' || field === 'stockQuantity';
-    setProductState((prevState) => {
+    const isNumberField =
+      field === 'pointLoss' || 'maxAmount' || 'percentageDiscount';
+    setVoucherState((prevState) => {
       return { ...prevState, [field]: e.target.value };
     });
     setErrorState((prevState) => {
@@ -118,90 +113,79 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
     });
   };
 
-  const generatePostData = (body: ProductStateInterface) => {
+  const generatePostData = (body: VoucherInterface) => {
     const {
-      productName,
-      cost,
-      stockQuantity,
-      author,
-      imageUrl,
-      _id,
-      quantity,
-      additionalRequirements,
+      id,
+      voucherName,
+      correspondingRanking,
+      available,
+      pointLoss,
+      percentageDiscount,
+      maxAmount,
     } = body;
 
     return {};
   };
 
-  const genPostItem = (
-    productState: ProductStateInterface,
-  ): CartItemInterface => {
+  const genPostItem = (voucherState: VoucherInterface): VoucherInterface => {
     const {
-      productName,
-      price,
-      stockQuantity,
-      author,
-      imageUrl,
-      _id,
-      quantity,
-      additionalRequirements,
-    } = productState;
+      id,
+      voucherName,
+      correspondingRanking,
+      available,
+      pointLoss,
+      percentageDiscount,
+      maxAmount,
+    } = voucherState;
 
     const postItem = {
-      _id: _id,
-      name: productName,
-      stock: stockQuantity,
-      price: price,
-      author: author,
-      imageUrl: imageUrl,
-      additionalRequirements: additionalRequirements,
-      quantity: Number(quantity),
+      id: id,
+      voucherName: voucherName,
+      correspondingRanking: correspondingRanking,
+      available: available,
+      pointLoss: pointLoss,
+      percentageDiscount: percentageDiscount,
+      maxAmount: maxAmount,
     };
 
-    return postItem as CartItemInterface;
+    return postItem as VoucherInterface;
   };
 
   const handleSave = () => {
     const {
-      imageUrl,
-      productId,
-      productName,
-      cost,
-      stockQuantity,
-      author,
-      quantity,
-      additionalRequirements,
-    } = productState;
+      id,
+      voucherName,
+      correspondingRanking,
+      available,
+      pointLoss,
+      percentageDiscount,
+      maxAmount,
+    } = voucherState;
 
     const error = {
-      productId: !productId,
-      productName: !productName,
-      cost: cost <= 0,
-      stockQuantity: stockQuantity <= 0,
-      quantity: quantity < 0,
+      voucherName: !voucherName,
+      correspondingRanking: !correspondingRanking,
+      pointLoss: pointLoss <= 0,
+      percentageDiscount: percentageDiscount <= 0,
+      maxAmount: maxAmount <= 0,
     };
     setErrorState(error);
     const passable = !(Object.values(error).findIndex((item) => item) > -1);
 
     console.log(error);
     if (!passable) return;
-    const newItem = genPostItem(productState);
-    dispatch({ type: CartAction.CART_UPDATE_ITEM_QUANTITY, payload: newItem });
-    if (newItem.quantity > newItem.stock) {
-      toastError('Out of stock');
-      handleClose();
-      return;
-    }
+    const newItem = genPostItem(voucherState);
+    dispatch({ type: CartAction.ADD_VOUCHERS, payload: newItem });
     toastInformSuccess('Changes saved!');
     handleClose();
   };
 
-  React.useEffect(() => {
-    const updateLoading = updateDrinkLoading || updateBookLoading;
-    if (updateSuccess && !updateLoading) {
-      handleClose();
-    }
-  }, [updateSuccess, updateDrinkLoading, updateBookLoading]);
+  // React.useEffect(() => {
+  //   const updateLoading = updateDrinkLoading || updateBookLoading;
+  //   if (updateSuccess && !updateLoading) {
+  //     handleClose();
+  //   }
+  // }, [updateSuccess, updateDrinkLoading, updateBookLoading]);
 
   return (
     <div>
@@ -221,7 +205,7 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
             color={theme.palette.secondary.contrastText}
             style={{ padding: ` ${theme.spacing(1)} 0` }}
           >
-            <strong> Edit Cart Item</strong>
+            <strong> Edit Voucher</strong>
           </Typography>
           <Divider />
 
@@ -229,15 +213,15 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
             <Grid container spacing={2}>
               <Grid container item alignItems="center">
                 <Grid xs={3}>
-                  <label htmlFor="product-id">Product ID</label>
+                  <label htmlFor="voucher-id">Voucher ID</label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
                   <TextField
                     variant="outlined"
-                    id="product-id"
+                    id="voucher-id"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={productState?.productId}
+                    value={voucherState?.id}
                     disabled
                   />
                 </Grid>
@@ -245,139 +229,134 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
 
               <Grid container item alignItems="center">
                 <Grid xs={3}>
-                  <label htmlFor="product-name">Product Name</label>
+                  <label htmlFor="voucher-name">Voucher Name</label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
                   <TextField
                     variant="outlined"
-                    id="product-name"
+                    id="voucher-name"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={productState?.productName}
-                    onChange={(e) => handleChangeText(e, 'productName')}
-                    error={errorState.productName}
+                    value={voucherState?.voucherName}
+                    onChange={(e) => handleChangeText(e, 'voucherName')}
+                    error={errorState.voucherName}
+                  />
+                </Grid>
+              </Grid>
+
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="corresponding-rank">Corresponding Rank</label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <TextField
+                    variant="outlined"
+                    id="corresponding-rank"
+                    aria-describedby="my-helper-text"
+                    fullWidth
+                    value={voucherState?.correspondingRanking}
+                    onChange={(e) =>
+                      handleChangeText(e, 'correspondingRanking')
+                    }
+                    error={errorState.correspondingRanking}
+                  />
+                </Grid>
+              </Grid>
+
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="voucher-point-loss">Point Loss</label>
+                </Grid>
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <TextField
+                    variant="outlined"
+                    id="voucher-point-loss"
+                    aria-describedby="my-helper-text"
+                    fullWidth
+                    value={round0(voucherState?.pointLoss)}
+                    InputProps={{
+                      inputComponent: NumberFormatCustom as any,
+                    }}
+                    onChange={(e) => handleChangeText(e, 'pointLoss')}
+                    error={errorState.pointLoss}
                     // helperText={
-                    //   errorState.productName && 'Product Name must not be empty'
+                    //     errorState.pointLoss &&
+                    //     'Point loss must be more than 0'
                     // }
-                    disabled
                   />
                 </Grid>
               </Grid>
 
-              {productState?.author && (
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="product-author">Author</label>
-                  </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <TextField
-                      variant="outlined"
-                      id="product-author"
-                      aria-describedby="my-helper-text"
-                      fullWidth
-                      value={productState?.author}
-                      onChange={(e) => handleChangeText(e, 'author')}
-                      error={errorState.author}
-                      helperText={
-                        errorState.author && 'Author must not be empty'
-                      }
-                      disabled
-                    />
-                  </Grid>
-                </Grid>
-              )}
-
               <Grid container item alignItems="center">
                 <Grid xs={3}>
-                  <label htmlFor="product-price">Price</label>
+                  <label htmlFor="voucher-availability">Availability</label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
                   <TextField
                     variant="outlined"
-                    id="product-price"
+                    id="voucher-availability"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={round2(productState?.cost)}
-                    InputProps={{
-                      startAdornment: '$',
-                      inputComponent: NumberFormatCustom as any,
-                    }}
-                    onChange={(e) => handleChangeText(e, 'cost')}
-                    error={errorState.cost}
-                    helperText={
-                      errorState.cost &&
-                      'Price must not be less than or equal to 0'
+                    value={
+                      voucherState?.available ? 'Available' : 'Non-available'
                     }
-                    disabled
-                  />
-                </Grid>
-              </Grid>
-              <Grid container item alignItems="center">
-                <Grid xs={3}>
-                  <label htmlFor="product-stock">Stock Quantity</label>
-                </Grid>
-                <Grid xs sx={{ maxWidth: 400 }}>
-                  <TextField
-                    variant="outlined"
-                    id="product-stock"
-                    aria-describedby="my-helper-text"
-                    fullWidth
-                    value={productState?.stockQuantity}
-                    onChange={(e) => handleChangeText(e, 'stockQuantity')}
-                    InputProps={{
-                      // inputMode: 'numeric',
-                      inputComponent: NumberFormatCustom as any,
-                    }}
-                    error={errorState.stockQuantity}
-                    helperText={
-                      errorState.stockQuantity &&
-                      'Stock must not be less than or equal to 0'
-                    }
-                    disabled
+                    onChange={(e) => handleChangeText(e, 'available')}
+                    // helperText={
+                    //     errorState.pointLoss &&
+                    //     'Point loss must be more than 0'
+                    // }
                   />
                 </Grid>
               </Grid>
 
               <Grid container item alignItems="center">
                 <Grid xs={3}>
-                  <label htmlFor="product-quantity">Quantity</label>
+                  <label htmlFor="voucher-amount">Max Discount Amount</label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
                   <TextField
                     variant="outlined"
-                    id="product-quantity"
+                    id="voucher-amount"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={productState?.quantity}
+                    value={voucherState?.maxAmount}
+                    onChange={(e) => handleChangeText(e, 'maxAmount')}
                     InputProps={{
+                      inputMode: 'numeric',
                       inputComponent: NumberFormatCustom as any,
                     }}
-                    onChange={(e) => handleChangeText(e, 'quantity')}
-                    error={errorState.quantity}
-                    helperText={
-                      errorState.quantity &&
-                      'Quantity must not be less than or equal to 0'
-                    }
+                    error={errorState.maxAmount}
+                    // helperText={
+                    //   errorState.stockQuantity &&
+                    //   'Discount amount must not be less than or equal to 0'
+                    // }
                   />
                 </Grid>
               </Grid>
 
               <Grid container item alignItems="center">
                 <Grid xs={3}>
-                  <label htmlFor="product-additionalRequirements">
-                    Additional Requirement
+                  <label htmlFor="voucher-perentageDiscount">
+                    Discount Percentage
                   </label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
                   <TextField
                     variant="outlined"
-                    id="product-additionalRequirements"
+                    id="voucher-percentageDiscount"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={productState?.additionalRequirements}
-                    onChange={(e) =>
-                      handleChangeText(e, 'additionalRequirements')
-                    }
+                    value={voucherState?.maxAmount}
+                    onChange={(e) => handleChangeText(e, 'percentageDiscount')}
+                    InputProps={{
+                      inputMode: 'numeric',
+                      inputComponent: NumberFormatCustom as any,
+                    }}
+                    error={errorState.percentageDiscount}
+                    // helperText={
+                    //   errorState.stockQuantity &&
+                    //   'Discount amount must not be less than or equal to 0'
+                    // }
                   />
                 </Grid>
               </Grid>
@@ -402,9 +381,9 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
             <Grid>
               <LoadingButton
                 variant="contained"
-                loading={updateDrinkLoading || updateBookLoading}
+                // loading={updateDrinkLoading || updateBookLoading}
                 loadingPosition="end"
-                onClick={() => handleSave()}
+                // onClick={() => handleSave()}
                 endIcon={<SaveIcon />}
               >
                 Save Changes{' '}

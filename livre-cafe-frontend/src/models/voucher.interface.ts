@@ -5,5 +5,6 @@ export interface VoucherInterface {
   correspondingRanking: string;
   available: boolean;
   pointLoss: number;
-  amount: number;
+  percentageDiscount: number;
+  maxAmount: number;
 }
