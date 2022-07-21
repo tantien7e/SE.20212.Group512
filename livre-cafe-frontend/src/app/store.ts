@@ -13,6 +13,7 @@ import { verifyApi } from '@app/app/services/authentication/verify-api-slice';
 import snacksReducer from '@app/app/features/snacks/snacks-slice';
 import areasReducer from '@app/app/features/areas/areas-slice';
 import reservationsReducer from '@app/app/features/reservations/reservations-slice';
+import vouchersReducer from './features/vouchers/vouchers-slice';
 
 const sagaMiddleware = createSagaMiddleware();
 export const store = configureStore({
@@ -26,6 +27,7 @@ export const store = configureStore({
     snacks: snacksReducer,
     areas: areasReducer,
     reservations: reservationsReducer,
+    vouchers: vouchersReducer,
     [bookApi.reducerPath]: bookApi.reducer,
     [drinkApi.reducerPath]: drinkApi.reducer,
     [verifyApi.reducerPath]: verifyApi.reducer,
