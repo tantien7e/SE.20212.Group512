@@ -31,6 +31,10 @@ import addStaffSaga from '@app/app/sagas/staffs/addStaffSaga';
 import deleteStaffSaga from '@app/app/sagas/staffs/deleteStaffSaga';
 import getListStaffsSaga from '@app/app/sagas/staffs/getListStaffsSaga';
 import updateStaffSaga from '@app/app/sagas/staffs/updateStaffSaga';
+import addVoucherSaga from '@app/app/sagas/vouchers/addVoucherSaga';
+import deleteVoucherSaga from '@app/app/sagas/vouchers/deleteVoucherSaga';
+import getListVouchersSaga from '@app/app/sagas/vouchers/getListVouchersSaga';
+import updateVoucherSaga from '@app/app/sagas/vouchers/updateVoucherSaga';
 import { all } from 'redux-saga/effects';
 
 function* helloSaga() {
@@ -74,5 +78,9 @@ export default function* rootSaga() {
     getListReservationsSaga(),
     updateReservationSaga(),
     addReservationSaga(),
+    getListVouchersSaga(),
+    addVoucherSaga(),
+    updateVoucherSaga(),
+    deleteVoucherSaga(),
   ]);
 }

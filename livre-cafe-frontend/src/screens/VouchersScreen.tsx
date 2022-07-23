@@ -31,7 +31,6 @@ function VouchersScreen() {
   const dispatch = useDispatch();
   const vouchersSelector = useSelector(selectVouchers);
   const { vouchers, loading } = vouchersSelector;
-  console.log(vouchers)
 
   const [openAddModal, setOpenAddModal] = useState(false);
 
@@ -103,7 +102,7 @@ function VouchersScreen() {
           </Button>
         </Box>
         <Box sx={{ margin: `${theme.spacing(2)} 0` }}>
-          <VouchersTable vouchers={vouchers} />
+          <VouchersTable />
         </Box>
       </Box>
     </div >

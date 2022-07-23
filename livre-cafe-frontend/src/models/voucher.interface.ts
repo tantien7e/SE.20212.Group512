@@ -1,5 +1,5 @@
 export interface VoucherInterface {
-  _id?: string;
+  _id: string;
   name: string;
   correspondingRank: string;
   available: boolean;
@@ -8,4 +8,4 @@ export interface VoucherInterface {
   maxAmount: number;
 }
 
-export type VoucherNewInterface = VoucherInterface
+export type VoucherPostData = Omit<VoucherInterface, '_id'>;

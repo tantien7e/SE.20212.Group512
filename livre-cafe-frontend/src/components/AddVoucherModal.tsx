@@ -83,7 +83,7 @@ export default function AddVoucherModal(
         _id: '',
         name: '',
         correspondingRank: '',
-        available: false,
+        available: true,
         pointsCost: 0,
         percentageDiscount: 0,
         maxAmount: 0,
@@ -101,7 +101,9 @@ export default function AddVoucherModal(
     const headerPadding = `${theme.spacing(2)} 0`;
 
     const handleChangeText = (
-        e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> | SelectChangeEvent,
+        e:
+            | React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+            | SelectChangeEvent,
         field: keyof VoucherInterface,
     ) => {
 
@@ -211,7 +213,7 @@ export default function AddVoucherModal(
                         color={theme.palette.secondary.contrastText}
                         style={{ padding: ` ${theme.spacing(1)} 0` }}
                     >
-                        <strong> Add A New Voucher</strong>
+                        <strong> Edit This Voucher</strong>
                     </Typography>
                     <Divider />
 
@@ -288,15 +290,13 @@ export default function AddVoucherModal(
                                 </Grid>
                                 <Grid xs sx={{ maxWidth: 400 }}>
                                     <Select
-                                        variant="outlined"
-                                        id="voucher-availability"
-                                        aria-describedby="my-helper-text"
-                                        fullWidth
-                                        value={voucherState.available}
+                                        labelId="demo-select-small"
+                                        id="demo-select-small"
+                                        value={voucherState.available ? "Available" : "Non - Available"}
                                         onChange={(e) => handleChangeText(e, 'available')}
                                     >
-                                        <MenuItem value={1}>Available</MenuItem>
-                                        <MenuItem value={0}>Non-Available</MenuItem>
+                                        <MenuItem value={"Available"}>Available</MenuItem>
+                                        <MenuItem value={"Non - Available"}>Non - Available</MenuItem>
                                     </Select>
                                 </Grid>
                             </Grid>
@@ -378,7 +378,7 @@ export default function AddVoucherModal(
                                 onClick={() => handleAdd()}
                                 endIcon={<SaveIcon />}
                             >
-                                Add{' '}
+                                Save{' '}
                             </LoadingButton>
                         </Grid>
                     </Grid>

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   DataGrid,
   GridColDef,
@@ -26,51 +26,46 @@ import { getRankColor } from '@app/utils';
 import { RankType } from '@app/models';
 import EditVoucherModal from './EditVoucherModal';
 import { CartStateInterface } from '@app/context/Store';
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteVoucher, fetchVouchers, selectVouchers } from '@app/app/features/vouchers/vouchers-slice';
 
 export default function VouchersTable() {
   const [openEditModal, setOpenEditModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [currentVoucher, setCurrentVoucher] = useState<VoucherInterface>();
+  const dispatch = useDispatch();
+  const vouchersSelector = useSelector(selectVouchers);
+  const { vouchers, loading } = vouchersSelector;
 
-  // const rows = vouchers.map((voucher, id) => {
-  //   return {
-  //     id: voucher._id,
-  //     voucherName: voucher.voucherName,
-  //     correspondingRanking: voucher.correspondingRanking,
-  //     available: voucher.available ? 'Available' : 'Non-available',
-  //     pointLoss: voucher.pointLoss,
-  //     percentageDiscount: voucher.percentageDiscount,
-  //     maxAmount: voucher.maxAmount,
-  //   };
-  // });
 
-  // const rows = vouchers.map((voucher) => {
-  //   return {
-  //     id: voucher._id,
-  //     voucherName: voucher.voucherName,
-  //     correspondingRanking: voucher.correspondingRanking,
-  //     available: voucher.available ? 'Available' : 'Non-available',
-  //     pointLoss: voucher.pointLoss,
-  //     percentageDiscount: voucher.percentageDiscount,
-  //     maxAmount: voucher.maxAmount,
-  //   };
-  // });
-
-  const rows = () => {
+  const rows = vouchers?.map((voucher, id) => {
     return {
-      //     id: voucher._id,
-      //     voucherName: voucher.voucherName,
-      //     correspondingRanking: voucher.correspondingRanking,
-      //     available: voucher.available ? 'Available' : 'Non-available',
-      //     pointLoss: voucher.pointLoss,
-      //     percentageDiscount: voucher.percentageDiscount,
-      //     maxAmount: voucher.maxAmount,
-      //   };
-    }
-  }
+      id: id + 1,
+      _id: voucher._id,
+      name: voucher.name,
+      correspondingRank: voucher.correspondingRank,
+      available: voucher.available ? 'Available' : 'Non-available',
+      pointsCost: voucher.pointsCost,
+      percentageDiscount: voucher.percentageDiscount,
+      maxAmount: voucher.maxAmount,
+    };
+  }) || [];
+
+  useEffect(() => {
+    if (!vouchers) dispatch(fetchVouchers());
+  }, [vouchers]);
+
   const handleEdit = (params: GridRenderCellParams<any, any, any>) => {
     setCurrentVoucher(params.row);
     setOpenEditModal(true);
   };
+
+  const handleDelete = (params: GridRenderCellParams<any, any, any>) => {
+    setCurrentVoucher(params.row);
+    if (!currentVoucher) return;
+    console.log(currentVoucher._id)
+    dispatch(deleteVoucher(currentVoucher._id));
+  }
 
   const deleteButton = (params: GridRenderCellParams<any, any, any>) => {
     return (
@@ -78,7 +73,7 @@ export default function VouchersTable() {
         <Button
           variant="text"
           color="error"
-        //   onClick={(e) => handleDelete(params)}
+          onClick={(e) => handleDelete(params)}
         >
           <DeleteOutlineOutlinedIcon />
         </Button>
@@ -106,32 +101,32 @@ export default function VouchersTable() {
             fontWeight={600}
             textTransform="uppercase"
           >
-            {params.row.correspondingRanking}
+            {params.row.correspondingRank}
           </Typography>
         }
         variant="filled"
-        color={getRankColor(params.row.correspondingRanking.toLowerCase())}
+        color={getRankColor(params.row.correspondingRank?.toLowerCase())}
       />
     );
   };
 
   const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', sortable: false, flex: 80 },
+    { field: '_id', headerName: 'ID', sortable: false, flex: 110 },
     {
-      field: 'voucherName',
+      field: 'name',
       headerName: 'Voucher Name',
       flex: 280,
       resizable: true,
     },
     {
-      field: 'correspondingRanking',
+      field: 'correspondingRank',
       headerName: 'Corresponding Ranking',
       flex: 280,
       resizable: true,
       renderCell: (params) => rankTag(params),
     },
     {
-      field: 'pointLoss',
+      field: 'pointsCost',
       headerName: 'Point Loss',
       flex: 180,
       resizable: true,
@@ -190,17 +185,18 @@ export default function VouchersTable() {
         }}
       >
         <DataGrid
-          rows={rows}
+          rows={rows || []}
           columns={columns}
-          rowsPerPageOptions={[5]}
           rowHeight={75}
+          rowsPerPageOptions={[5, 10, 25, 50, 100]}
           isRowSelectable={() => false}
-          autoHeight={true}
+          autoHeight={false}
+          loading={loading}
           sx={{
             padding: '1rem',
             paddingTop: '0',
             '& .MuiDataGrid-main > div:first-child': {
-              zIndex: rows.length === 0 ? 100 : 0,
+              zIndex: rows?.length === 0 ? 100 : 0,
             },
           }}
         />

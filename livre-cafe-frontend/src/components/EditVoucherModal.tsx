@@ -1,25 +1,21 @@
 import {
-  selectBooksUpdateLoading,
-  updateBook,
-} from '@app/app/features/books/books-slice';
+  selectVouchersUpdateLoading,
+  updateVoucher,
+} from '@app/app/features/vouchers/vouchers-slice';
+import { RankType } from '@app/models';
 import {
-  selectDrinksUpdateLoading,
-  updateDrink,
-} from '@app/app/features/drinks/drinks-slice';
-import { InventoryType, PREFIX_URL } from '@app/constants';
-import { CartAction, CartItemInterface, Store } from '@app/context/Store';
-import { VoucherInterface } from '@app/models';
-import { BookInterface, DrinkInterface } from '@app/models/product.interface';
-import { round0, round2 } from '@app/utils';
-import { toastError, toastInformSuccess } from '@app/utils/toast';
+  VoucherInterface
+} from '@app/models/voucher.interface';
+import { round0 } from '@app/utils';
 import SaveIcon from '@mui/icons-material/Save';
-import { LoadingButton } from '@mui/lab';
+import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Button,
   Container,
   Divider,
-  FormHelperText,
   Grid,
+  MenuItem,
+  Select,
   SelectChangeEvent,
   TextField,
 } from '@mui/material';
@@ -27,18 +23,11 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import React, { useContext } from 'react';
+import * as React from 'react';
 import { useState } from 'react';
 import NumberFormat from 'react-number-format';
+import { CountryData } from 'react-phone-input-2';
 import { useDispatch, useSelector } from 'react-redux';
-
-export interface ErrorStateInterface {
-  voucherName?: boolean;
-  correspondingRanking?: boolean;
-  pointLoss?: boolean;
-  percentageDiscount: boolean;
-  maxAmount: boolean;
-}
 
 const style = {
   // position: 'absolute' as 'absolute',
@@ -51,7 +40,7 @@ const style = {
   border: '0.5px solid #000',
   borderRadius: '8px',
   boxShadow: 24,
-  // minHeight: 'calc(100vh - 64px)',
+  //   minHeight: 'calc(100vh - 64px)',
   height: 'auto',
   margin: '32px auto',
   p: 4,
@@ -61,50 +50,76 @@ const Input = styled('input')({
   display: 'none',
 });
 
-interface EditVoucherModalPropsInterface {
+interface AddModalProps {
   open: boolean;
   handleClose: () => void;
-  item: VoucherInterface;
+  item?: VoucherInterface;
 }
 
-export default function EditVoucherModal(
-  props: EditVoucherModalPropsInterface,
-) {
+interface VoucherStateInterface {
+  _id: string;
+  name: string;
+  correspondingRank: string,
+  available: boolean,
+  pointsCost: number,
+  percentageDiscount: number,
+  maxAmount: number,
+}
+
+export interface ErrorStateInterface {
+  name: boolean;
+  correspondingRank: boolean,
+  pointsCost: boolean,
+  percentageDiscount: boolean,
+  maxAmount: boolean,
+}
+
+export default function EditVoucherModal(props: AddModalProps) {
+  const dispatch = useDispatch();
+  const vouchersLoading = useSelector(selectVouchersUpdateLoading);
+  const [addSuccess, setAddSuccess] = useState(false);
   const { open, handleClose, item } = props;
-  // const updateDrinkLoading = useSelector(selectDrinksUpdateLoading);
-  // const updateBookLoading = useSelector(selectBooksUpdateLoading);
-  const [updateSuccess, setUpdateSuccess] = useState(false);
-  const { dispatch } = useContext(Store);
-  const [voucherState, setVoucherState] = useState<VoucherInterface>({
+
+  const [voucherState, setVoucherState] = useState<VoucherStateInterface>({
     _id: item?._id || '',
-    id: item?.id || '0',
-    voucherName: item?.voucherName || '',
-    correspondingRanking: item?.correspondingRanking || '',
+    name: item?.name || '',
+    correspondingRank: item?.correspondingRank || '',
     available: item?.available || false,
-    pointLoss: item?.pointLoss || 0,
+    pointsCost: item?.pointsCost || 0,
     percentageDiscount: item?.percentageDiscount || 0,
     maxAmount: item?.maxAmount || 0,
   });
 
   const [errorState, setErrorState] = useState<ErrorStateInterface>({
-    voucherName: false,
-    correspondingRanking: false,
-    pointLoss: false,
+    name: false,
+    correspondingRank: false,
+    pointsCost: false,
     percentageDiscount: false,
     maxAmount: false,
   });
-
   const theme = useTheme();
   const headerPadding = `${theme.spacing(2)} 0`;
 
+
   const handleChangeText = (
-    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> | SelectChangeEvent,
+    e:
+      | React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+      | SelectChangeEvent,
     field: keyof VoucherInterface,
   ) => {
+
     const isNumberField =
-      field === 'pointLoss' || 'maxAmount' || 'percentageDiscount';
+      field === 'pointsCost' || 'maxAmount' || 'percentageDiscount';
     setVoucherState((prevState) => {
-      return { ...prevState, [field]: e.target.value };
+      let value;
+      if (field == "available") {
+        value = (e.target.value == "Available")
+      }
+      else {
+        value = e.target.value
+      }
+
+      return { ...prevState, [field]: value };
     });
     setErrorState((prevState) => {
       return {
@@ -116,77 +131,49 @@ export default function EditVoucherModal(
 
   const generatePostData = (body: VoucherInterface) => {
     const {
-      id,
-      voucherName,
-      correspondingRanking,
+      _id,
+      name,
+      correspondingRank,
       available,
-      pointLoss,
+      pointsCost,
       percentageDiscount,
       maxAmount,
     } = body;
 
-    return {};
-  };
-
-  const genPostItem = (voucherState: VoucherInterface): VoucherInterface => {
-    const {
-      id,
-      voucherName,
-      correspondingRanking,
+    return {
+      _id,
+      name,
+      correspondingRank,
       available,
-      pointLoss,
+      pointsCost,
       percentageDiscount,
       maxAmount,
-    } = voucherState;
-
-    const postItem = {
-      id: id,
-      voucherName: voucherName,
-      correspondingRanking: correspondingRanking,
-      available: available,
-      pointLoss: pointLoss,
-      percentageDiscount: percentageDiscount,
-      maxAmount: maxAmount,
     };
-
-    return postItem as VoucherInterface;
   };
 
   const handleSave = () => {
-    const {
-      id,
-      voucherName,
-      correspondingRanking,
-      available,
-      pointLoss,
-      percentageDiscount,
-      maxAmount,
-    } = voucherState;
-
     const error = {
-      voucherName: !voucherName,
-      correspondingRanking: !correspondingRanking,
-      pointLoss: pointLoss <= 0,
-      percentageDiscount: percentageDiscount <= 0,
-      maxAmount: maxAmount <= 0,
+      name: !voucherState.name,
+      correspondingRank: !voucherState.correspondingRank,
+      pointsCost: voucherState.pointsCost <= 0,
+      percentageDiscount: voucherState.percentageDiscount <= 0,
+      maxAmount: voucherState.maxAmount <= 0,
     };
     setErrorState(error);
     const passable = !(Object.values(error).findIndex((item) => item) > -1);
-
-    console.log(error);
     if (!passable) return;
-    const newItem = genPostItem(voucherState);
-    dispatch({ type: CartAction.ADD_VOUCHERS, payload: newItem });
-    toastInformSuccess('Changes saved!');
-    handleClose();
+    const voucherData = generatePostData(voucherState);
+    console.log(voucherData)
+    dispatch(updateVoucher(voucherData as VoucherInterface));
+    setAddSuccess(true);
   };
 
-  // React.useEffect(() => {
-  //   const updateLoading = updateDrinkLoading || updateBookLoading;
-  //   if (updateSuccess && !updateLoading) {
-  //     handleClose();
-  //   }
-  // }, [updateSuccess, updateDrinkLoading, updateBookLoading]);
+  React.useEffect(() => {
+    const loading = vouchersLoading;
+    if (addSuccess && !loading) {
+      handleClose();
+    }
+  }, [addSuccess, vouchersLoading]);
 
   return (
     <div>
@@ -206,28 +193,12 @@ export default function EditVoucherModal(
             color={theme.palette.secondary.contrastText}
             style={{ padding: ` ${theme.spacing(1)} 0` }}
           >
-            <strong> Edit Voucher</strong>
+            <strong> Edit This Voucher</strong>
           </Typography>
           <Divider />
 
           <Container sx={{ padding: headerPadding }} maxWidth="lg">
             <Grid container spacing={2}>
-              <Grid container item alignItems="center">
-                <Grid xs={3}>
-                  <label htmlFor="voucher-id">Voucher ID</label>
-                </Grid>
-                <Grid xs sx={{ maxWidth: 400 }}>
-                  <TextField
-                    variant="outlined"
-                    id="voucher-id"
-                    aria-describedby="my-helper-text"
-                    fullWidth
-                    value={voucherState?.id}
-                    disabled
-                  />
-                </Grid>
-              </Grid>
-
               <Grid container item alignItems="center">
                 <Grid xs={3}>
                   <label htmlFor="voucher-name">Voucher Name</label>
@@ -238,9 +209,9 @@ export default function EditVoucherModal(
                     id="voucher-name"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={voucherState?.voucherName}
-                    onChange={(e) => handleChangeText(e, 'voucherName')}
-                    error={errorState.voucherName}
+                    value={voucherState?.name}
+                    onChange={(e) => handleChangeText(e, 'name')}
+                    error={errorState.name}
                   />
                 </Grid>
               </Grid>
@@ -255,11 +226,11 @@ export default function EditVoucherModal(
                     id="corresponding-rank"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={voucherState.correspondingRanking}
+                    value={voucherState.correspondingRank}
                     onChange={(e) =>
-                      handleChangeText(e, 'correspondingRanking')
+                      handleChangeText(e, 'correspondingRank')
                     }
-                    error={errorState.correspondingRanking}
+                    error={errorState.correspondingRank}
                   >
                     <MenuItem value={RankType.SILVER}>Silver</MenuItem>
                     <MenuItem value={RankType.GOLD}>Gold</MenuItem>
@@ -279,16 +250,16 @@ export default function EditVoucherModal(
                     id="voucher-point-loss"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={round0(voucherState?.pointLoss)}
+                    value={round0(voucherState?.pointsCost)}
                     InputProps={{
                       inputComponent: NumberFormatCustom as any,
                     }}
-                    onChange={(e) => handleChangeText(e, 'pointLoss')}
-                    error={errorState.pointLoss}
-                  // helperText={
-                  //     errorState.pointLoss &&
-                  //     'Point loss must be more than 0'
-                  // }
+                    onChange={(e) => handleChangeText(e, 'pointsCost')}
+                    error={errorState.pointsCost}
+                    helperText={
+                      errorState.pointsCost &&
+                      'Point loss must be more than 0'
+                    }
                   />
                 </Grid>
               </Grid>
@@ -298,20 +269,15 @@ export default function EditVoucherModal(
                   <label htmlFor="voucher-availability">Availability</label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
-                  <TextField
-                    variant="outlined"
-                    id="voucher-availability"
-                    aria-describedby="my-helper-text"
-                    fullWidth
-                    value={
-                      voucherState?.available ? 'Available' : 'Non-available'
-                    }
+                  <Select
+                    labelId="demo-select-small"
+                    id="demo-select-small"
+                    value={voucherState.available ? "Available" : "Non - Available"}
                     onChange={(e) => handleChangeText(e, 'available')}
-                  // helperText={
-                  //     errorState.pointLoss &&
-                  //     'Point loss must be more than 0'
-                  // }
-                  />
+                  >
+                    <MenuItem value={"Available"}>Available</MenuItem>
+                    <MenuItem value={"Non - Available"}>Non - Available</MenuItem>
+                  </Select>
                 </Grid>
               </Grid>
 
@@ -332,10 +298,10 @@ export default function EditVoucherModal(
                       inputComponent: NumberFormatCustom as any,
                     }}
                     error={errorState.maxAmount}
-                  // helperText={
-                  //   errorState.stockQuantity &&
-                  //   'Discount amount must not be less than or equal to 0'
-                  // }
+                    helperText={
+                      errorState.maxAmount &&
+                      'Discount amount must not be less than or equal to 0'
+                    }
                   />
                 </Grid>
               </Grid>
@@ -359,10 +325,10 @@ export default function EditVoucherModal(
                       inputComponent: NumberFormatCustom as any,
                     }}
                     error={errorState.percentageDiscount}
-                  // helperText={
-                  //   errorState.stockQuantity &&
-                  //   'Discount amount must not be less than or equal to 0'
-                  // }
+                    helperText={
+                      errorState.percentageDiscount &&
+                      'Discount amount must not be less than or equal to 0'
+                    }
                   />
                 </Grid>
               </Grid>
@@ -387,18 +353,18 @@ export default function EditVoucherModal(
             <Grid>
               <LoadingButton
                 variant="contained"
-                // loading={updateDrinkLoading || updateBookLoading}
+                loading={vouchersLoading}
                 loadingPosition="end"
-                // onClick={() => handleSave()}
+                onClick={() => handleSave()}
                 endIcon={<SaveIcon />}
               >
-                Save Changes{' '}
+                Save{' '}
               </LoadingButton>
             </Grid>
           </Grid>
         </Box>
       </Modal>
-    </div>
+    </div >
   );
 }
 
