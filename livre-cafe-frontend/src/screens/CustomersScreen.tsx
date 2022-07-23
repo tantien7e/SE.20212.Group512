@@ -81,6 +81,7 @@ function CustomersScreen() {
   const dispatch = useDispatch();
   const customersSelector = useSelector(selectCustomers);
   const { customers, loading } = customersSelector;
+  console.log(customers)
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
   const [deleteCustomerModalOpen, setDeleteCustomerModalOpen] = useState(false);

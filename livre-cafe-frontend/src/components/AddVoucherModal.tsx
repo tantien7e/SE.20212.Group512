@@ -6,7 +6,7 @@ import {
     selectDrinksUpdateLoading,
     updateDrink,
 } from '@app/app/features/drinks/drinks-slice';
-import { addVoucher } from '@app/app/features/vouchers/vouchers-slice';
+import { addVoucher, selectVouchersAddLoading } from '@app/app/features/vouchers/vouchers-slice';
 import { InventoryType, PREFIX_URL } from '@app/constants';
 import { CartAction, CartItemInterface, Store } from '@app/context/Store';
 import { RankType, VoucherInterface } from '@app/models';
@@ -37,9 +37,9 @@ import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector } from 'react-redux';
 
 export interface ErrorStateInterface {
-    voucherName?: boolean;
-    correspondingRanking?: boolean;
-    pointLoss?: boolean;
+    name?: boolean;
+    correspondingRank?: boolean;
+    pointsCost?: boolean;
     percentageDiscount: boolean;
     maxAmount: boolean;
 }
@@ -76,23 +76,23 @@ export default function AddVoucherModal(
     const { open, handleClose } = props;
     // const updateDrinkLoading = useSelector(selectDrinksUpdateLoading);
     // const updateBookLoading = useSelector(selectBooksUpdateLoading);
-    const [updateSuccess, setUpdateSuccess] = useState(false);
-    const { dispatch } = useContext(Store);
+    const [addSuccess, setAddSuccess] = useState(false);
+    const dispatch = useDispatch();
+    const vouchersLoading = useSelector(selectVouchersAddLoading);
     const [voucherState, setVoucherState] = useState<VoucherInterface>({
         _id: '',
-        id: '',
-        voucherName: '',
-        correspondingRanking: '',
+        name: '',
+        correspondingRank: '',
         available: false,
-        pointLoss: 0,
+        pointsCost: 0,
         percentageDiscount: 0,
         maxAmount: 0,
     });
 
     const [errorState, setErrorState] = useState<ErrorStateInterface>({
-        voucherName: false,
-        correspondingRanking: false,
-        pointLoss: false,
+        name: false,
+        correspondingRank: false,
+        pointsCost: false,
         percentageDiscount: false,
         maxAmount: false,
     });
@@ -104,16 +104,17 @@ export default function AddVoucherModal(
         e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> | SelectChangeEvent,
         field: keyof VoucherInterface,
     ) => {
-        if (field === 'available') {
-            setVoucherState((prevState) => {
-                return {
-                    ...prevState, [field]: (e.target.value == '1') ? true : false
-                }
-            });
-        }
+
         const isNumberField =
-            field === 'pointLoss' || 'maxAmount' || 'percentageDiscount';
+            field === 'pointsCost' || 'maxAmount' || 'percentageDiscount';
         setVoucherState((prevState) => {
+            let value;
+            if (field === 'available') {
+                value = (e.target.value == "1")
+            }
+            else {
+                value = e.target.value
+            }
             return { ...prevState, [field]: e.target.value };
         });
         setErrorState((prevState) => {
@@ -126,11 +127,10 @@ export default function AddVoucherModal(
 
     const generatePostData = (body: VoucherInterface) => {
         const {
-            id,
-            voucherName,
-            correspondingRanking,
+            name,
+            correspondingRank,
             available,
-            pointLoss,
+            pointsCost,
             percentageDiscount,
             maxAmount,
         } = body;
@@ -140,21 +140,19 @@ export default function AddVoucherModal(
 
     const genPostVoucher = (voucherState: VoucherInterface): VoucherInterface => {
         const {
-            id,
-            voucherName,
-            correspondingRanking,
+            name,
+            correspondingRank,
             available,
-            pointLoss,
+            pointsCost,
             percentageDiscount,
             maxAmount,
         } = voucherState;
 
         const postItem = {
-            id: id,
-            voucherName: voucherName,
-            correspondingRanking: correspondingRanking,
+            name: name,
+            correspondingRank: correspondingRank,
             available: available,
-            pointLoss: pointLoss,
+            pointsCost: pointsCost,
             percentageDiscount: percentageDiscount,
             maxAmount: maxAmount,
         };
@@ -164,19 +162,18 @@ export default function AddVoucherModal(
 
     const handleAdd = () => {
         const {
-            id,
-            voucherName,
-            correspondingRanking,
+            name,
+            correspondingRank,
             available,
-            pointLoss,
+            pointsCost,
             percentageDiscount,
             maxAmount,
         } = voucherState;
 
         const error = {
-            voucherName: !voucherName,
-            correspondingRanking: !correspondingRanking,
-            pointLoss: pointLoss <= 0,
+            name: !name,
+            correspondingRank: !correspondingRank,
+            pointsCost: pointsCost <= 0,
             percentageDiscount: percentageDiscount <= 0,
             maxAmount: maxAmount <= 0,
         };
@@ -184,18 +181,17 @@ export default function AddVoucherModal(
         const passable = !(Object.values(error).findIndex((item) => item) >= 0);
 
         if (!passable) return;
-        const newVoucher: VoucherInterface = genPostVoucher(voucherState);
+        const newVoucher = genPostVoucher(voucherState);
         dispatch(addVoucher(newVoucher as VoucherInterface));
-        setUpdateSuccess(true)
-        toastInformSuccess('Changes saved!');
-        handleClose();
+        setAddSuccess(true)
     };
 
     React.useEffect(() => {
-        if (updateSuccess) {
+        if (addSuccess && !vouchersLoading) {
             handleClose();
         }
-    }, [updateSuccess]);
+    }, [addSuccess, vouchersLoading]);
+
 
     return (
         <div>
@@ -231,9 +227,9 @@ export default function AddVoucherModal(
                                         id="voucher-name"
                                         aria-describedby="my-helper-text"
                                         fullWidth
-                                        value={voucherState?.voucherName}
-                                        onChange={(e) => handleChangeText(e, 'voucherName')}
-                                        error={errorState.voucherName}
+                                        value={voucherState?.name}
+                                        onChange={(e) => handleChangeText(e, 'name')}
+                                        error={errorState.name}
                                     />
                                 </Grid>
                             </Grid>
@@ -248,11 +244,11 @@ export default function AddVoucherModal(
                                         id="corresponding-rank"
                                         aria-describedby="my-helper-text"
                                         fullWidth
-                                        value={voucherState.correspondingRanking}
+                                        value={voucherState.correspondingRank}
                                         onChange={(e) =>
-                                            handleChangeText(e, 'correspondingRanking')
+                                            handleChangeText(e, 'correspondingRank')
                                         }
-                                        error={errorState.correspondingRanking}
+                                        error={errorState.correspondingRank}
                                     >
                                         <MenuItem value={RankType.SILVER}>Silver</MenuItem>
                                         <MenuItem value={RankType.GOLD}>Gold</MenuItem>
@@ -272,14 +268,14 @@ export default function AddVoucherModal(
                                         id="voucher-point-loss"
                                         aria-describedby="my-helper-text"
                                         fullWidth
-                                        value={round0(voucherState?.pointLoss)}
+                                        value={round0(voucherState?.pointsCost)}
                                         InputProps={{
                                             inputComponent: NumberFormatCustom as any,
                                         }}
-                                        onChange={(e) => handleChangeText(e, 'pointLoss')}
-                                        error={errorState.pointLoss}
+                                        onChange={(e) => handleChangeText(e, 'pointsCost')}
+                                        error={errorState.pointsCost}
                                         helperText={
-                                            errorState.pointLoss &&
+                                            errorState.pointsCost &&
                                             'Point loss must be more than 0'
                                         }
                                     />
@@ -377,12 +373,12 @@ export default function AddVoucherModal(
                         <Grid>
                             <LoadingButton
                                 variant="contained"
-                                // loading={updateDrinkLoading || updateBookLoading}
+                                loading={vouchersLoading}
                                 loadingPosition="end"
                                 onClick={() => handleAdd()}
                                 endIcon={<SaveIcon />}
                             >
-                                Save Changes{' '}
+                                Add{' '}
                             </LoadingButton>
                         </Grid>
                     </Grid>
@@ -403,7 +399,6 @@ const NumberFormatCustom = React.forwardRef<NumberFormat<string>, CustomProps>(
 
         return (
             <NumberFormat
-                {...other}
                 getInputRef={ref}
                 onValueChange={(values) => {
                     onChange({
@@ -415,6 +410,7 @@ const NumberFormatCustom = React.forwardRef<NumberFormat<string>, CustomProps>(
                 }}
                 thousandSeparator
                 isNumericString
+                {...other}
             />
         );
     },

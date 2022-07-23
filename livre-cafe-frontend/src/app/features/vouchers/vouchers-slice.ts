@@ -1,5 +1,5 @@
 import { RootState } from '@app/app/store';
-import {VoucherInterface} from '@app/models/voucher.interface';
+import { VoucherInterface } from '@app/models/voucher.interface';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 

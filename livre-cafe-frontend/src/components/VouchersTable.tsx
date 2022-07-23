@@ -29,9 +29,6 @@ import { CartStateInterface } from '@app/context/Store';
 
 export default function VouchersTable() {
   const [openEditModal, setOpenEditModal] = useState(false);
-  const { state, dispatch } = useContext(Store)
-  const { vouchers } = state;
-  console.log(vouchers)
   const [currentVoucher, setCurrentVoucher] = useState<VoucherInterface>();
 
   // const rows = vouchers.map((voucher, id) => {
@@ -192,7 +189,7 @@ export default function VouchersTable() {
           display: 'flex',
         }}
       >
-        /* <DataGrid
+        <DataGrid
           rows={rows}
           columns={columns}
           rowsPerPageOptions={[5]}
@@ -206,7 +203,7 @@ export default function VouchersTable() {
               zIndex: rows.length === 0 ? 100 : 0,
             },
           }}
-        /> */
+        />
       </div>
     </div>
   );

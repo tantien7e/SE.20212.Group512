@@ -18,13 +18,20 @@ import requireAuthentication from '@app/hocs/requireAuthentication';
 import { useFetch } from '@app/hooks/useFetch';
 import { a11yProps } from './InventoryScreen';
 import AddVoucherModal from '@app/components/AddVoucherModal';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectVouchers } from '@app/app/features/vouchers/vouchers-slice';
 
 function VouchersScreen() {
   const theme = useTheme();
   const [value, setValue] = useState(0);
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleChangeTabs = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+
+  const dispatch = useDispatch();
+  const vouchersSelector = useSelector(selectVouchers);
+  const { vouchers, loading } = vouchersSelector;
+  console.log(vouchers)
 
   const [openAddModal, setOpenAddModal] = useState(false);
 
@@ -54,7 +61,7 @@ function VouchersScreen() {
         <Box sx={{ borderColor: 'divider', width: 'fit-content' }}>
           <Tabs
             value={value}
-            onChange={handleChange}
+            onChange={handleChangeTabs}
             aria-label="basic tabs example"
           >
             <Tab
@@ -96,7 +103,7 @@ function VouchersScreen() {
           </Button>
         </Box>
         <Box sx={{ margin: `${theme.spacing(2)} 0` }}>
-          <VouchersTable />
+          <VouchersTable vouchers={vouchers} />
         </Box>
       </Box>
     </div >
