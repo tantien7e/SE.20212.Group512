@@ -20,6 +20,7 @@ import {
   Divider,
   FormHelperText,
   Grid,
+  SelectChangeEvent,
   TextField,
 } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -97,7 +98,7 @@ export default function EditVoucherModal(
   const headerPadding = `${theme.spacing(2)} 0`;
 
   const handleChangeText = (
-    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement> | SelectChangeEvent,
     field: keyof VoucherInterface,
   ) => {
     const isNumberField =
@@ -249,17 +250,22 @@ export default function EditVoucherModal(
                   <label htmlFor="corresponding-rank">Corresponding Rank</label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
-                  <TextField
+                  <Select
                     variant="outlined"
                     id="corresponding-rank"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={voucherState?.correspondingRanking}
+                    value={voucherState.correspondingRanking}
                     onChange={(e) =>
                       handleChangeText(e, 'correspondingRanking')
                     }
                     error={errorState.correspondingRanking}
-                  />
+                  >
+                    <MenuItem value={RankType.SILVER}>Silver</MenuItem>
+                    <MenuItem value={RankType.GOLD}>Gold</MenuItem>
+                    <MenuItem value={RankType.PLATINUM}>Platinum</MenuItem>
+                    <MenuItem value={RankType.DIAMOND}>Diamond</MenuItem>
+                  </Select>
                 </Grid>
               </Grid>
 
@@ -279,10 +285,10 @@ export default function EditVoucherModal(
                     }}
                     onChange={(e) => handleChangeText(e, 'pointLoss')}
                     error={errorState.pointLoss}
-                    // helperText={
-                    //     errorState.pointLoss &&
-                    //     'Point loss must be more than 0'
-                    // }
+                  // helperText={
+                  //     errorState.pointLoss &&
+                  //     'Point loss must be more than 0'
+                  // }
                   />
                 </Grid>
               </Grid>
@@ -301,10 +307,10 @@ export default function EditVoucherModal(
                       voucherState?.available ? 'Available' : 'Non-available'
                     }
                     onChange={(e) => handleChangeText(e, 'available')}
-                    // helperText={
-                    //     errorState.pointLoss &&
-                    //     'Point loss must be more than 0'
-                    // }
+                  // helperText={
+                  //     errorState.pointLoss &&
+                  //     'Point loss must be more than 0'
+                  // }
                   />
                 </Grid>
               </Grid>
@@ -326,37 +332,37 @@ export default function EditVoucherModal(
                       inputComponent: NumberFormatCustom as any,
                     }}
                     error={errorState.maxAmount}
-                    // helperText={
-                    //   errorState.stockQuantity &&
-                    //   'Discount amount must not be less than or equal to 0'
-                    // }
+                  // helperText={
+                  //   errorState.stockQuantity &&
+                  //   'Discount amount must not be less than or equal to 0'
+                  // }
                   />
                 </Grid>
               </Grid>
 
               <Grid container item alignItems="center">
                 <Grid xs={3}>
-                  <label htmlFor="voucher-perentageDiscount">
+                  <label htmlFor="voucher-perentage-discount">
                     Discount Percentage
                   </label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
                   <TextField
                     variant="outlined"
-                    id="voucher-percentageDiscount"
+                    id="voucher-percentage-discount"
                     aria-describedby="my-helper-text"
                     fullWidth
-                    value={voucherState?.maxAmount}
+                    value={voucherState?.percentageDiscount}
                     onChange={(e) => handleChangeText(e, 'percentageDiscount')}
                     InputProps={{
                       inputMode: 'numeric',
                       inputComponent: NumberFormatCustom as any,
                     }}
                     error={errorState.percentageDiscount}
-                    // helperText={
-                    //   errorState.stockQuantity &&
-                    //   'Discount amount must not be less than or equal to 0'
-                    // }
+                  // helperText={
+                  //   errorState.stockQuantity &&
+                  //   'Discount amount must not be less than or equal to 0'
+                  // }
                   />
                 </Grid>
               </Grid>

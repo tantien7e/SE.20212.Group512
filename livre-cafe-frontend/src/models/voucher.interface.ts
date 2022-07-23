@@ -8,3 +8,5 @@ export interface VoucherInterface {
   percentageDiscount: number;
   maxAmount: number;
 }
+
+export type VoucherNewInterface = VoucherInterface

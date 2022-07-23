@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import {
   DataGrid,
   GridColDef,
@@ -8,6 +8,15 @@ import {
 } from '@mui/x-data-grid';
 import { Helmet } from 'react-helmet-async';
 import type { } from '@mui/x-data-grid/themeAugmentation';
+import { CartItemInterface, Store } from '@app/context/Store';
+import { relative } from 'node:path/win32';
+import { idID } from '@mui/material/locale';
+import { parseClassName } from 'react-toastify/dist/utils';
+import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
+import { Params, useNavigate } from 'react-router-dom';
+import EditCartModal from './EditCartModal';
+
+import { current } from '@reduxjs/toolkit';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import Button from '@mui/material/Button';
 import { useFetch } from '@app/hooks/useFetch';
@@ -15,12 +24,56 @@ import { VoucherInterface } from '@app/models';
 import { Chip, Grid, Toolbar, Tooltip, Typography } from '@mui/material';
 import { getRankColor } from '@app/utils';
 import { RankType } from '@app/models';
+import EditVoucherModal from './EditVoucherModal';
+import { CartStateInterface } from '@app/context/Store';
 
 export default function VouchersTable() {
   const [openEditModal, setOpenEditModal] = useState(false);
-  const { data, isPending, error, postData } = useFetch(
-    'http://localhost:3001/voucher',
-  );
+  const { state, dispatch } = useContext(Store)
+  const { vouchers } = state;
+  console.log(vouchers)
+  const [currentVoucher, setCurrentVoucher] = useState<VoucherInterface>();
+
+  // const rows = vouchers.map((voucher, id) => {
+  //   return {
+  //     id: voucher._id,
+  //     voucherName: voucher.voucherName,
+  //     correspondingRanking: voucher.correspondingRanking,
+  //     available: voucher.available ? 'Available' : 'Non-available',
+  //     pointLoss: voucher.pointLoss,
+  //     percentageDiscount: voucher.percentageDiscount,
+  //     maxAmount: voucher.maxAmount,
+  //   };
+  // });
+
+  // const rows = vouchers.map((voucher) => {
+  //   return {
+  //     id: voucher._id,
+  //     voucherName: voucher.voucherName,
+  //     correspondingRanking: voucher.correspondingRanking,
+  //     available: voucher.available ? 'Available' : 'Non-available',
+  //     pointLoss: voucher.pointLoss,
+  //     percentageDiscount: voucher.percentageDiscount,
+  //     maxAmount: voucher.maxAmount,
+  //   };
+  // });
+
+  const rows = () => {
+    return {
+      //     id: voucher._id,
+      //     voucherName: voucher.voucherName,
+      //     correspondingRanking: voucher.correspondingRanking,
+      //     available: voucher.available ? 'Available' : 'Non-available',
+      //     pointLoss: voucher.pointLoss,
+      //     percentageDiscount: voucher.percentageDiscount,
+      //     maxAmount: voucher.maxAmount,
+      //   };
+    }
+  }
+  const handleEdit = (params: GridRenderCellParams<any, any, any>) => {
+    setCurrentVoucher(params.row);
+    setOpenEditModal(true);
+  };
 
   const deleteButton = (params: GridRenderCellParams<any, any, any>) => {
     return (
@@ -120,19 +173,6 @@ export default function VouchersTable() {
     },
   ];
 
-  const rows = () =>
-    data?.map((voucher) => {
-      return {
-        id: voucher.id,
-        voucherName: voucher.voucherName,
-        correspondingRanking: voucher.correspondingRanking,
-        available: voucher.available ? 'Available' : 'Non-available',
-        pointLoss: voucher.pointLoss,
-        percentageDiscount: voucher.percentageDiscount,
-        maxAmount: voucher.maxAmount,
-      };
-    }) || [];
-
   return (
     <div>
       {currentVoucher && openEditModal && (
@@ -152,8 +192,8 @@ export default function VouchersTable() {
           display: 'flex',
         }}
       >
-        <DataGrid
-          rows={rows()}
+        /* <DataGrid
+          rows={rows}
           columns={columns}
           rowsPerPageOptions={[5]}
           rowHeight={75}
@@ -166,7 +206,7 @@ export default function VouchersTable() {
               zIndex: rows.length === 0 ? 100 : 0,
             },
           }}
-        />
+        /> */
       </div>
     </div>
   );

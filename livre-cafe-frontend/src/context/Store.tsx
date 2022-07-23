@@ -1,4 +1,4 @@
-import { CustomerInterface, VoucherInterface } from '@app/models';
+import { CustomerInterface, VoucherNewInterface } from '@app/models';
 import { ProductInterface } from '@app/models/product.interface';
 import { ReservationPostData } from '@app/models/reservation.interface';
 import React, { createContext, useReducer } from 'react';
@@ -15,8 +15,8 @@ export interface CartStateInterface {
   };
 
   customer?: CustomerInterface;
-  vouchers?: VoucherInterface[];
   reservation?: ReservationPostData;
+  vouchers: VoucherNewInterface[];
 }
 
 export enum CartAction {
@@ -35,7 +35,7 @@ export enum CartAction {
 
 interface CartContextActionInterface {
   type: string;
-  payload: CartItemInterface | CustomerInterface | VoucherInterface[];
+  payload: CartItemInterface | CustomerInterface | VoucherNewInterface;
 }
 
 const initialState: CartStateInterface = {
@@ -78,12 +78,13 @@ function reducer(
     (item: ProductInterface) => item?._id === selectedItem?._id,
   );
 
+
   switch (action.type) {
     case CartAction.CART_ADD_ITEM: {
       const cartItems = existItem
         ? state.cart?.cartItems?.map((item) =>
-            item._id === existItem._id ? selectedItem : item,
-          )
+          item._id === existItem._id ? selectedItem : item,
+        )
         : [...state.cart.cartItems, action.payload];
 
       return {
@@ -96,12 +97,12 @@ function reducer(
     case CartAction.CART_UPDATE_ITEM_QUANTITY: {
       const cartItems = existItem
         ? state.cart?.cartItems?.map((item) =>
-            item._id === existItem._id &&
+          item._id === existItem._id &&
             (selectedItem?.quantity <= selectedItem.stock ||
               selectedItem.hasNoStock)
-              ? selectedItem
-              : item,
-          )
+            ? selectedItem
+            : item,
+        )
         : [...state.cart.cartItems, action.payload];
       const filteredCartItems = (cartItems as CartItemInterface[]).filter(
         (item) =>
@@ -140,7 +141,7 @@ function reducer(
           cartItems: [],
         },
         customer: null,
-        vouchers: null,
+        vouchers: [],
       };
     }
 
@@ -162,11 +163,11 @@ function reducer(
     }
 
     case CartAction.ADD_VOUCHERS: {
-      const vouchers = action.payload;
-      localStorage.setItem('vouchers', JSON.stringify(vouchers));
+
+      const newVouchers = [...state.vouchers, action.payload]
       return {
         ...state,
-        vouchers,
+        vouchers: newVouchers,
       };
     }
 

@@ -17,6 +17,7 @@ import DiamondIcon from '@mui/icons-material/Diamond';
 import requireAuthentication from '@app/hocs/requireAuthentication';
 import { useFetch } from '@app/hooks/useFetch';
 import { a11yProps } from './InventoryScreen';
+import AddVoucherModal from '@app/components/AddVoucherModal';
 
 function VouchersScreen() {
   const theme = useTheme();
@@ -25,17 +26,21 @@ function VouchersScreen() {
     setValue(newValue);
   };
 
-  // const a11yProps(index: number) {
-  //   return {
-  //     id: `simple-tab-${index}`,
-  //     'aria-controls': `simple-tabpanel-${index}`,
-  //   };
-  // }
+  const [openAddModal, setOpenAddModal] = useState(false);
+
   return (
     <div className="screen-container">
       <Helmet>
         <title>Vouchers Management</title>
       </Helmet>
+      <div>
+        {openAddModal && <AddVoucherModal
+          open={openAddModal}
+          handleClose={() => {
+            setOpenAddModal(false);
+          }}
+        />}
+      </div>
       <Box sx={{ marginBottom: theme.spacing(5) }}>
         <Box sx={{ marginBottom: theme.spacing(3.5) }}>
           <Typography
@@ -84,7 +89,7 @@ function VouchersScreen() {
             endIcon={<AddIcon />}
             variant="contained"
             onClick={() => {
-              // handleOpenAddModal && handleOpenAddModal();
+              setOpenAddModal(true)
             }}
           >
             Add
@@ -94,7 +99,7 @@ function VouchersScreen() {
           <VouchersTable />
         </Box>
       </Box>
-    </div>
+    </div >
   );
 }
 
