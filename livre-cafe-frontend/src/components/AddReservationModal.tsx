@@ -1,29 +1,52 @@
+import {
+  addCustomer,
+  fetchCustomers,
+  selectCustomers,
+} from '@app/app/features/customers/customers-slice';
+import { ErrorStateInterface } from '@app/components/AddCustomerModal';
+import GroupedSearchBar from '@app/components/GroupedSearchBar';
+import {
+  AddCustomerBox,
+  CustomerDetailsBlock,
+  CustomerStateInterface,
+} from '@app/components/NormalCheckoutModal';
+import PickerButton from '@app/components/PickerButton';
 import { BootstrapDialogTitle } from '@app/components/ViewOrderModal';
-import { useTheme } from '@mui/material/styles';
+import {
+  AreaInterface,
+  CustomerGender,
+  CustomerInterface,
+  CustomerPostData,
+  RankType,
+} from '@app/models';
+import { ReservationPostData } from '@app/models/reservation.interface';
+import { renderTimeSlots, roundupHour } from '@app/utils';
+import { Add } from '@mui/icons-material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { DatePicker, LoadingButton } from '@mui/lab';
 import {
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
+  FormControl,
   Grid,
+  IconButton,
+  MenuItem,
+  Select,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { AreaInterface, CustomerInterface } from '@app/models';
-import PickerButton from '@app/components/PickerButton';
+import { useTheme } from '@mui/material/styles';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+
 import moment from 'moment';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { height } from '@mui/system';
-import GroupedSearchBar from '@app/components/GroupedSearchBar';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  fetchCustomers,
-  selectCustomers,
-} from '@app/app/features/customers/customers-slice';
-import { CustomerDetailsBlock } from '@app/components/NormalCheckoutModal';
+
 interface AddReservationProps {
   open: boolean;
   handleClose: () => void;
@@ -34,15 +57,58 @@ function AddReservationModal(props: AddReservationProps) {
   const { open, handleClose, area } = props;
   const [date, setDate] = useState<Date>(new Date());
   const customersSelector = useSelector(selectCustomers);
-  const { customers, loading } = customersSelector;
+  const { customers, loading, addLoading } = customersSelector;
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerInterface>();
   const [filterText, setFilterText] = useState('');
   const [filteredCustomers, setFilteredCustomers] = useState(customers);
+
+  const [reservationState, setReservationState] = useState<ReservationPostData>(
+    {
+      date: new Date(),
+      duration: 120,
+      area: area,
+      additionalRequirement: '',
+      time: roundupHour(moment(new Date())).format('HH:mm'),
+    },
+  );
+
+  const [customerState, setCustomerState] = useState<CustomerStateInterface>({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    points: 0,
+    ranking: RankType.SILVER,
+    gender: CustomerGender.NA,
+  });
+
+  const [errorState, setErrorState] = useState<ErrorStateInterface>({
+    firstName: false,
+    lastName: false,
+    phone: false,
+    email: false,
+    points: false,
+    ranking: false,
+    gender: false,
+  });
+  const [addSuccess, setAddSuccess] = useState(false);
+
+  const [isAddNew, setIsAddNew] = useState(false);
   const dispatch = useDispatch();
   const handleSelect = (customer: CustomerInterface) => {
+    setIsAddNew(false);
     setSelectedCustomer(customer);
+    handleChangeState('customer')(customer);
     setFilterText(`${customer.firstName} ${customer.lastName}`);
   };
+
+  const handleChangeState =
+    (field: keyof ReservationPostData) => (value: any) => {
+      setReservationState((prevState) => ({
+        ...prevState,
+        [field]: value,
+      }));
+    };
 
   const theme = useTheme();
 
@@ -69,12 +135,58 @@ function AddReservationModal(props: AddReservationProps) {
     handleSearch(text);
   };
 
+  const generatePostData = (body: CustomerStateInterface): CustomerPostData => {
+    return {
+      firstName: body.firstName,
+      lastName: body.lastName,
+      phone: body.phone,
+      email: body.email,
+      rankingPoints: Number(body.points),
+      exchangeablePoints: Number(body.points),
+      gender: body.gender,
+      ordersHistory: [],
+    };
+  };
+
+  const handleAddCustomer = () => {
+    setAddSuccess(false);
+    if (!isAddNew) return false;
+    const { firstName, phone, email } = customerState;
+    const error = {
+      firstName: !firstName,
+      phone: !phone,
+      email: !email,
+      points: false,
+      ranking: false,
+      lastName: false,
+      gender: false,
+      customerId: false,
+    };
+    setErrorState(error);
+    const passable = !(Object.values(error).findIndex((item) => item) > -1);
+    if (!passable) return false;
+    const customerData = generatePostData(customerState);
+    dispatch(addCustomer(customerData as CustomerInterface));
+    setAddSuccess(true);
+    return true;
+  };
+
   useEffect(() => {
     if (!customers) {
       dispatch(fetchCustomers());
     }
+    if (addSuccess) {
+      setIsAddNew(false);
+    }
+
+    if (addSuccess && customers && !addLoading) {
+      handleChangeState('customer')(
+        customers.find((cus) => cus.email === customerState.email),
+      );
+    }
+
     handleSearch(filterText);
-  }, [dispatch, customers]);
+  }, [dispatch, customers, addSuccess]);
 
   return (
     <div>
@@ -85,7 +197,7 @@ function AddReservationModal(props: AddReservationProps) {
         }}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
-        maxWidth="lg"
+        maxWidth="md"
       >
         <BootstrapDialogTitle
           id="customized-dialog-title"
@@ -139,12 +251,35 @@ function AddReservationModal(props: AddReservationProps) {
                 >
                   Date
                 </Typography>
-                <PickerButton
-                  fontColor={theme.palette.secondary.contrastText}
-                  endIcon={<CalendarMonthIcon />}
-                >
-                  {moment(date).format('ddd, D MMM YYYY')}
-                </PickerButton>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    views={['day']}
+                    // label="Just date"
+                    value={reservationState.date}
+                    onChange={(newValue) => {
+                      handleChangeState('date')(newValue || new Date());
+                    }}
+                    disablePast
+                    rifmFormatter={() => {
+                      return moment(reservationState.date).format(
+                        'ddd, D MMM YYYY',
+                      );
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        variant="outlined"
+                        {...params}
+                        sx={{
+                          textTransform: 'none',
+                          justifyContent: 'space-between',
+                          color: theme.palette.secondary.contrastText,
+                          borderColor: 'rgba(0, 40, 100, 0.12)',
+                          fontWeight: 400,
+                        }}
+                      ></TextField>
+                    )}
+                  />
+                </LocalizationProvider>
               </Grid>
               <Grid item container direction={'column'} rowGap={1}>
                 <Typography
@@ -154,12 +289,37 @@ function AddReservationModal(props: AddReservationProps) {
                 >
                   Duration
                 </Typography>
-                <PickerButton
-                  fontColor={theme.palette.secondary.contrastText}
-                  endIcon={<KeyboardArrowDownIcon />}
-                >
-                  2 hours
-                </PickerButton>
+
+                <FormControl variant="outlined" fullWidth>
+                  <Select
+                    labelId="demo-customized-select-label"
+                    id="demo-customized-select"
+                    value={reservationState.duration}
+                    onChange={(e) =>
+                      handleChangeState('duration')(e.target.value)
+                    }
+                    sx={{
+                      textTransform: 'none',
+                      justifyContent: 'space-between',
+                      color: theme.palette.secondary.contrastText,
+                      borderColor: 'rgba(0, 40, 100, 0.12)',
+                      fontWeight: 400,
+                    }}
+                  >
+                    {Array(6)
+                      .fill(1)
+                      .map((_val, index) => {
+                        const unit = 60;
+                        const value = unit * (index + 1);
+                        const hours = value / 60;
+                        const text =
+                          hours > 1
+                            ? `${value / 60} hours`
+                            : `${value / 60} hour`;
+                        return <MenuItem value={value}>{text}</MenuItem>;
+                      })}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item container direction={'column'} rowGap={1}>
                 <Typography
@@ -169,12 +329,34 @@ function AddReservationModal(props: AddReservationProps) {
                 >
                   Time
                 </Typography>
-                <PickerButton
-                  fontColor={theme.palette.secondary.contrastText}
-                  endIcon={<KeyboardArrowDownIcon />}
-                >
-                  10:00
-                </PickerButton>
+                <FormControl variant="outlined" fullWidth>
+                  <Select
+                    labelId="demo-customized-select-label"
+                    id="demo-customized-select"
+                    value={reservationState.time}
+                    onChange={(e) => handleChangeState('time')(e.target.value)}
+                    sx={{
+                      textTransform: 'none',
+                      justifyContent: 'space-between',
+                      color: theme.palette.secondary.contrastText,
+                      borderColor: 'rgba(0, 40, 100, 0.12)',
+                      fontWeight: 400,
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          maxHeight: 256,
+                        },
+                      },
+                    }}
+                  >
+                    {renderTimeSlots(reservationState.date).map(
+                      (val, index) => {
+                        return <MenuItem value={val}>{val}</MenuItem>;
+                      },
+                    )}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item container direction={'column'} rowGap={1}>
                 <Typography
@@ -187,6 +369,7 @@ function AddReservationModal(props: AddReservationProps) {
                 <PickerButton
                   fontColor={theme.palette.secondary.contrastText}
                   endIcon={<KeyboardArrowDownIcon />}
+                  disabled
                 >
                   {area.name}
                 </PickerButton>
@@ -204,6 +387,9 @@ function AddReservationModal(props: AddReservationProps) {
                   rows={2}
                   sx={{ fontSize: 0.8 }}
                   placeholder="Specify"
+                  onChange={(e) =>
+                    handleChangeState('additionalRequirement')(e.target.value)
+                  }
                 ></TextField>
               </Grid>
             </Grid>
@@ -219,13 +405,31 @@ function AddReservationModal(props: AddReservationProps) {
               //   rowSpacing={2}
               rowGap={2}
             >
-              <Grid item>
+              <Grid
+                item
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+              >
                 <Typography
                   variant="h6"
                   color={theme.palette.secondary.contrastText}
                 >
                   Customer Details
                 </Typography>
+                <Tooltip title="Add New Customer">
+                  <IconButton
+                    color="primary"
+                    onClick={() => {
+                      setIsAddNew(true);
+                      onSearchChange({
+                        target: { value: '' },
+                      } as React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>);
+                    }}
+                  >
+                    <Add />
+                  </IconButton>
+                </Tooltip>
               </Grid>
               <Grid container>
                 <Grid item xs={12}>
@@ -242,14 +446,42 @@ function AddReservationModal(props: AddReservationProps) {
                 </Grid>
               </Grid>
 
-              {selectedCustomer && (
+              {reservationState.customer && !isAddNew && (
                 <Grid item container xs={12}>
                   <CustomerDetailsBlock
-                    selectedCustomer={selectedCustomer}
+                    selectedCustomer={reservationState.customer}
                     noImage
                     noTitle
-                    m={-4}
+                    m={-2}
                   />
+                </Grid>
+              )}
+
+              {isAddNew && (
+                <Grid item container xs={12}>
+                  <AddCustomerBox
+                    customerState={customerState}
+                    setCustomerState={setCustomerState}
+                    errorState={errorState}
+                    setErrorState={setErrorState}
+                  />
+
+                  <Grid item container justifyContent={'space-between'}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => setIsAddNew(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <LoadingButton
+                      variant="outlined"
+                      onClick={() => handleAddCustomer()}
+                      loading={addLoading}
+                    >
+                      Add Customer
+                    </LoadingButton>
+                  </Grid>
                 </Grid>
               )}
             </Grid>

@@ -8,4 +8,5 @@ export interface AreaInterface {
   backgroundImage: string;
   _id: string;
   name: string;
+  isNotClickable?: boolean;
 }

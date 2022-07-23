@@ -83,7 +83,7 @@ interface AddModalProps {
   item?: DrinkInterface | BookInterface;
 }
 
-interface CustomerStateInterface {
+export interface CustomerStateInterface {
   firstName: string;
   lastName: string;
   phone: string;
@@ -113,6 +113,19 @@ export default function NormalCheckoutModal(props: AddModalProps) {
   const { open, handleClose } = props;
   const { state, dispatch: ctxDispatch } = useContext(Store);
 
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerInterface>();
+  const [isAddNew, setIsAddNew] = useState(false);
+  const [filterText, setFilterText] = useState('');
+  const theme = useTheme();
+  const headerPadding = `${theme.spacing(2)} 0`;
+  const customersSelector = useSelector(selectCustomers);
+  const { customers, loading } = customersSelector;
+  const [filteredCustomers, setFilteredCustomers] = useState(customers);
+  const [vouchers, setVouchers] = useState<VoucherInterface[]>([]);
+  const [isPost, setIsPost] = useState(false);
+
   const [customerState, setCustomerState] = useState<CustomerStateInterface>({
     firstName: '',
     lastName: '',
@@ -132,19 +145,6 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     ranking: false,
     gender: false,
   });
-
-  const [tabIndex, setTabIndex] = useState(0);
-
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerInterface>();
-  const [isAddNew, setIsAddNew] = useState(false);
-  const [filterText, setFilterText] = useState('');
-  const theme = useTheme();
-  const headerPadding = `${theme.spacing(2)} 0`;
-  const customersSelector = useSelector(selectCustomers);
-  const { customers, loading } = customersSelector;
-  const [filteredCustomers, setFilteredCustomers] = useState(customers);
-  const [vouchers, setVouchers] = useState<VoucherInterface[]>([]);
-  const [isPost, setIsPost] = useState(false);
 
   const onSearchChange = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
@@ -168,29 +168,6 @@ export default function NormalCheckoutModal(props: AddModalProps) {
       return !hasConflict;
     });
     setFilteredCustomers(filteredRows);
-  };
-  const handleChangeText = (
-    e:
-      | React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-      | SelectChangeEvent,
-    field: keyof CustomerStateInterface,
-    country?: CountryData,
-  ) => {
-    setCustomerState((prevState) => {
-      return { ...prevState, [field]: e.target.value };
-    });
-    let phoneValue = '';
-    if (field === 'phone') {
-      const valueCopy = e.target.value.slice();
-      const regex = new RegExp(`^${country?.dialCode}`);
-      phoneValue = valueCopy.replace(regex, '');
-    }
-    setErrorState((prevState) => {
-      return {
-        ...prevState,
-        [field]: field === 'phone' ? !phoneValue : !e.target.value,
-      };
-    });
   };
 
   const handleSelect = (customer: CustomerInterface) => {
@@ -331,154 +308,12 @@ export default function NormalCheckoutModal(props: AddModalProps) {
               </Button>
             </Grid>
             {isAddNew ? (
-              <Box my={2}>
-                <Grid container spacing={2}>
-                  <Grid container item alignItems="center">
-                    <Grid xs={3}>
-                      <label htmlFor="first-name">
-                        <Grid container>
-                          <Typography>First Name</Typography>{' '}
-                          <Typography color="error">*</Typography>
-                        </Grid>
-                      </label>
-                    </Grid>
-                    <Grid xs sx={{ maxWidth: 400 }}>
-                      <TextField
-                        variant="outlined"
-                        id="first-name"
-                        aria-describedby="my-helper-text"
-                        fullWidth
-                        value={customerState?.firstName}
-                        onChange={(e) => handleChangeText(e, 'firstName')}
-                        error={errorState.firstName}
-                        helperText={
-                          errorState.firstName && 'First Name must not be empty'
-                        }
-                      />
-                    </Grid>
-                  </Grid>
-                  <Grid container item alignItems="center">
-                    <Grid xs={3}>
-                      <label htmlFor="last-name">Last Name</label>
-                    </Grid>
-                    <Grid xs sx={{ maxWidth: 400 }}>
-                      <TextField
-                        variant="outlined"
-                        id="last-name"
-                        aria-describedby="my-helper-text"
-                        fullWidth
-                        value={customerState?.lastName}
-                        onChange={(e) => handleChangeText(e, 'lastName')}
-                      />
-                    </Grid>
-                  </Grid>
-                  <Grid container item alignItems="center">
-                    <Grid xs={3}>
-                      <label htmlFor="phone">
-                        <Grid container>
-                          <Typography>Phone</Typography>{' '}
-                          <Typography color="error">*</Typography>
-                        </Grid>
-                      </label>
-                    </Grid>
-                    <Grid xs sx={{ maxWidth: 400 }}>
-                      {/* <TextField
-                        variant="outlined"
-                        id="phone"
-                        aria-describedby="my-helper-text"
-                        fullWidth
-                        value={customerState?.phone}
-                        onChange={(e) => handleChangeText(e, 'phone')}
-                        error={errorState.phone}
-                        helperText={errorState.phone && 'Phone must not be empty'}
-                        InputProps={{
-                          // inputMode: 'numeric',
-                          inputComponent: PhoneInputCustom as any,
-                        }}
-                        // inputProps={{
-                        //   thousandSeparator: false,
-                        // }}
-                      /> */}
-                      <PhoneInputCustom
-                        onChange={(value, country: CountryData) => {
-                          const event = {
-                            target: {
-                              value: value,
-                            },
-                          };
-
-                          handleChangeText(event as any, 'phone', country);
-                        }}
-                        error={errorState.phone}
-                      />
-                    </Grid>
-                  </Grid>
-                  <Grid container item alignItems="center">
-                    <Grid xs={3}>
-                      <label htmlFor="email">
-                        <Grid container>
-                          <Typography>Email</Typography>{' '}
-                          <Typography color="error">*</Typography>
-                        </Grid>
-                      </label>
-                    </Grid>
-                    <Grid xs sx={{ maxWidth: 400 }}>
-                      <TextField
-                        variant="outlined"
-                        id="email"
-                        aria-describedby="my-helper-text"
-                        fullWidth
-                        value={customerState?.email}
-                        onChange={(e) => handleChangeText(e, 'email')}
-                        error={errorState.email}
-                        helperText={
-                          errorState.email && 'Email must not be empty'
-                        }
-                      />
-                    </Grid>
-                  </Grid>
-
-                  <Grid container item alignItems="center">
-                    <Grid xs={3}>
-                      <label htmlFor="points">Points</label>
-                    </Grid>
-                    <Grid xs sx={{ maxWidth: 400 }}>
-                      <TextField
-                        variant="outlined"
-                        id="points"
-                        aria-describedby="my-helper-text"
-                        fullWidth
-                        value={customerState?.points}
-                        onChange={(e) => handleChangeText(e, 'points')}
-                        error={errorState.points}
-                        InputProps={{
-                          inputMode: 'numeric',
-                          inputComponent: NumberFormatCustom as any,
-                        }}
-                        helperText={
-                          errorState.points && 'points must not be empty'
-                        }
-                      />
-                    </Grid>
-                  </Grid>
-
-                  <Grid container item alignItems="center">
-                    <Grid xs={3}>
-                      <label htmlFor="points">Gender</label>
-                    </Grid>
-                    <Select
-                      labelId="demo-select-small"
-                      id="demo-select-small"
-                      value={customerState.gender}
-                      onChange={(e) => handleChangeText(e, 'gender')}
-                    >
-                      <MenuItem value={CustomerGender.FEMALE}>Female</MenuItem>
-                      <MenuItem value={CustomerGender.MALE}>Male</MenuItem>
-                      <MenuItem value={CustomerGender.NA}>N/A</MenuItem>
-                    </Select>
-                  </Grid>
-                </Grid>
-              </Box>
+              <AddCustomerBox
+                customerState={customerState}
+                setCustomerState={setCustomerState}
+                errorState={errorState}
+                setErrorState={setErrorState}
+              />
             ) : (
               <Box my={2}>
                 <Box component="form" noValidate autoComplete="off">
@@ -821,3 +656,186 @@ export function CustomerDetailsBlock(props: CustomerDetailsBlockProps) {
     </Grid>
   );
 }
+
+export interface AddCustomerBoxProps {
+  setCustomerState: React.Dispatch<
+    React.SetStateAction<CustomerStateInterface>
+  >;
+  customerState: CustomerStateInterface;
+  setErrorState: React.Dispatch<React.SetStateAction<ErrorStateInterface>>;
+  errorState: ErrorStateInterface;
+}
+
+export const AddCustomerBox = (props: AddCustomerBoxProps) => {
+  const { setCustomerState, customerState, setErrorState, errorState } = props;
+  const handleChangeText = (
+    e:
+      | React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+      | SelectChangeEvent,
+    field: keyof CustomerStateInterface,
+    country?: CountryData,
+  ) => {
+    setCustomerState((prevState) => {
+      return { ...prevState, [field]: e.target.value };
+    });
+    let phoneValue = '';
+    if (field === 'phone') {
+      const valueCopy = e.target.value.slice();
+      const regex = new RegExp(`^${country?.dialCode}`);
+      phoneValue = valueCopy.replace(regex, '');
+    }
+    setErrorState((prevState) => {
+      return {
+        ...prevState,
+        [field]: field === 'phone' ? !phoneValue : !e.target.value,
+      };
+    });
+  };
+
+  return (
+    <Box my={2}>
+      <Grid container spacing={2}>
+        <Grid container item alignItems="center">
+          <Grid xs={3}>
+            <label htmlFor="first-name">
+              <Grid container>
+                <Typography>First Name</Typography>{' '}
+                <Typography color="error">*</Typography>
+              </Grid>
+            </label>
+          </Grid>
+          <Grid xs sx={{ maxWidth: 400 }}>
+            <TextField
+              variant="outlined"
+              id="first-name"
+              aria-describedby="my-helper-text"
+              fullWidth
+              value={customerState?.firstName}
+              onChange={(e) => handleChangeText(e, 'firstName')}
+              error={errorState.firstName}
+              helperText={
+                errorState.firstName && 'First Name must not be empty'
+              }
+            />
+          </Grid>
+        </Grid>
+        <Grid container item alignItems="center">
+          <Grid xs={3}>
+            <label htmlFor="last-name">Last Name</label>
+          </Grid>
+          <Grid xs sx={{ maxWidth: 400 }}>
+            <TextField
+              variant="outlined"
+              id="last-name"
+              aria-describedby="my-helper-text"
+              fullWidth
+              value={customerState?.lastName}
+              onChange={(e) => handleChangeText(e, 'lastName')}
+            />
+          </Grid>
+        </Grid>
+        <Grid container item alignItems="center">
+          <Grid xs={3}>
+            <label htmlFor="phone">
+              <Grid container>
+                <Typography>Phone</Typography>{' '}
+                <Typography color="error">*</Typography>
+              </Grid>
+            </label>
+          </Grid>
+          <Grid xs sx={{ maxWidth: 400 }}>
+            {/* <TextField
+          variant="outlined"
+          id="phone"
+          aria-describedby="my-helper-text"
+          fullWidth
+          value={customerState?.phone}
+          onChange={(e) => handleChangeText(e, 'phone')}
+          error={errorState.phone}
+          helperText={errorState.phone && 'Phone must not be empty'}
+          InputProps={{
+            // inputMode: 'numeric',
+            inputComponent: PhoneInputCustom as any,
+          }}
+          // inputProps={{
+          //   thousandSeparator: false,
+          // }}
+        /> */}
+            <PhoneInputCustom
+              onChange={(value, country: CountryData) => {
+                const event = {
+                  target: {
+                    value: value,
+                  },
+                };
+
+                handleChangeText(event as any, 'phone', country);
+              }}
+              error={errorState.phone}
+            />
+          </Grid>
+        </Grid>
+        <Grid container item alignItems="center">
+          <Grid xs={3}>
+            <label htmlFor="email">
+              <Grid container>
+                <Typography>Email</Typography>{' '}
+                <Typography color="error">*</Typography>
+              </Grid>
+            </label>
+          </Grid>
+          <Grid xs sx={{ maxWidth: 400 }}>
+            <TextField
+              variant="outlined"
+              id="email"
+              aria-describedby="my-helper-text"
+              fullWidth
+              value={customerState?.email}
+              onChange={(e) => handleChangeText(e, 'email')}
+              error={errorState.email}
+              helperText={errorState.email && 'Email must not be empty'}
+            />
+          </Grid>
+        </Grid>
+
+        <Grid container item alignItems="center">
+          <Grid xs={3}>
+            <label htmlFor="points">Points</label>
+          </Grid>
+          <Grid xs sx={{ maxWidth: 400 }}>
+            <TextField
+              variant="outlined"
+              id="points"
+              aria-describedby="my-helper-text"
+              fullWidth
+              value={customerState?.points}
+              onChange={(e) => handleChangeText(e, 'points')}
+              error={errorState.points}
+              InputProps={{
+                inputMode: 'numeric',
+                inputComponent: NumberFormatCustom as any,
+              }}
+              helperText={errorState.points && 'points must not be empty'}
+            />
+          </Grid>
+        </Grid>
+
+        <Grid container item alignItems="center">
+          <Grid xs={3}>
+            <label htmlFor="points">Gender</label>
+          </Grid>
+          <Select
+            labelId="demo-select-small"
+            id="demo-select-small"
+            value={customerState.gender}
+            onChange={(e) => handleChangeText(e, 'gender')}
+          >
+            <MenuItem value={CustomerGender.FEMALE}>Female</MenuItem>
+            <MenuItem value={CustomerGender.MALE}>Male</MenuItem>
+            <MenuItem value={CustomerGender.NA}>N/A</MenuItem>
+          </Select>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};

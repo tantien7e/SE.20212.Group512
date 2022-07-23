@@ -15,6 +15,7 @@ export interface TargetProps {
   backgroundColor: string;
   fontColor: string;
   backgroundImage: string;
+  isNotClickable?: boolean;
 }
 
 export interface TempProps {
@@ -38,7 +39,7 @@ interface FloorElementProps {
 
 export default function FloorElement(props: FloorElementProps) {
   // Changes in rotate throttle may lead to invalid "left" and "top"
-  const throttles = { drag: 10, resize: 10, rotate: 90 };
+  const throttles = { drag: 1, resize: 1, rotate: 90 };
   const bounds = { left: null, top: null, right: null, bottom: null };
   const {
     properties,
@@ -70,13 +71,14 @@ export default function FloorElement(props: FloorElementProps) {
     top: `${attributes.top}px`,
     left: `${attributes.left}px`,
     backgroundColor: attributes.backgroundColor,
-    transform: `rotate(${attributes.rotate}deg)`,
+    // transform: `rotate(${attributes.rotate}deg)`,
     color: attributes.fontColor,
     fontWeight: 'bold',
     boxSizing: `border-box`,
     cursor: 'pointer',
     backgroundImage: `url(${attributes.backgroundImage})`,
     backgroundSize: 'contain',
+    backgroundRepeat: 'no-repeat',
   });
 
   const onMouseEnter = () => {
@@ -128,7 +130,26 @@ export default function FloorElement(props: FloorElementProps) {
 
   //   }
   // }, [privateProps]);
-  console.log(target);
+  useEffect(() => {
+    if (isHovered) {
+      const backdrop = document.createElement('div');
+      backdrop.id = 'area-backdrop';
+      const backdropStyle = backdrop.style;
+      backdropStyle.width = '100vw';
+      backdropStyle.height = '100vh';
+      backdropStyle.background = 'black';
+      backdropStyle.opacity = '0.5';
+      backdropStyle.zIndex = '1000';
+      backdropStyle.position = 'fixed';
+      backdropStyle.top = '0';
+      backdropStyle.left = '0';
+      // document.getElementById('area-element-container')?.appendChild(backdrop);
+    } else {
+      const backdrop = document.getElementById('area-backdrop');
+      backdrop?.remove();
+    }
+  }, [isHovered]);
+
   return (
     <React.Fragment>
       <Box
@@ -143,12 +164,16 @@ export default function FloorElement(props: FloorElementProps) {
         sx={{
           boxShadow: active ? theme.shadows[20] : 'none',
           '&:hover': {
-            boxShadow: theme.shadows[20],
+            // boxShadow: theme.shadows[20],
+            transform: 'translateZ(50px) scale(1.1)',
+            zIndex: 1001,
           },
-          // transition: 'transform 0.2s ease',
-          border: '1px solid rgba(0,0,0, 0.5)',
+          transition: 'transform 0.6s ease',
+          border: 'none',
           borderRadius: '4px',
-          backgroudColor: 'white',
+          backgroudnColor: 'white',
+          pointerEvents: properties.isNotClickable ? 'none' : 'auto',
+          zIndex: properties.isNotClickable ? -1 : 0,
         }}
         onClick={(e: any) => handleClickElement(e, properties)}
         role="button"
@@ -180,13 +205,13 @@ export default function FloorElement(props: FloorElementProps) {
           <div
             style={{
               position: 'absolute',
-              top: '-50px',
+              top: '-20px',
               fontFamily: 'Caveat, cursive',
               fontWeight: 600,
               fontSize: '1.5rem',
             }}
           >
-            {properties.name}
+            {!properties.isNotClickable && properties.name}
           </div>
         </div>
         {allowMoveable ? (
@@ -228,12 +253,10 @@ export default function FloorElement(props: FloorElementProps) {
               // console.log('onDrag left, top', left, top);
               target.style.left = `${left}px`;
               target.style.top = `${top}px`;
-              console.log('onDrag translate', dist);
               // console.log(transform);
               // target.style.transform = transform;
               let deltaX = dist[0];
               let deltaY = dist[1];
-              console.log(dist);
               if (privateProps.rotate === 90) {
                 deltaX = dist[1] * -1;
                 deltaY = dist[0];
@@ -274,6 +297,7 @@ export default function FloorElement(props: FloorElementProps) {
             }}
             onResizeStart={({ target, clientX, clientY }) => {
               // console.log("onResizeStart", target);
+              // console.log(target)
             }}
             onResize={({
               target,

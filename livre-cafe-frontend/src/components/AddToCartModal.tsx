@@ -1,5 +1,5 @@
 import { PREFIX_URL } from '@app/constants';
-import { CartStateInterface, Store } from '@app/context/Store';
+import { CartAction, CartStateInterface, Store } from '@app/context/Store';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { numberWithCommasRound2, round2 } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
@@ -80,7 +80,7 @@ export default function AddToCartModal(props: EditCartModalPropsInterface) {
       : Number(addedQuantity);
 
     ctxDispatch({
-      type: 'CART_UPDATE_ITEM_QUANTITY',
+      type: CartAction.CART_UPDATE_ITEM_QUANTITY,
       payload: {
         ...product,
         quantity,

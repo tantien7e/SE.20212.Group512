@@ -76,6 +76,7 @@ function Floor() {
       sx={{
         width: '100%',
         height: '100%',
+        perspective: '1000px',
       }}
       ref={wrapperRef}
       mx={-4}
@@ -157,12 +158,12 @@ function Floor() {
               {/* <button onClick={() => zoomIn()}>+</button>
               <button onClick={() => zoomOut()}>-</button>
               <button onClick={() => resetTransform()}>x</button> */}
-              <button style={{ marginLeft: '10px' }} onClick={toggleMoveable}>
+              {/* <button style={{ marginLeft: '10px' }} onClick={toggleMoveable}>
                 Toggle Moveable
               </button>
               <button style={{ marginLeft: '10px' }} onClick={handleSave}>
                 Save Position
-              </button>
+              </button> */}
             </div>
             <TransformComponent
               wrapperStyle={{
@@ -170,6 +171,7 @@ function Floor() {
                 height: `calc(100vh - ${
                   wrapperRef?.current?.getBoundingClientRect().top
                 }px)`,
+                transformStyle: 'preserve-3d',
               }}
               contentStyle={{
                 width: '100%',
@@ -187,6 +189,7 @@ function Floor() {
 
                   // backgroundColor: '#09123a',
                 }}
+                id="area-element-container"
               >
                 {targets.map((target: TargetProps) => (
                   <FloorElement
@@ -201,8 +204,10 @@ function Floor() {
                     updateTarget={(privateProps) => {
                       setTargets((targetArr) => {
                         return targetArr.map((targetState: any) => {
-                          if (targetState._id === target._id)
+                          if (targetState._id === target._id) {
+                            console.log(privateProps.width);
                             return privateProps;
+                          }
                           return targetState;
                         });
                       });

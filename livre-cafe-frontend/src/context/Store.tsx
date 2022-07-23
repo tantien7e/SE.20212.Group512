@@ -1,7 +1,5 @@
 import { CustomerInterface, VoucherInterface } from '@app/models';
 import { ProductInterface } from '@app/models/product.interface';
-import { getCartTotal } from '@app/utils';
-import { toastInformSuccess } from '@app/utils/toast';
 import React, { createContext, useReducer } from 'react';
 
 export interface CartItemInterface extends ProductInterface {

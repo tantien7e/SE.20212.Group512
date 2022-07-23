@@ -3,7 +3,9 @@ import { CartItemInterface, CartStateInterface } from '@app/context/Store';
 import { OrderPostData, ProductType, VoucherInterface } from '@app/models';
 import { ErrorResponse } from '@app/models/common';
 import { CustomerGender, RankType } from '@app/models/customer.interface';
+import { MenuItem } from '@mui/material';
 import { AxiosError } from 'axios';
+import moment, { Moment } from 'moment';
 
 export function stableSort<T>(
   array: readonly T[],
@@ -133,4 +135,33 @@ export const getErrorMessage = (error: AxiosError) => {
   return error.response
     ? (error.response.data as ErrorResponse).message
     : error.message;
+};
+
+export const roundupHour = (time: Moment) => {
+  return time.minute()
+    ? time.add(1, 'hour').startOf('hour')
+    : time.startOf('hour');
+};
+
+export const renderTimeSlots = (date: Date) => {
+  const today = new Date();
+  if (today.getDate() === date.getDate()) {
+    const startTime = roundupHour(moment(today));
+    const remainingHours = 24 - startTime.hours();
+    return Array(remainingHours)
+      .fill(1)
+      .map((_val, index) => {
+        const time = roundupHour(moment(today));
+        const value = time.add(index, 'hour').format('HH:mm').toString();
+        return value;
+      });
+  }
+  return Array(24)
+    .fill(1)
+    .map((_val, index) => {
+      const time = moment(moment(date).toDate().setHours(0));
+      time.startOf('hour');
+      const value = time.add(index, 'hour').format('HH:mm');
+      return value;
+    });
 };

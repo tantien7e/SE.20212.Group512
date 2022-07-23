@@ -2,7 +2,7 @@ import { Button, ButtonProps } from '@mui/material';
 import React from 'react';
 
 interface PickerButtonProps extends ButtonProps {
-  children: string;
+  children: string | JSX.Element;
   fontColor: string;
 }
 function PickerButton(props: PickerButtonProps) {
@@ -15,7 +15,7 @@ function PickerButton(props: PickerButtonProps) {
         justifyContent: 'space-between',
         color: fontColor,
         borderColor: 'rgba(0, 40, 100, 0.12)',
-        fontWeight: 400
+        fontWeight: 400,
       }}
       {...restProps}
     >

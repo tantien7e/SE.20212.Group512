@@ -1,3 +1,5 @@
+import { AreaInterface } from '@app/models/area.interface';
+
 export interface DrinkInterface {
   imageUrl: string;
   stock: number;
@@ -27,4 +29,7 @@ export interface SnackInterface {
   stock?: number;
 }
 
-export type ProductInterface = DrinkInterface & BookInterface & SnackInterface;
+export type ProductInterface = DrinkInterface &
+  BookInterface &
+  SnackInterface &
+  AreaInterface;
