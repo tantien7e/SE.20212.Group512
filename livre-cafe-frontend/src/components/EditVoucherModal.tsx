@@ -211,7 +211,6 @@ export default function EditVoucherModal(props: AddModalProps) {
                     fullWidth
                     value={voucherState?.name}
                     onChange={(e) => handleChangeText(e, 'name')}
-                    error={errorState.name}
                   />
                 </Grid>
               </Grid>
@@ -230,7 +229,6 @@ export default function EditVoucherModal(props: AddModalProps) {
                     onChange={(e) =>
                       handleChangeText(e, 'correspondingRank')
                     }
-                    error={errorState.correspondingRank}
                   >
                     <MenuItem value={RankType.SILVER}>Silver</MenuItem>
                     <MenuItem value={RankType.GOLD}>Gold</MenuItem>

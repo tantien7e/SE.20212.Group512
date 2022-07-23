@@ -9,7 +9,7 @@ import {
 import { addVoucher, selectVouchersAddLoading } from '@app/app/features/vouchers/vouchers-slice';
 import { InventoryType, PREFIX_URL } from '@app/constants';
 import { CartAction, CartItemInterface, Store } from '@app/context/Store';
-import { RankType, VoucherInterface } from '@app/models';
+import { RankType, VoucherPostData } from '@app/models';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { round0, round2 } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
@@ -79,8 +79,7 @@ export default function AddVoucherModal(
     const [addSuccess, setAddSuccess] = useState(false);
     const dispatch = useDispatch();
     const vouchersLoading = useSelector(selectVouchersAddLoading);
-    const [voucherState, setVoucherState] = useState<VoucherInterface>({
-        _id: '',
+    const [voucherState, setVoucherState] = useState<VoucherPostData>({
         name: '',
         correspondingRank: '',
         available: true,
@@ -104,7 +103,7 @@ export default function AddVoucherModal(
         e:
             | React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
             | SelectChangeEvent,
-        field: keyof VoucherInterface,
+        field: keyof VoucherPostData,
     ) => {
 
         const isNumberField =
@@ -117,7 +116,7 @@ export default function AddVoucherModal(
             else {
                 value = e.target.value
             }
-            return { ...prevState, [field]: e.target.value };
+            return { ...prevState, [field]: value };
         });
         setErrorState((prevState) => {
             return {
@@ -127,20 +126,7 @@ export default function AddVoucherModal(
         });
     };
 
-    const generatePostData = (body: VoucherInterface) => {
-        const {
-            name,
-            correspondingRank,
-            available,
-            pointsCost,
-            percentageDiscount,
-            maxAmount,
-        } = body;
-
-        return {};
-    };
-
-    const genPostVoucher = (voucherState: VoucherInterface): VoucherInterface => {
+    const genPostVoucher = (voucherState: VoucherPostData): VoucherPostData => {
         const {
             name,
             correspondingRank,
@@ -159,7 +145,7 @@ export default function AddVoucherModal(
             maxAmount: maxAmount,
         };
 
-        return postItem as VoucherInterface;
+        return postItem as VoucherPostData;
     };
 
     const handleAdd = () => {
@@ -184,7 +170,8 @@ export default function AddVoucherModal(
 
         if (!passable) return;
         const newVoucher = genPostVoucher(voucherState);
-        dispatch(addVoucher(newVoucher as VoucherInterface));
+        console.log(newVoucher)
+        dispatch(addVoucher(newVoucher as VoucherPostData));
         setAddSuccess(true)
     };
 
@@ -213,7 +200,7 @@ export default function AddVoucherModal(
                         color={theme.palette.secondary.contrastText}
                         style={{ padding: ` ${theme.spacing(1)} 0` }}
                     >
-                        <strong> Edit This Voucher</strong>
+                        <strong> Add A New Voucher</strong>
                     </Typography>
                     <Divider />
 
@@ -231,7 +218,6 @@ export default function AddVoucherModal(
                                         fullWidth
                                         value={voucherState?.name}
                                         onChange={(e) => handleChangeText(e, 'name')}
-                                        error={errorState.name}
                                     />
                                 </Grid>
                             </Grid>
@@ -250,7 +236,6 @@ export default function AddVoucherModal(
                                         onChange={(e) =>
                                             handleChangeText(e, 'correspondingRank')
                                         }
-                                        error={errorState.correspondingRank}
                                     >
                                         <MenuItem value={RankType.SILVER}>Silver</MenuItem>
                                         <MenuItem value={RankType.GOLD}>Gold</MenuItem>

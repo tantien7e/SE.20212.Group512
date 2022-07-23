@@ -1,5 +1,5 @@
 import { RootState } from '@app/app/store';
-import { VoucherInterface } from '@app/models/voucher.interface';
+import { VoucherInterface, VoucherPostData } from '@app/models/voucher.interface';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -37,7 +37,7 @@ const vouchersSlice = createSlice({
       state.error = action.payload;
     },
     // Add
-    addVoucher(state, action: PayloadAction<VoucherInterface>) {
+    addVoucher(state, action: PayloadAction<VoucherPostData>) {
       state.addLoading = true;
     },
     addVoucherSucceeded(state, action: PayloadAction<VoucherInterface>) {
