@@ -44,7 +44,7 @@ export default function VouchersTable() {
       _id: voucher._id,
       name: voucher.name,
       correspondingRank: voucher.correspondingRank,
-      available: voucher.available ? 'Available' : 'Non-available',
+      available: voucher.available ? 'Available' : 'Non - Available',
       pointsCost: voucher.pointsCost,
       percentageDiscount: voucher.percentageDiscount,
       maxAmount: voucher.maxAmount,
@@ -56,15 +56,16 @@ export default function VouchersTable() {
   }, [vouchers]);
 
   const handleEdit = (params: GridRenderCellParams<any, any, any>) => {
-    setCurrentVoucher(params.row);
+    const filteredVoucher = vouchers?.filter((voucher) => (voucher._id === params.row._id)) || []
+    setCurrentVoucher(filteredVoucher[filteredVoucher?.length - 1]);
     setOpenEditModal(true);
   };
 
   const handleDelete = (params: GridRenderCellParams<any, any, any>) => {
-    setCurrentVoucher(params.row);
+    const filteredVoucher = vouchers?.filter((voucher) => (voucher._id === params.row._id)) || []
+    setCurrentVoucher(filteredVoucher[filteredVoucher?.length - 1]);
     if (!currentVoucher) return;
-    console.log(currentVoucher._id)
-    dispatch(deleteVoucher(currentVoucher._id));
+    dispatch(deleteVoucher(currentVoucher?._id));
   }
 
   const deleteButton = (params: GridRenderCellParams<any, any, any>) => {

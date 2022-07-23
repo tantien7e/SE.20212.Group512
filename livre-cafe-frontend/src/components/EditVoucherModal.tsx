@@ -89,7 +89,6 @@ export default function EditVoucherModal(props: AddModalProps) {
     percentageDiscount: item?.percentageDiscount || 0,
     maxAmount: item?.maxAmount || 0,
   });
-
   const [errorState, setErrorState] = useState<ErrorStateInterface>({
     name: false,
     correspondingRank: false,
@@ -112,13 +111,12 @@ export default function EditVoucherModal(props: AddModalProps) {
       field === 'pointsCost' || 'maxAmount' || 'percentageDiscount';
     setVoucherState((prevState) => {
       let value;
-      if (field == "available") {
-        value = (e.target.value == "Available")
+      if (field === "available") {
+        value = (e.target.value === "Available")
       }
       else {
         value = e.target.value
       }
-
       return { ...prevState, [field]: value };
     });
     setErrorState((prevState) => {
@@ -163,7 +161,7 @@ export default function EditVoucherModal(props: AddModalProps) {
     const passable = !(Object.values(error).findIndex((item) => item) > -1);
     if (!passable) return;
     const voucherData = generatePostData(voucherState);
-    console.log(voucherData)
+    console.log(voucherState)
     dispatch(updateVoucher(voucherData as VoucherInterface));
     setAddSuccess(true);
   };
@@ -270,7 +268,7 @@ export default function EditVoucherModal(props: AddModalProps) {
                   <Select
                     labelId="demo-select-small"
                     id="demo-select-small"
-                    value={voucherState.available ? "Available" : "Non - Available"}
+                    value={(voucherState?.available === true) ? "Available" : "Non - Available"}
                     onChange={(e) => handleChangeText(e, 'available')}
                   >
                     <MenuItem value={"Available"}>Available</MenuItem>
