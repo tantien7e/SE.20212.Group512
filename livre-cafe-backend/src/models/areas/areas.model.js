@@ -10,6 +10,23 @@ const AreasSchema = new Schema({
         type: Number
     },
 
+    width: {
+        type: Number
+    },
+
+    height: {
+        type: Number
+    },
+
+    backgroundImage: {
+        type: String
+    },
+
+    isNotClickable: {
+        type: Boolean,
+        default: false
+    },
+
     costPerHour: {
         type: Number
     },
