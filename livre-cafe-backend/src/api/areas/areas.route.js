@@ -18,6 +18,10 @@ const isManager = require('../../middleware/authorize');
  *              - capacity
  *              - available
  *              - reservations
+ *              - width
+ *              - height
+ *              - backgroundImage
+ *              - isNotClickable
  *              - name
  *          properties:
  *              id:
@@ -29,7 +33,16 @@ const isManager = require('../../middleware/authorize');
  *              x:
  *                  type: number                  
  *              y:
- *                  type: string
+ *                  type: number
+ *              width:
+ *                  type: number
+ *              height:
+ *                  type: number
+ *              backgroundImage:
+ *                  type: String
+ *              isNotClickable:
+ *                  type: Boolean
+ *                  default: false
  *              costPerHour:
  *                  type: number
  *                  description: cost per hour
