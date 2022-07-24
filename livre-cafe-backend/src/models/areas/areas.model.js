@@ -34,7 +34,11 @@ const AreasSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'reservations' 
         }
-    ]
+    ],
+
+    name: {
+        type: String
+    }
 });
 
 const Areas = mongoose.model('areas', AreasSchema);

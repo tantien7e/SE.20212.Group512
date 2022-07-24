@@ -47,6 +47,14 @@ const OrdersRouter = express.Router();
  *              totalCost:
  *                  type: number
  *                  description: the total cost of the order
+ *              reservation:
+ *                  type: string
+ *                  description: the corresponding reservation's id
+ *                  default: null
+ *              appliedVoucher:
+ *                  type: string
+ *                  description: the id of the voucher applied to this order
+ *                  default: null
  */
 
 /**
