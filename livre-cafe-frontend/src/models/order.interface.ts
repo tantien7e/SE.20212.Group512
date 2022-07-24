@@ -1,6 +1,7 @@
 import { CartItemInterface } from '@app/context/Store';
 import { CustomerInterface } from '@app/models/customer.interface';
 import { ProductInterface } from '@app/models/product.interface';
+import { ReservationPostData } from '@app/models/reservation.interface';
 import { VoucherInterface } from '@app/models/voucher.interface';
 
 export enum OrderStatusType {
@@ -41,4 +42,5 @@ export interface OrderPostData
     productType: ProductType;
   }[];
   customer?: string | null;
+  reservation?: ReservationPostData;
 }

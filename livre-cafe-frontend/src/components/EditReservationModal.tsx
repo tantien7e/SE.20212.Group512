@@ -1,44 +1,33 @@
+import { fetchAreas, selectAreas } from '@app/app/features/areas/areas-slice';
 import {
   addCustomer,
   fetchCustomers,
   selectCustomers,
 } from '@app/app/features/customers/customers-slice';
 import { ErrorStateInterface } from '@app/components/AddCustomerModal';
-import GroupedSearchBar from '@app/components/GroupedSearchBar';
-import {
-  AddCustomerBox,
-  CustomerDetailsBlock,
-  CustomerStateInterface,
-} from '@app/components/NormalCheckoutModal';
-import PickerButton from '@app/components/PickerButton';
+import { CustomerStateInterface } from '@app/components/NormalCheckoutModal';
 import { BootstrapDialogTitle } from '@app/components/ViewOrderModal';
 import { CartAction, Store } from '@app/context/Store';
 import {
-  AreaInterface,
   CustomerGender,
   CustomerInterface,
   CustomerPostData,
   RankType,
 } from '@app/models';
 import { ReservationPostData } from '@app/models/reservation.interface';
-import { renderTimeSlots, roundupHour } from '@app/utils';
+import { renderTimeSlots } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
-import { Add } from '@mui/icons-material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { DatePicker, LoadingButton } from '@mui/lab';
+import { DatePicker } from '@mui/lab';
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   FormControl,
   Grid,
-  IconButton,
   MenuItem,
   Select,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -52,25 +41,28 @@ import { useDispatch, useSelector } from 'react-redux';
 interface AddReservationProps {
   open: boolean;
   handleClose: () => void;
-  area: AreaInterface;
+  reservation: ReservationPostData;
 }
 
-function AddReservationModal(props: AddReservationProps) {
-  const { open, handleClose, area } = props;
+function EditReservationModal(props: AddReservationProps) {
+  const { open, handleClose, reservation } = props;
   const [date, setDate] = useState<Date>(new Date());
   const customersSelector = useSelector(selectCustomers);
-  const { customers, loading, addLoading } = customersSelector;
+  const {
+    customers,
+    loading: customersLoading,
+    addLoading,
+  } = customersSelector;
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerInterface>();
   const [filterText, setFilterText] = useState('');
   const [filteredCustomers, setFilteredCustomers] = useState(customers);
+  const areasSelector = useSelector(selectAreas);
+  const { areas, loading: areasLoading } = areasSelector;
 
   const [reservationState, setReservationState] = useState<ReservationPostData>(
     {
-      date: new Date(),
-      duration: 120,
-      area: area,
-      additionalRequirements: '',
-      time: roundupHour(moment(new Date())).format('HH:mm'),
+      ...reservation,
+      date: new Date(reservation.date),
     },
   );
 
@@ -175,26 +167,22 @@ function AddReservationModal(props: AddReservationProps) {
 
   const { state, dispatch: ctxDispatch } = useContext(Store);
 
-  const handleAddReservationToCart = () => {
-    if (state.reservation) {
-      toastError('Already have a reservation in cart, delete it first');
-      handleClose();
-
-      return;
-    }
-
+  const handleSaveReservationToCart = () => {
     ctxDispatch({
       type: CartAction.ADD_RESERVATION,
       payload: reservationState,
     });
 
-    toastInformSuccess("Reservation's been successfully added");
+    toastInformSuccess("Reservation's been successfully updated");
     handleClose();
   };
 
   useEffect(() => {
-    if (!customers) {
+    if (!customers && !customersLoading) {
       dispatch(fetchCustomers());
+    }
+    if (!areas && !areasLoading) {
+      dispatch(fetchAreas());
     }
     if (addSuccess) {
       setIsAddNew(false);
@@ -207,7 +195,7 @@ function AddReservationModal(props: AddReservationProps) {
     }
 
     handleSearch(filterText);
-  }, [dispatch, customers, addSuccess]);
+  }, [dispatch, customers, addSuccess, areasSelector]);
 
   return (
     <div>
@@ -232,7 +220,7 @@ function AddReservationModal(props: AddReservationProps) {
             style={{ padding: ` ${theme.spacing(1)} 0` }}
           >
             <strong style={{ textTransform: 'capitalize' }}>
-              Add Reservation
+              Edit Reservation
             </strong>
           </Typography>
         </BootstrapDialogTitle>
@@ -389,13 +377,38 @@ function AddReservationModal(props: AddReservationProps) {
                 >
                   Area
                 </Typography>
-                <PickerButton
-                  fontColor={theme.palette.secondary.contrastText}
-                  endIcon={<KeyboardArrowDownIcon />}
-                  disabled
-                >
-                  {area.name}
-                </PickerButton>
+                <FormControl variant="outlined" fullWidth>
+                  <Select
+                    labelId="demo-customized-select-label"
+                    id="demo-customized-select"
+                    value={reservationState.area._id}
+                    sx={{
+                      textTransform: 'none',
+                      justifyContent: 'space-between',
+                      color: theme.palette.secondary.contrastText,
+                      borderColor: 'rgba(0, 40, 100, 0.12)',
+                      fontWeight: 400,
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          maxHeight: 256,
+                        },
+                      },
+                    }}
+                  >
+                    {areas?.map((area) => {
+                      return (
+                        <MenuItem
+                          onClick={() => handleChangeState('area')(area)}
+                          value={area._id}
+                        >
+                          {area.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item container direction={'column'} rowGap={1}>
                 <Typography
@@ -511,14 +524,18 @@ function AddReservationModal(props: AddReservationProps) {
           </Grid>
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'space-between', px: 3 }}>
-          <Button variant="outlined" color="error">
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => handleClose()}
+          >
             Cancel
           </Button>
           <Button
             variant="contained"
-            onClick={() => handleAddReservationToCart()}
+            onClick={() => handleSaveReservationToCart()}
           >
-            Add Reservation
+            Save Changes
           </Button>
         </DialogActions>
       </Dialog>
@@ -526,4 +543,4 @@ function AddReservationModal(props: AddReservationProps) {
   );
 }
 
-export default AddReservationModal;
+export default EditReservationModal;

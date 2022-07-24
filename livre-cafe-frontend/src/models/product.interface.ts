@@ -29,7 +29,4 @@ export interface SnackInterface {
   stock?: number;
 }
 
-export type ProductInterface = DrinkInterface &
-  BookInterface &
-  SnackInterface &
-  AreaInterface;
+export type ProductInterface = DrinkInterface & BookInterface & SnackInterface;

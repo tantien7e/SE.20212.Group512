@@ -1,44 +1,42 @@
-import React, { useContext } from 'react';
+import EditReservationModal from '@app/components/EditReservationModal';
 import {
-  DataGrid,
-  GridColDef,
-  GridRenderCellParams,
-  GridValueGetterParams,
-} from '@mui/x-data-grid';
-import { CartItemInterface, Store } from '@app/context/Store';
-import { relative } from 'node:path/win32';
+  CartItemInterface,
+  CartStateInterface,
+  Store,
+} from '@app/context/Store';
+import { ReservationPostData } from '@app/models/reservation.interface';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { Box, Button, Grid, Typography } from '@mui/material';
-import { idID } from '@mui/material/locale';
-import { parseClassName } from 'react-toastify/dist/utils';
-import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
-import { Params, useNavigate } from 'react-router-dom';
+import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import EditCartModal from './EditCartModal';
-import {
-  BookInterface,
-  DrinkInterface,
-  ProductInterface,
-} from '@app/models/product.interface';
-import { useState } from 'react';
-import { current } from '@reduxjs/toolkit';
 
 interface CartRowInterface {
-  _id: string;
-  imageUrl: string;
-  productId: string;
-  productName: string;
-  cost: number;
-  stock: number;
+  _id?: string;
+  imageUrl?: string;
+  productId?: string;
+  productName?: string;
+  cost?: number;
+  stock?: number;
   author?: string;
-  quantity: number;
+  quantity?: number;
   additionalRequirements: string;
+  type?: string;
+  id?: number;
+  price?: number;
+  name?: string;
 }
 
 export default function CheckOutTable() {
   const { state, dispatch } = useContext(Store);
   const { cart } = state;
   const [openEditModal, setOpenEditModal] = useState(false);
+  const [openEditReservation, setOpenEditReservation] = useState(false);
   const [currentItem, setCurrentItem] = useState<CartItemInterface>();
+  const [rows, setRows] = useState<CartRowInterface[]>([]);
+  const [currentReservation, setCurrentReservation] =
+    useState<ReservationPostData>();
 
   const handleDelete = (params: GridRenderCellParams<any, any, any>) => {
     const toBeDeleted = params.row;
@@ -75,8 +73,13 @@ export default function CheckOutTable() {
   const handleEdit = (params: GridRenderCellParams<any, any, any>) => {
     const quantity = params.row.quantity;
     const additionalRequirements = params.row.additionalRequirements;
-    setCurrentItem(params.row);
-    setOpenEditModal(true);
+    if (params.row.type === 'Reservation') {
+      setOpenEditReservation(true);
+      setCurrentReservation(state.reservation);
+    } else {
+      setOpenEditModal(true);
+      setCurrentItem(params.row);
+    }
   };
 
   const columns: GridColDef[] = [
@@ -112,25 +115,47 @@ export default function CheckOutTable() {
       renderCell: (params) => deleteButton(params),
     },
   ];
-  const rows = cart.cartItems.map((item, id) => {
-    const type = item.title ? 'Book' : 'Drink';
-    const name = item.title || item.name;
-    const quantity = item.quantity;
 
-    return {
-      id: id + 1,
-      _id: item._id,
-      type,
-      name: name,
-      price: item.price,
-      quantity,
-      cost: quantity * item.price,
-      additionalRequirements: item.additionalRequirements
-        ? item.additionalRequirements
+  const renderCartRows = (cartState: CartStateInterface) => {
+    const reservation = cartState.reservation;
+    const cartReservation = {
+      id: 1,
+      _id: cartState.reservation?.area._id,
+      type: 'Reservation',
+      name: reservation?.area.name,
+      quantity: reservation?.duration,
+      cost: reservation ? reservation?.duration * reservation?.area?.price : 0,
+      additionalRequirements: reservation?.additionalRequirements
+        ? reservation?.additionalRequirements
         : 'None',
-      stock: item.stock,
     };
-  });
+    const cartItems = cartState.cart.cartItems.map((item, id) => {
+      const type = item.title ? 'Book' : 'Drink';
+      const name = item.title || item.name;
+      const quantity = item.quantity;
+
+      return {
+        id: !!reservation ? id + 2 : id + 1,
+        _id: item._id,
+        type,
+        name: name,
+        price: item.price,
+        quantity,
+        cost: quantity * item.price,
+        additionalRequirements: item.additionalRequirements
+          ? item.additionalRequirements
+          : 'None',
+        stock: item.stock,
+      };
+    });
+
+    return [cartReservation, ...cartItems];
+  };
+
+  useEffect(() => {
+    const newRows = renderCartRows(state);
+    setRows(newRows);
+  }, [state]);
 
   return (
     <div
@@ -147,6 +172,15 @@ export default function CheckOutTable() {
             setOpenEditModal(false);
           }}
           item={currentItem}
+        />
+      )}
+      {currentReservation && openEditReservation && (
+        <EditReservationModal
+          open={openEditReservation}
+          handleClose={() => {
+            setOpenEditReservation(false);
+          }}
+          reservation={currentReservation}
         />
       )}
       <DataGrid

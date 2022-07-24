@@ -6,6 +6,6 @@ export interface ReservationPostData {
   duration: number;
   date: Date;
   time: string;
-  additionalRequirement?: string;
+  additionalRequirements?: string;
   customer?: CustomerInterface;
 }

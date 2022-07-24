@@ -9,4 +9,5 @@ export interface AreaInterface {
   _id: string;
   name: string;
   isNotClickable?: boolean;
+  price: number;
 }
