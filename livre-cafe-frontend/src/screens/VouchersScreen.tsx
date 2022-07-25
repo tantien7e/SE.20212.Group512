@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import type { } from '@mui/x-data-grid/themeAugmentation';
 import {
@@ -20,17 +20,26 @@ import { a11yProps } from './InventoryScreen';
 import AddVoucherModal from '@app/components/AddVoucherModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectVouchers } from '@app/app/features/vouchers/vouchers-slice';
+import { getRankByIndex } from '@app/utils';
 
 function VouchersScreen() {
   const theme = useTheme();
-  const [value, setValue] = useState(0);
+  const rankList: string[] = ["platinum", "diamond", "dilver", "gold"]
+  const [tab, setTab] = useState(0);
+  const [currentRank, setCurrentRank] = useState(rankList)
+
+  useEffect(() => {
+    if (tab != 0)
+      setCurrentRank([getRankByIndex(tab)])
+    else
+      setCurrentRank(rankList)
+  }, [tab]);
+
   const handleChangeTabs = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    setTab(newValue)
   };
 
-  const dispatch = useDispatch();
   const vouchersSelector = useSelector(selectVouchers);
-  const { vouchers, loading } = vouchersSelector;
 
   const [openAddModal, setOpenAddModal] = useState(false);
 
@@ -59,34 +68,37 @@ function VouchersScreen() {
         </Box>
         <Box sx={{ borderColor: 'divider', width: 'fit-content' }}>
           <Tabs
-            value={value}
+            value={tab}
             onChange={handleChangeTabs}
             aria-label="basic tabs example"
           >
             <Tab
               iconPosition="start"
-              // icon={<CoffeeIcon />}
               label="All"
               {...a11yProps(0)}
             />
-            <Tab
-              iconPosition="start"
-              // icon={<TapasIcon />}
-              label="Silver"
-              {...a11yProps(4)}
-            />
-            <Tab
-              iconPosition="start"
-              // icon={<TapasIcon />}
-              label="Gold"
-              {...a11yProps(3)}
-            />
-            <Tab iconPosition="start" label="Platinum" {...a11yProps(1)} />
+
             <Tab
               iconPosition="start"
               icon={<DiamondIcon />}
               label="Diamond"
-              {...a11yProps(2)}
+              {...a11yProps(1)}
+            />
+
+            <Tab
+              iconPosition="start"
+              label="Platinum"
+              {...a11yProps(2)} />
+            <Tab
+              iconPosition="start"
+              label="Gold"
+              {...a11yProps(3)}
+            />
+
+            <Tab
+              iconPosition="start"
+              label="Silver"
+              {...a11yProps(4)}
             />
           </Tabs>
         </Box>
@@ -102,7 +114,7 @@ function VouchersScreen() {
           </Button>
         </Box>
         <Box sx={{ margin: `${theme.spacing(2)} 0` }}>
-          <VouchersTable />
+          <VouchersTable ranksSelected={currentRank} />
         </Box>
       </Box>
     </div >

@@ -22,38 +22,47 @@ import Button from '@mui/material/Button';
 import { useFetch } from '@app/hooks/useFetch';
 import { VoucherInterface } from '@app/models';
 import { Chip, Grid, Toolbar, Tooltip, Typography } from '@mui/material';
-import { getRankColor } from '@app/utils';
-import { RankType } from '@app/models';
+// import { getRankByindex, getRankColor } from '@app/utils';
+import { RankType, RankIndex } from '@app/models';
 import EditVoucherModal from './EditVoucherModal';
 import { CartStateInterface } from '@app/context/Store';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteVoucher, fetchVouchers, selectVouchers } from '@app/app/features/vouchers/vouchers-slice';
+import { getRankColor } from '@app/utils';
 
-export default function VouchersTable() {
+export default function VouchersTable(props: { ranksSelected: string[] }) {
+  const { ranksSelected } = props;
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [currentVoucher, setCurrentVoucher] = useState<VoucherInterface>();
+  const [tabIndex, setTabIndex] = useState(0)
   const dispatch = useDispatch();
   const vouchersSelector = useSelector(selectVouchers);
   const { vouchers, loading } = vouchersSelector;
-
-
-  const rows = vouchers?.map((voucher, id) => {
-    return {
-      id: id + 1,
-      _id: voucher._id,
-      name: voucher.name,
-      correspondingRank: voucher.correspondingRank,
-      available: voucher.available ? 'Available' : 'Non - Available',
-      pointsCost: voucher.pointsCost,
-      percentageDiscount: voucher.percentageDiscount,
-      maxAmount: voucher.maxAmount,
-    };
-  }) || [];
+  const [rankSelected, setRankSelected] = useState([''])
 
   useEffect(() => {
     if (!vouchers) dispatch(fetchVouchers());
   }, [vouchers]);
+
+  const rows = () => {
+    const newVouchers = vouchers?.filter((cur) => ranksSelected.includes(cur.correspondingRank))
+    return newVouchers?.map((voucher: VoucherInterface, id) => {
+      return {
+        id: id,
+        _id: voucher._id,
+        name: voucher.name,
+        correspondingRank: voucher.correspondingRank,
+        available: voucher.available ? 'Available' : 'Non - Available',
+        pointsCost: voucher.pointsCost,
+        percentageDiscount: voucher.percentageDiscount + "%",
+        maxAmount: voucher.maxAmount + "$",
+      };
+      // }
+    }
+    ) || [] as VoucherInterface[];
+  }
+
 
   const handleEdit = (params: GridRenderCellParams<any, any, any>) => {
     const filteredVoucher = vouchers?.filter((voucher) => (voucher._id === params.row._id)) || []
@@ -122,7 +131,7 @@ export default function VouchersTable() {
     {
       field: 'correspondingRank',
       headerName: 'Corresponding Ranking',
-      flex: 280,
+      flex: 260,
       resizable: true,
       renderCell: (params) => rankTag(params),
     },
@@ -186,13 +195,14 @@ export default function VouchersTable() {
         }}
       >
         <DataGrid
-          rows={rows || []}
+          rows={rows() || [] as VoucherInterface[]}
           columns={columns}
           rowHeight={75}
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
           isRowSelectable={() => false}
           autoHeight={false}
           loading={loading}
+          headerHeight={80}
           sx={{
             padding: '1rem',
             paddingTop: '0',

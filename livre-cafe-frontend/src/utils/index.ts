@@ -64,6 +64,12 @@ export const genRanking = (points: number) => {
   return RankType.SILVER;
 };
 
+export const getRankByIndex = (index: number): string => {
+  if (index === 1) return RankType.DIAMOND;
+  if (index === 2) return RankType.PLATINUM;
+  if (index === 3) return RankType.GOLD;
+  return RankType.SILVER;
+}
 export const getSalutation = (gender: CustomerGender) => {
   switch (gender) {
     case CustomerGender.MALE:
