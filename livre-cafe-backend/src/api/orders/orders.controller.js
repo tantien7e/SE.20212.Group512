@@ -14,7 +14,12 @@ const getAllOrders = async (req, res, next) => {
             .populate('itemsOrdered.product')
             .populate('customer')
             .populate('appliedVoucher')
-            .populate('reservation');
+            .populate({
+                path: 'reservation',
+                populate: {
+                    path: 'area'
+                }
+            });
 
         res.status(200).json(orders);
     } catch (err) {
