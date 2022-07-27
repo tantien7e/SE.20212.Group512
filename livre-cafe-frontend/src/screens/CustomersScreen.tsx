@@ -81,6 +81,7 @@ function CustomersScreen() {
   const dispatch = useDispatch();
   const customersSelector = useSelector(selectCustomers);
   const { customers, loading } = customersSelector;
+  console.log(customers)
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
   const [deleteCustomerModalOpen, setDeleteCustomerModalOpen] = useState(false);
@@ -150,7 +151,7 @@ function CustomersScreen() {
         // aria-checked={isItemSelected}
         tabIndex={-1}
         key={`customer${row?._id}` + index}
-        // selected={isItemSelected}
+      // selected={isItemSelected}
       >
         <TableCell component="th" id={labelId} scope="row" padding="normal">
           {`${getSalutation(row.gender)} `}

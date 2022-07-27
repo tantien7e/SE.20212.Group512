@@ -1,8 +1,11 @@
 export interface VoucherInterface {
-  _id?: string;
-  id?: string;
+  _id: string;
   name: string;
-  color: string;
-  points: number;
-  discount: number;
+  correspondingRank: string;
+  available: boolean;
+  pointsCost: number;
+  percentageDiscount: number;
+  maxAmount: number;
 }
+
+export type VoucherPostData = Omit<VoucherInterface, '_id'>;

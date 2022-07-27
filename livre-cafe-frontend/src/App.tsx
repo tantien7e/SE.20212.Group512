@@ -12,6 +12,7 @@ import {
   SIGNUP_PATH,
   STAFFS_PATH,
   WORKSPACES_PATH,
+  VOUCHERS_PATH,
 } from '@app/constants';
 import { StaffResponse } from '@app/models/user.interface';
 import CartCheckoutScreen from '@app/screens/CartCheckoutScreen';
@@ -29,6 +30,8 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
+import { VoucherBadge } from './components/ViewOrderModal';
+import VouchersScreen from './screens/VouchersScreen';
 
 function App() {
   const { pathname } = useLocation();
@@ -63,6 +66,7 @@ function App() {
           <Route path={LOGIN_PATH} element={<LoginScreen />} />
           <Route path={SIGNUP_PATH} element={<SignupScreen />} />
           <Route path={WORKSPACES_PATH} element={<WorkSpacesScreen />} />
+          <Route path={VOUCHERS_PATH} element={<VouchersScreen />} />
           {user?.isManager && (
             <Route path={STAFFS_PATH} element={<StaffsScreen />} />
           )}

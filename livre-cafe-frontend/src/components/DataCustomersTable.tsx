@@ -49,7 +49,7 @@ import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import React, { useContext, useEffect, useState } from 'react';
 
-interface Data extends CustomerInterface {}
+interface Data extends CustomerInterface { }
 
 type ExcludedKey = 'action' | 'orders';
 
@@ -69,9 +69,9 @@ function getComparator<Key extends keyof any>(
   order: Order,
   orderBy: Exclude<Key, 'actions' | 'orders'>,
 ): (
-  a: { [key in Exclude<Key, 'actions' | 'orders'>]: number | string },
-  b: { [key in Exclude<Key, 'actions' | 'orders'>]: number | string },
-) => number {
+    a: { [key in Exclude<Key, 'actions' | 'orders'>]: number | string },
+    b: { [key in Exclude<Key, 'actions' | 'orders'>]: number | string },
+  ) => number {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
@@ -154,9 +154,9 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
   const { order, orderBy, onRequestSort, onSearchChange, filterText } = props;
   const createSortHandler =
     (property: keyof Omit<Data, 'orders'>) =>
-    (event: React.MouseEvent<unknown>) => {
-      onRequestSort(event, property);
-    };
+      (event: React.MouseEvent<unknown>) => {
+        onRequestSort(event, property);
+      };
 
   return (
     <TableHead>
@@ -186,7 +186,7 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
           key="search-bar"
           align="right"
           padding="normal"
-          // sortDirection={orderBy === headCell.id ? order : false}
+        // sortDirection={orderBy === headCell.id ? order : false}
         >
           <Box component="form" noValidate autoComplete="off">
             <FormControl>
@@ -430,8 +430,8 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
           handleClose={() => handleCloseModal(ModalType.DELETE_CUSTOMER)}
           item={
             currentCustomer as DrinkInterface &
-              BookInterface &
-              CustomerInterface
+            BookInterface &
+            CustomerInterface
           }
           handleDelete={handleDeleteCustomer}
         />
@@ -544,7 +544,7 @@ export default function DataCustomersTable(props: EnhancedTableProps) {
                         // aria-checked={isItemSelected}
                         tabIndex={-1}
                         key={`customer${row?._id}` + index}
-                        // selected={isItemSelected}
+                      // selected={isItemSelected}
                       >
                         <TableCell
                           component="th"

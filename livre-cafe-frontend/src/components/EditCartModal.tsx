@@ -102,26 +102,6 @@ export default function EditCartModal(props: EditCartModalPropsInterface) {
   const theme = useTheme();
   const headerPadding = `${theme.spacing(2)} 0`;
 
-  const handleChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const reader = new FileReader();
-    const file = e.target.files?.[0];
-    reader.onloadend = () => {
-      setProductState((state) => ({
-        ...state,
-        imageUrl: reader.result as string,
-      }));
-      setErrorState((state) => ({
-        ...state,
-        imageUrl: !reader.result,
-      }));
-    };
-    if (!file) {
-      return;
-    }
-    reader.readAsDataURL(file);
-  };
-
   const handleChangeText = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
     field: keyof ProductStateInterface,

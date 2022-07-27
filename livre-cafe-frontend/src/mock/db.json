@@ -1,0 +1,36 @@
+{
+    "voucher": [
+      {
+        "id": "59761c23b30d971669fb42ff",
+        "voucherName": "Blaze Flame Voucher",
+        "correspondingRanking": "Silver",
+        "pointLoss": "50",
+        "available": true,
+        "amount": "2$"
+      },
+      {
+        "id": "59761c233d8d0f92a6b0570d",
+        "voucherName": "Honor Chosen Voucher",
+        "correspondingRanking": "Gold",
+        "pointLoss": "100",
+        "available": true,
+        "amount": "5$"
+      },
+      {
+        "id": "59761c23fcb6254b1a06dad5",
+        "voucherName": "Progentinor Voucher",
+        "correspondingRanking": "Platinum",
+        "pointLoss": "200",
+        "available": true,
+        "amount": "8$"
+      },
+      {
+        "id": "59761c23fcb6254b1a06dad5",
+        "voucherName": "Sundae",
+        "correspondingRanking": "Diamond",
+        "pointLoss": "320",
+        "available": true,
+        "amount": "15$"
+      }
+    ]
+  }

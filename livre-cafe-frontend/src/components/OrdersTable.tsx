@@ -63,9 +63,9 @@ function getComparator<Key extends keyof any>(
   order: Order,
   orderBy: OrderBy<Key>,
 ): (
-  a: { [key in OrderBy<Key>]: number | string },
-  b: { [key in OrderBy<Key>]: number | string },
-) => number {
+    a: { [key in OrderBy<Key>]: number | string },
+    b: { [key in OrderBy<Key>]: number | string },
+  ) => number {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
@@ -154,9 +154,9 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
   const { order, orderBy, onRequestSort, onSearchChange, filterText } = props;
   const createSortHandler =
     (property: keyof Omit<Data, 'orders'>) =>
-    (event: React.MouseEvent<unknown>) => {
-      onRequestSort(event, property);
-    };
+      (event: React.MouseEvent<unknown>) => {
+        onRequestSort(event, property);
+      };
 
   return (
     <TableHead>
@@ -186,7 +186,7 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
           key="search-bar"
           align="right"
           padding="normal"
-          // sortDirection={orderBy === headCell.id ? order : false}
+        // sortDirection={orderBy === headCell.id ? order : false}
         >
           <Box component="form" noValidate autoComplete="off">
             <Tooltip title="Search by item's name, customer name or Order Id">
@@ -336,8 +336,8 @@ export default function OrdersTable(props: EnhancedTableProps) {
     const { itemsOrdered, reservation } = rowOrder;
     const reservationName = reservation?.area?.name;
 
-    const itemsName = itemsOrdered.reduce(
-      (a, c) => a + (c.product?.name || c.product?.title),
+    const itemsName = itemsOrdered?.reduce(
+      (a, c) => a + ", " + (c.product?.name || c.product?.title),
       '',
     );
     console.log(
@@ -462,18 +462,16 @@ export default function OrdersTable(props: EnhancedTableProps) {
           open={confirmCompleteModalOpen}
           handleClose={() => handleCloseModal(ModalType.CONFIRM_COMPLETE_ORDER)}
           handleConfirm={handleCompleteOrder}
-          title={`Do you want to mark order #${
-            currentOrder.id || currentOrder._id
-          } as COMPLETED`}
+          title={`Do you want to mark order #${currentOrder.id || currentOrder._id
+            } as COMPLETED`}
         />
       )}
 
       {confirmCancelModalOpen && currentOrder && (
         <ConfirmModal
           open={confirmCancelModalOpen}
-          title={`Do you want to cancel order #${
-            currentOrder.id || currentOrder._id
-          }`}
+          title={`Do you want to cancel order #${currentOrder.id || currentOrder._id
+            }`}
           handleClose={() => handleCloseModal(ModalType.CONFIRM_CANCEL_ORDER)}
           handleConfirm={handleCancerOrder}
         />
@@ -572,7 +570,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
                         // aria-checked={isItemSelected}
                         tabIndex={-1}
                         key={`customer${row?._id}` + index}
-                        // selected={isItemSelected}
+                      // selected={isItemSelected}
                       >
                         <TableCell
                           component="th"

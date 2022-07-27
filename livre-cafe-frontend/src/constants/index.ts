@@ -20,6 +20,7 @@ export const BOOKS_URL = 'books';
 export const AREAS_URL = 'areas';
 export const RESERVATIONS_URL = 'reservations';
 export const CUSTOMERS_URL = 'customers';
+export const VOUCHERS_URL = 'vouchers';
 export const ORDERS_URL = 'orders';
 export const LOGIN_URL = 'auth/login';
 export const VERIFY_TOKEN_URL = 'auth/verify-token';
@@ -47,6 +48,10 @@ export enum ModalType {
   DELETE_STAFF = 'DELETE_STAFF',
   VIEW_STAFF = 'VIEW_STAFF',
   ADD_RESERVATION = 'ADD_RESERVATION',
+  ADD_VOUCHER = 'ADD_VOUCHER',
+  EDIT_VOUCHER = 'EDIT_VOUCHER',
+  DELETE_VOUCHER = 'DELETE_VOUCHER',
+  VIEW_VOUCHER = 'VIEW_VOUCHER',
 }
 
 export enum InventoryType {

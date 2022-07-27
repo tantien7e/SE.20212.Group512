@@ -93,17 +93,17 @@ function Invoice(props: InvoiceProps) {
               rows={
                 state.reservation
                   ? [
-                      {
-                        // _id: state.reservation._id,
-                        name: state.reservation.area.name,
-                        price: state.reservation.area.costPerHour,
+                    {
+                      // _id: state.reservation._id,
+                      name: state.reservation.area.name,
+                      price: state.reservation.area.costPerHour,
 
-                        additionalRequirements:
-                          state.reservation.additionalRequirements || '',
-                        quantity: state.reservation.duration,
-                      } as CartItemInterface,
-                      ...cart.cartItems,
-                    ]
+                      additionalRequirements:
+                        state.reservation.additionalRequirements || '',
+                      quantity: state.reservation.duration,
+                    } as CartItemInterface,
+                    ...cart.cartItems,
+                  ]
                   : cart.cartItems
               }
             />
@@ -120,7 +120,7 @@ function Invoice(props: InvoiceProps) {
             <Grid item container justifyContent="space-between">
               <Typography>Vouchers: </Typography>
               <Typography>
-                -${numberWithCommasRound2(getVouchersTotal(vouchers))}
+                -${numberWithCommasRound2(getVouchersTotal(vouchers, getCartTotal(state)))}
               </Typography>
             </Grid>
           )}
