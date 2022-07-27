@@ -11,6 +11,7 @@ import {
   selectOrdersAddLoading,
   selectOrdersError,
 } from '@app/app/features/orders/orders-slice';
+import { fetchVouchers, selectVouchers } from '@app/app/features/vouchers/vouchers-slice';
 import GroupedSearchBar from '@app/components/GroupedSearchBar';
 import Invoice from '@app/components/Invoice';
 import PhoneInputCustom from '@app/components/PhoneInputCustom';
@@ -36,6 +37,7 @@ import {
   getTotalCost,
 } from '@app/utils';
 import { toastInformSuccess } from '@app/utils/toast';
+import { ConstructionOutlined } from '@mui/icons-material';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
@@ -116,18 +118,9 @@ export default function NormalCheckoutModal(props: AddModalProps) {
   const { open, handleClose } = props;
   const { state, dispatch: ctxDispatch } = useContext(Store);
 
-  const [tabIndex, setTabIndex] = useState(0);
-
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerInterface>();
-  const [isAddNew, setIsAddNew] = useState(false);
-  const [filterText, setFilterText] = useState('');
-  const theme = useTheme();
-  const headerPadding = `${theme.spacing(2)} 0`;
-  const customersSelector = useSelector(selectCustomers);
-  const { customers, loading } = customersSelector;
-  const [filteredCustomers, setFilteredCustomers] = useState(customers);
-  const [vouchers, setVouchers] = useState<VoucherInterface[]>([]);
-  const [isPost, setIsPost] = useState(false);
+  const vouchersSelector = useSelector(selectVouchers);
+  // const { vouchers, loading } = vouchersSelector;
+  const { vouchers } = vouchersSelector;
 
   const [customerState, setCustomerState] = useState<CustomerStateInterface>({
     firstName: '',
@@ -148,6 +141,29 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     ranking: false,
     gender: false,
   });
+
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerInterface>();
+  const [isAddNew, setIsAddNew] = useState(false);
+  const [filterText, setFilterText] = useState('');
+  const theme = useTheme();
+  const headerPadding = `${theme.spacing(2)} 0`;
+  const customersSelector = useSelector(selectCustomers);
+  const { customers, loading } = customersSelector;
+  const [filteredCustomers, setFilteredCustomers] = useState(customers);
+  const [vouchersSelected, setVouchersSelected] = useState<VoucherInterface[]>([]);
+  const [isPost, setIsPost] = useState(false);
+  const [filteredVouchers, setFilteredVouchers] = useState<VoucherInterface[]>([])
+
+  useEffect(() => {
+    if (!vouchers) dispatch(fetchVouchers());
+  }, [vouchers]);
+
+  useEffect(() => {
+    setFilteredVouchers(getCorrespondingVouchers(vouchers as VoucherInterface[], state.customer?.ranking as RankType));
+  }, [vouchers, state.customer]);
+
 
   const onSearchChange = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
@@ -206,7 +222,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
   const handleAddVouchersToCart = () => {
     ctxDispatch({
       type: CartAction.ADD_VOUCHERS,
-      payload: vouchers || [],
+      payload: vouchersSelected || [],
     });
     toastInformSuccess('Select vouchers successfully!');
   };
@@ -246,6 +262,13 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     setAddSuccess(true);
     return true;
   };
+
+  const getCorrespondingVouchers = (vouchers: VoucherInterface[], rank?: RankType) => {
+
+    if (!rank)
+      return vouchers;
+    return vouchers?.filter((voucher: VoucherInterface) => { return voucher.correspondingRank === rank && voucher.available })
+  }
 
   useEffect(() => {
     if (!orderLoading && isPost && !orderError) {
@@ -356,17 +379,19 @@ export default function NormalCheckoutModal(props: AddModalProps) {
               >
                 Voucher Details
               </Typography>
-              <Box mb={2}>
-                <VoucherSelect
-                  selectedVouchers={vouchers}
+              <Box mb={2}>{
+                filteredVouchers && (<VoucherSelect
+                  selectedVouchers={vouchersSelected as VoucherInterface[]}
                   setSelectedVouchers={(selected) => {
-                    setVouchers(selected);
+                    console.log(selected)
+                    setVouchersSelected(selected);
                   }}
-                />
+                  vouchers={filteredVouchers}
+                />)}
               </Box>
-              {vouchers?.length > 0 && (
+              {vouchersSelected && (
                 <Grid container direction="column" spacing={2}>
-                  {vouchers.map((voucher) => {
+                  {vouchersSelected?.map((voucher) => {
                     return (
                       <Grid item>
                         {' '}
@@ -378,13 +403,14 @@ export default function NormalCheckoutModal(props: AddModalProps) {
               )}
             </Box>
           </TabPanel>
+
           <TabPanel
             value={tabIndex}
             index={NormalCheckoutTabIndex.INVOICE}
             mt={-1}
             mb={3}
           >
-            <Invoice vouchers={vouchers} customer={state.customer} />
+            <Invoice vouchers={state.vouchers} customer={state.customer} />
           </TabPanel>
           <Divider />
           <Grid

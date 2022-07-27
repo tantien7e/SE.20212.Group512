@@ -31,19 +31,17 @@ import { deleteVoucher, fetchVouchers, selectVouchers } from '@app/app/features/
 import { getRankColor } from '@app/utils';
 
 export default function VouchersTable(props: { ranksSelected: string[] }) {
+  const user = localStorage.getItem('user')
+    ? JSON.parse(localStorage.getItem('user') || '')
+    : null;
   const { ranksSelected } = props;
   const [openEditModal, setOpenEditModal] = useState(false);
-  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [deleteSuccess, setDeleteSuccess] = useState(true);
   const [currentVoucher, setCurrentVoucher] = useState<VoucherInterface>();
-  const [tabIndex, setTabIndex] = useState(0)
+  const [currentDeleteVoucher, setCurrentDeleteVoucher] = useState<VoucherInterface>();
   const dispatch = useDispatch();
   const vouchersSelector = useSelector(selectVouchers);
   const { vouchers, loading } = vouchersSelector;
-  const [rankSelected, setRankSelected] = useState([''])
-
-  useEffect(() => {
-    if (!vouchers) dispatch(fetchVouchers());
-  }, [vouchers]);
 
   const rows = () => {
     const newVouchers = vouchers?.filter((cur) => ranksSelected.includes(cur.correspondingRank))
@@ -58,11 +56,15 @@ export default function VouchersTable(props: { ranksSelected: string[] }) {
         percentageDiscount: voucher.percentageDiscount + "%",
         maxAmount: voucher.maxAmount + "$",
       };
-      // }
     }
     ) || [] as VoucherInterface[];
   }
 
+  useEffect(() => {
+    console.log(currentDeleteVoucher)
+    if (!currentDeleteVoucher) return;
+    else dispatch(deleteVoucher(currentDeleteVoucher._id));
+  }, [currentDeleteVoucher])
 
   const handleEdit = (params: GridRenderCellParams<any, any, any>) => {
     const filteredVoucher = vouchers?.filter((voucher) => (voucher._id === params.row._id)) || []
@@ -72,10 +74,12 @@ export default function VouchersTable(props: { ranksSelected: string[] }) {
 
   const handleDelete = (params: GridRenderCellParams<any, any, any>) => {
     const filteredVoucher = vouchers?.filter((voucher) => (voucher._id === params.row._id)) || []
-    setCurrentVoucher(filteredVoucher[filteredVoucher?.length - 1]);
-    if (!currentVoucher) return;
-    dispatch(deleteVoucher(currentVoucher?._id));
+    setCurrentDeleteVoucher(filteredVoucher[filteredVoucher?.length - 1]);
   }
+
+  useEffect(() => {
+    if (!vouchers) dispatch(fetchVouchers());
+  }, [vouchers]);
 
   const deleteButton = (params: GridRenderCellParams<any, any, any>) => {
     return (
@@ -84,6 +88,7 @@ export default function VouchersTable(props: { ranksSelected: string[] }) {
           variant="text"
           color="error"
           onClick={(e) => handleDelete(params)}
+          disabled={!user?.isManager}
         >
           <DeleteOutlineOutlinedIcon />
         </Button>
@@ -94,7 +99,8 @@ export default function VouchersTable(props: { ranksSelected: string[] }) {
   const editButton = (params: GridRenderCellParams<any, any, any>) => {
     return (
       <strong>
-        <Button variant="outlined" onClick={(e) => handleEdit(params)}>
+        <Button variant="outlined" onClick={(e) => handleEdit(params)}
+          disabled={!user?.isManager}>
           Edit
         </Button>
       </strong>
@@ -121,7 +127,7 @@ export default function VouchersTable(props: { ranksSelected: string[] }) {
   };
 
   const columns: GridColDef[] = [
-    { field: '_id', headerName: 'ID', sortable: false, flex: 110 },
+    { field: '_id', headerName: 'ID', sortable: false, flex: 140 },
     {
       field: 'name',
       headerName: 'Voucher Name',
@@ -200,9 +206,10 @@ export default function VouchersTable(props: { ranksSelected: string[] }) {
           rowHeight={75}
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
           isRowSelectable={() => false}
-          autoHeight={false}
+          // autoHeight={false}
           loading={loading}
           headerHeight={80}
+          density={"comfortable"}
           sx={{
             padding: '1rem',
             paddingTop: '0',

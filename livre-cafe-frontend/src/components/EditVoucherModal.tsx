@@ -99,7 +99,6 @@ export default function EditVoucherModal(props: AddModalProps) {
   const theme = useTheme();
   const headerPadding = `${theme.spacing(2)} 0`;
 
-
   const handleChangeText = (
     e:
       | React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
@@ -109,6 +108,7 @@ export default function EditVoucherModal(props: AddModalProps) {
 
     const isNumberField =
       field === 'pointsCost' || 'maxAmount' || 'percentageDiscount';
+
     setVoucherState((prevState) => {
       let value;
       if (field === "available") {
@@ -119,12 +119,13 @@ export default function EditVoucherModal(props: AddModalProps) {
       }
       return { ...prevState, [field]: value };
     });
-    setErrorState((prevState) => {
-      return {
-        ...prevState,
-        [field]: !isNumberField ? !e.target.value : !Number(e.target.value),
-      };
-    });
+
+    // setErrorState((prevState) => {
+    //   return {
+    //     ...prevState,
+    //     [field]: !isNumberField ? !e.target.value : !Number(e.target.value),
+    //   };
+    // });
   };
 
   const generatePostData = (body: VoucherInterface) => {
@@ -154,7 +155,7 @@ export default function EditVoucherModal(props: AddModalProps) {
       name: !voucherState.name,
       correspondingRank: !voucherState.correspondingRank,
       pointsCost: voucherState.pointsCost <= 0,
-      percentageDiscount: voucherState.percentageDiscount <= 0,
+      percentageDiscount: voucherState.percentageDiscount <= 0 || voucherState.percentageDiscount > 100,
       maxAmount: voucherState.maxAmount <= 0,
     };
     setErrorState(error);
@@ -208,7 +209,12 @@ export default function EditVoucherModal(props: AddModalProps) {
                     aria-describedby="my-helper-text"
                     fullWidth
                     value={voucherState?.name}
+                    error={errorState.name}
                     onChange={(e) => handleChangeText(e, 'name')}
+                    helperText={
+                      errorState.name &&
+                      'Name must not be left blank'
+                    }
                   />
                 </Grid>
               </Grid>
@@ -224,6 +230,7 @@ export default function EditVoucherModal(props: AddModalProps) {
                     aria-describedby="my-helper-text"
                     fullWidth
                     value={voucherState.correspondingRank}
+                    error={errorState.correspondingRank}
                     onChange={(e) =>
                       handleChangeText(e, 'correspondingRank')
                     }
@@ -279,7 +286,7 @@ export default function EditVoucherModal(props: AddModalProps) {
 
               <Grid container item alignItems="center">
                 <Grid xs={3}>
-                  <label htmlFor="voucher-amount">Max Discount Amount</label>
+                  <label htmlFor="voucher-amount">Max Discount Amount ($)</label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
                   <TextField
@@ -305,7 +312,7 @@ export default function EditVoucherModal(props: AddModalProps) {
               <Grid container item alignItems="center">
                 <Grid xs={3}>
                   <label htmlFor="voucher-perentage-discount">
-                    Discount Percentage
+                    Discount Percentage (%)
                   </label>
                 </Grid>
                 <Grid xs sx={{ maxWidth: 400 }}>
@@ -323,7 +330,7 @@ export default function EditVoucherModal(props: AddModalProps) {
                     error={errorState.percentageDiscount}
                     helperText={
                       errorState.percentageDiscount &&
-                      'Discount amount must not be less than or equal to 0'
+                      'Discount Percentage must be between 0 and 100'
                     }
                   />
                 </Grid>

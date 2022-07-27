@@ -8,8 +8,9 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Chip from '@mui/material/Chip';
 import { Checkbox, Typography } from '@mui/material';
-import { getBackgroundColor } from '@app/utils';
-import { VoucherInterface } from '@app/models';
+import { getBackgroundColor, getVoucherColor } from '@app/utils';
+import { RankIndex, RankType, VoucherInterface } from '@app/models';
+import { getRankColor } from '@app/utils';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -22,25 +23,25 @@ const MenuProps = {
   },
 };
 
-const genVoucher = (
-  name: string,
-  color: string,
-  points: number,
-  discount: number,
-) => {
-  return {
-    name,
-    color,
-    points,
-    discount,
-  };
-};
+// const genVoucher = (
+//   name: string,
+//   color: string,
+//   points: number,
+//   discount: number,
+// ) => {
+//   return {
+//     name,
+//     color,
+//     points,
+//     discount,
+//   };
+// };
 
-const rows = [
-  genVoucher('Blaze Flame Voucher', 'red', 100, 10),
-  genVoucher('Honor Chosen Voucher', 'yeallow', 150, 15),
-  genVoucher('Progentinor Voucher', 'green', 500, 55),
-];
+// const rows = [
+//   genVoucher('Blaze Flame Voucher', 'red', 100, 10),
+//   genVoucher('Honor Chosen Voucher', 'yeallow', 150, 15),
+//   genVoucher('Progentinor Voucher', 'green', 500, 55),
+// ];
 
 function getStyles(name: string, VoucherName: readonly string[], theme: Theme) {
   return {
@@ -54,10 +55,11 @@ function getStyles(name: string, VoucherName: readonly string[], theme: Theme) {
 interface VoucherSelectProps {
   setSelectedVouchers: (vouchers: VoucherInterface[]) => void;
   selectedVouchers: VoucherInterface[];
+  vouchers: VoucherInterface[];
 }
 
 export default function VoucherSelect(props: VoucherSelectProps) {
-  const { selectedVouchers, setSelectedVouchers } = props;
+  const { vouchers, setSelectedVouchers, selectedVouchers } = props;
   const theme = useTheme();
   const [voucherName, setVoucherName] = React.useState<string[]>([]);
 
@@ -76,7 +78,7 @@ export default function VoucherSelect(props: VoucherSelectProps) {
       (e) => e.name === option.name,
     );
     const newSelectedVouchers = selectedVouchers.slice();
-    if (existingVoucher > -1) {
+    if (existingVoucher >= 0) {
       newSelectedVouchers.splice(existingVoucher, 1);
       setSelectedVouchers(newSelectedVouchers);
       return;
@@ -107,14 +109,14 @@ export default function VoucherSelect(props: VoucherSelectProps) {
           )}
           MenuProps={MenuProps}
         >
-          {rows.map((row) => (
+          {vouchers?.map((voucher) => (
             <MenuItem
-              key={row.name}
-              value={row.name}
-              style={getStyles(row.name, voucherName, theme)}
-              onClick={() => handleSelect(row)}
+              key={voucher.name}
+              value={voucher.name}
+              style={getStyles(voucher.name, voucherName, theme)}
+              onClick={() => handleSelect(voucher)}
             >
-              <VoucherOption {...row} width="100%" />
+              <VoucherOption {...voucher as VoucherInterface} width="100%" />
             </MenuItem>
           ))}
         </Select>
@@ -123,16 +125,13 @@ export default function VoucherSelect(props: VoucherSelectProps) {
   );
 }
 
-interface VoucherOptionProps extends BoxProps {
-  name: string;
-  points: number;
-  color: string;
-  discount: number;
+interface VoucherOptionProps extends BoxProps, VoucherInterface {
   showDetails?: boolean;
 }
 
 export function VoucherOption(props: VoucherOptionProps) {
-  const { name, points, color, discount, showDetails, ...restProps } = props;
+  const { name, pointsCost, percentageDiscount, showDetails, ...restProps } = props;
+  const color = getVoucherColor(props.correspondingRank?.toLowerCase() as RankType)
 
   return (
     <Box
@@ -141,7 +140,7 @@ export function VoucherOption(props: VoucherOptionProps) {
       {...restProps}
     >
       <Typography color={color}>
-        {name} {showDetails && `(${points} points for $${discount} saved)`}
+        <strong>{name}</strong> {showDetails && `: ${pointsCost} points for ${percentageDiscount}% (maximum ${props.maxAmount}$) saved`}
       </Typography>
     </Box>
   );

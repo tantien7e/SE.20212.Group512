@@ -24,7 +24,7 @@ import { getRankByIndex } from '@app/utils';
 
 function VouchersScreen() {
   const theme = useTheme();
-  const rankList: string[] = ["platinum", "diamond", "dilver", "gold"]
+  const rankList: string[] = ["platinum", "diamond", "silver", "gold"]
   const [tab, setTab] = useState(0);
   const [currentRank, setCurrentRank] = useState(rankList)
 
@@ -40,6 +40,9 @@ function VouchersScreen() {
   };
 
   const vouchersSelector = useSelector(selectVouchers);
+  const user = localStorage.getItem('user')
+    ? JSON.parse(localStorage.getItem('user') || '')
+    : null;
 
   const [openAddModal, setOpenAddModal] = useState(false);
 
@@ -103,12 +106,14 @@ function VouchersScreen() {
           </Tabs>
         </Box>
         <Box display="flex" justifyContent="flex-end" alignItems="flex-end">
+
           <Button
             endIcon={<AddIcon />}
             variant="contained"
             onClick={() => {
               setOpenAddModal(true)
             }}
+            disabled={!user?.isManager}
           >
             Add
           </Button>

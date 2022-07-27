@@ -23,7 +23,7 @@ const vouchersApi = {
     return axiosClient.post(url, data, { headers: authorizedHeader() });
   },
   update(data: VoucherInterface, id: string): Promise<VoucherInterface> {
-    const url = `${VOUCHERS_URL}/` + ":" + `${id}`;
+    const url = `${VOUCHERS_URL}/${id}`;
     console.log(url)
     return axiosClient.put(url, data, { headers: authorizedHeader() });
   },

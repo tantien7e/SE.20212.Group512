@@ -9,7 +9,7 @@ import {
 import { addVoucher, selectVouchersAddLoading } from '@app/app/features/vouchers/vouchers-slice';
 import { InventoryType, PREFIX_URL } from '@app/constants';
 import { CartAction, CartItemInterface, Store } from '@app/context/Store';
-import { RankType, VoucherPostData } from '@app/models';
+import { RankType, VoucherInterface, VoucherPostData } from '@app/models';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
 import { round0, round2 } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
@@ -37,9 +37,9 @@ import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector } from 'react-redux';
 
 export interface ErrorStateInterface {
-    name?: boolean;
-    correspondingRank?: boolean;
-    pointsCost?: boolean;
+    name: boolean;
+    correspondingRank: boolean;
+    pointsCost: boolean;
     percentageDiscount: boolean;
     maxAmount: boolean;
 }
@@ -103,27 +103,29 @@ export default function AddVoucherModal(
         e:
             | React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
             | SelectChangeEvent,
-        field: keyof VoucherPostData,
+        field: keyof VoucherInterface,
     ) => {
 
         const isNumberField =
             field === 'pointsCost' || 'maxAmount' || 'percentageDiscount';
         setVoucherState((prevState) => {
             let value;
-            if (field === 'available') {
-                value = (e.target.value == "1")
+            if (field === "available") {
+                value = (e.target.value === "Available")
             }
             else {
                 value = e.target.value
             }
+
             return { ...prevState, [field]: value };
         });
-        setErrorState((prevState) => {
-            return {
-                ...prevState,
-                [field]: !isNumberField ? !e.target.value : !Number(e.target.value),
-            };
-        });
+
+        // setErrorState((prevState) => {
+        //     return {
+        //         ...prevState,
+        //         [field]: !isNumberField ? !e.target.value : !Number(e.target.value),
+        //     };
+        // });
     };
 
     const genPostVoucher = (voucherState: VoucherPostData): VoucherPostData => {
@@ -162,7 +164,7 @@ export default function AddVoucherModal(
             name: !name,
             correspondingRank: !correspondingRank,
             pointsCost: pointsCost <= 0,
-            percentageDiscount: percentageDiscount <= 0,
+            percentageDiscount: percentageDiscount <= 0 || percentageDiscount > 100,
             maxAmount: maxAmount <= 0,
         };
         setErrorState(error);
@@ -218,6 +220,11 @@ export default function AddVoucherModal(
                                         fullWidth
                                         value={voucherState?.name}
                                         onChange={(e) => handleChangeText(e, 'name')}
+                                        error={errorState.name}
+                                        helperText={
+                                            errorState.name &&
+                                            'Name must not be left blank'
+                                        }
                                     />
                                 </Grid>
                             </Grid>
@@ -233,6 +240,7 @@ export default function AddVoucherModal(
                                         aria-describedby="my-helper-text"
                                         fullWidth
                                         value={voucherState.correspondingRank}
+                                        error={errorState.correspondingRank}
                                         onChange={(e) =>
                                             handleChangeText(e, 'correspondingRank')
                                         }
@@ -277,7 +285,7 @@ export default function AddVoucherModal(
                                     <Select
                                         labelId="demo-select-small"
                                         id="demo-select-small"
-                                        value={voucherState.available ? "Available" : "Non - Available"}
+                                        value={(voucherState?.available === true) ? "Available" : "Non - Available"}
                                         onChange={(e) => handleChangeText(e, 'available')}
                                     >
                                         <MenuItem value={"Available"}>Available</MenuItem>
@@ -288,7 +296,7 @@ export default function AddVoucherModal(
 
                             <Grid container item alignItems="center">
                                 <Grid xs={3}>
-                                    <label htmlFor="voucher-amount">Max Discount Amount</label>
+                                    <label htmlFor="voucher-amount">Max Discount Amount ($)</label>
                                 </Grid>
                                 <Grid xs sx={{ maxWidth: 400 }}>
                                     <TextField
@@ -314,7 +322,7 @@ export default function AddVoucherModal(
                             <Grid container item alignItems="center">
                                 <Grid xs={3}>
                                     <label htmlFor="voucher-perentage-discount">
-                                        Discount Percentage
+                                        Discount Percentage (%)
                                     </label>
                                 </Grid>
                                 <Grid xs sx={{ maxWidth: 400 }}>
@@ -332,7 +340,7 @@ export default function AddVoucherModal(
                                         error={errorState.percentageDiscount}
                                         helperText={
                                             errorState.percentageDiscount &&
-                                            'Discount amount must not be less than or equal to 0'
+                                            'Discount Percentage must be between 0 and 100'
                                         }
                                     />
                                 </Grid>

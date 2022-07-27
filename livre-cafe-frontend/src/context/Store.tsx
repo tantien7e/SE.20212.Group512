@@ -1,4 +1,4 @@
-import { CustomerInterface, VoucherNewInterface } from '@app/models';
+import { CustomerInterface, VoucherInterface } from '@app/models';
 import { ProductInterface } from '@app/models/product.interface';
 import { ReservationPostData } from '@app/models/reservation.interface';
 import React, { createContext, useReducer } from 'react';
@@ -16,7 +16,7 @@ export interface CartStateInterface {
 
   customer?: CustomerInterface;
   reservation?: ReservationPostData;
-  vouchers: VoucherNewInterface[];
+  vouchers: VoucherInterface[];
 }
 
 export enum CartAction {
@@ -35,7 +35,7 @@ export enum CartAction {
 
 interface CartContextActionInterface {
   type: string;
-  payload: CartItemInterface | CustomerInterface | VoucherNewInterface;
+  payload: CartItemInterface | CustomerInterface | VoucherInterface[];
 }
 
 const initialState: CartStateInterface = {
@@ -164,7 +164,7 @@ function reducer(
 
     case CartAction.ADD_VOUCHERS: {
 
-      const newVouchers = [...state.vouchers, action.payload]
+      const newVouchers = [...action.payload as VoucherInterface[]]
       return {
         ...state,
         vouchers: newVouchers,

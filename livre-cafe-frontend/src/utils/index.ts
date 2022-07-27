@@ -32,6 +32,10 @@ export const round2 = (num: number): string => {
   return (Math.round(num * 100 + Number.EPSILON) / 100).toFixed(2);
 };
 
+export const round0 = (num: number): string => {
+  return (Math.round(num * 100 + Number.EPSILON) / 100).toFixed(0);
+};
+
 export const numberWithCommas = (x: number | string): string => {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
@@ -43,12 +47,16 @@ export const getCartTotal = (state: CartStateInterface) => {
   return (
     state.cart.cartItems.reduce((a, c) => a + Number(c.price) * c.quantity, 0) +
     (state.reservation?.duration || 0) *
-      (state.reservation?.area?.costPerHour || 0)
+    (state.reservation?.area?.costPerHour || 0)
   );
 };
 
-export const getVouchersTotal = (items: VoucherInterface[]) => {
-  return items.reduce((a, c) => a + Number(c.discount), 0);
+export const min = (a: number, b: number) => {
+  return (a > b) ? b : a
+}
+
+export const getVouchersTotal = (items: VoucherInterface[], total: number) => {
+  return items.reduce((a, c) => a + Number(min(c.percentageDiscount * 0.01 * total, c.maxAmount)), 0);
 };
 
 export const a11yProps = (index: number) => {
@@ -87,9 +95,23 @@ export const standardize_color = (str: string) => {
   ctx.fillStyle = str;
   return ctx?.fillStyle;
 };
+
 export const getBackgroundColor = (colorString: string) => {
   const hexColor = standardize_color(colorString);
   return hexColor + '50';
+};
+
+export const getVoucherColor = (rank: RankType) => {
+  if (rank === RankType.DIAMOND)
+    return 'green'
+
+  if (rank === RankType.PLATINUM)
+    return 'grey'
+
+  if (rank === RankType.GOLD)
+    return 'violet'
+
+  return 'blue'
 };
 
 export const genAvatarImage = (gender: CustomerGender) => {
@@ -105,7 +127,7 @@ export const genAvatarImage = (gender: CustomerGender) => {
   }
 };
 
-export const getRankColor = (rank: RankType) => {
+export const getRankColor = (rank: RankType | string) => {
   switch (rank) {
     case RankType.DIAMOND:
       return 'info';
@@ -122,7 +144,7 @@ export const getRankColor = (rank: RankType) => {
 
 export const getTotalCost = (state: CartStateInterface) => {
   const { cart, vouchers, reservation } = state;
-  const voucherCost = vouchers ? getVouchersTotal(vouchers) : 0;
+  const voucherCost = vouchers ? getVouchersTotal(vouchers, getCartTotal(state)) : 0;
   return getCartTotal(state) - voucherCost < 0
     ? 0
     : getCartTotal(state) - voucherCost;
@@ -145,21 +167,6 @@ export const authorizedHeader = () => {
     Authorization: `${token}`,
     'Content-Type': 'application/json',
   };
-};
-
-export const getRankColor = (rank: RankType) => {
-  switch (rank) {
-    case RankType.DIAMOND:
-      return 'info';
-    case RankType.PLATINUM:
-      return 'success';
-    case RankType.GOLD:
-      return 'warning';
-    case RankType.SILVER:
-      return 'default';
-    default:
-      return 'default';
-  }
 };
 
 export const getErrorMessage = (error: AxiosError) => {

@@ -87,36 +87,37 @@ export default function CheckOutTable() {
   };
 
   const columns: GridColDef[] = [
-    { field: '_id', headerName: 'ID', width: 70, sortable: false },
+    { field: '_id', headerName: 'ID', width: 140, sortable: false },
     { field: 'type', headerName: 'Type', width: 140 },
-    { field: 'name', headerName: 'Item', width: 140 },
+    { field: 'name', headerName: 'Item Name', width: 200 },
     {
       field: 'quantity',
       headerName: 'Quantity',
-      width: 100,
+      width: 140,
     },
     {
       field: 'cost',
       headerName: 'Cost',
-      width: 100,
+      width: 140,
       renderCell: (params) => <>${params.row.cost}</>,
     },
     {
       field: 'additionalRequirements',
       headerName: 'Additional Requirements',
       sortable: false,
-      minWidth: 200,
-      flex: 1,
+      flex: 1
     },
     {
       field: 'edit',
       headerName: 'Edit',
       renderCell: (params) => editButton(params),
+      width: 140,
     },
     {
       field: 'delete',
       headerName: 'Delete',
       renderCell: (params) => deleteButton(params),
+      width: 140,
     },
   ];
 
@@ -166,7 +167,7 @@ export default function CheckOutTable() {
   return (
     <div
       style={{
-        height: 400,
+        height: 620,
         width: '100%',
         backgroundColor: 'white',
       }}
@@ -190,12 +191,15 @@ export default function CheckOutTable() {
         />
       )}
       <DataGrid
-        stickyHeader
         rows={rows}
         columns={columns}
         pageSize={5}
-        rowsPerPageOptions={[5]}
         isRowSelectable={() => false}
+        rowHeight={75}
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
+        // autoHeight={true}
+        headerHeight={80}
+        density={"comfortable"}
         sx={{
           padding: '1rem',
           paddingTop: '0',
