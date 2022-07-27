@@ -13,7 +13,7 @@ const addVoucher = async (req, res, next) => {
         if (voucher) {
             res.status(403).json({ message: "Duplicate name." });
         } else {
-            const newVoucher = Vouchers.create(req.body);
+            const newVoucher = await Vouchers.create(req.body);
             res.status(200).json(newVoucher);
         }
     } catch (err) {
@@ -23,7 +23,7 @@ const addVoucher = async (req, res, next) => {
 
 const editVoucher = async (req, res, next) => {
     try {
-        const voucher = Vouchers.findByIdAndUpdate(req.params.voucherId, {
+        const voucher = await Vouchers.findByIdAndUpdate(req.params.voucherId, {
             $set: req.body
         }, {
             new: true
@@ -40,7 +40,7 @@ const editVoucher = async (req, res, next) => {
 }
 
 const deleteVoucher = async (req, res, next) => {
-    const voucher = Vouchers.findByIdAndDelete(req.params.voucherId);
+    const voucher = await Vouchers.findByIdAndDelete(req.params.voucherId);
     if (voucher) {
         res.status(200).json({ message: "Delete successfully "});
     } else {
@@ -49,7 +49,7 @@ const deleteVoucher = async (req, res, next) => {
 }
 
 const getVoucher = async (req, res, next) => {
-    const voucher = Vouchers.findById(req.params.voucherId);
+    const voucher = await Vouchers.findById(req.params.voucherId);
 
     if (voucher) {
         res.status(200).json(voucher);
