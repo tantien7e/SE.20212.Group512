@@ -95,20 +95,27 @@ const createOrder = async (req, res, next) => {
             }
         }
 
-        const reservation = await Reservations.create(req.body.reservation);
-        const area = await Areas.findById(reservation.area);
-        console.log(area);
-        area.reservations.push(reservation._id);
-        await area.save();
+        let order = null;
+        if (req.body.reservation) {
+            const reservation = await Reservations.create(req.body.reservation);
+            const area = await Areas.findById(reservation.area);
+            area.reservations.push(reservation._id);
+            await area.save();
 
-        const order = await Orders.create({
-            ...req.body,
-            reservation: reservation._id
-            //totalCost: totalCost
-        });
+            order = await Orders.create({
+                ...req.body,
+                reservation: reservation._id
+                //totalCost: totalCost
+            });
 
-        reservation.order = order._id;
-        await reservation.save();
+            reservation.order = order._id;
+            await reservation.save();
+        } else {
+            order = await Orders.create({
+                ...req.body
+                //totalCost: totalCost
+            });
+        }
 
         if (order.customer) {
             const customer = await Customers.findById(order.customer);
