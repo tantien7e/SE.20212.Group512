@@ -83,7 +83,11 @@ const createOrder = async (req, res, next) => {
                 await Promise.all(promiseToAwait);
             }
 
-            const area = Areas.findById(req.body.area).populate('reservations');
+            const area = await Areas.findById(req.body.area).populate('reservations');
+            if (area.capacity < req.body.reservation.numberOfPeople) {
+                return res.status(403).json({ message: "Not enough capacity." });
+            }
+
             for (let reservation of area.reservations) {
                 if (checkTimeConflict(reservation.startTime.getTime(), reservation.startTime.getTime() + hoursToMilliseconds(reservation.duration, req.body.reservation.startTime.getTime(), req.body.reservation.startTime.getTime() + hoursToMilliseconds(req.body.reservation.duration)))) {
                     return res.status(403).json({ message: "Time conflict." });

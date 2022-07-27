@@ -1,5 +1,5 @@
 const accountSid = 'ACd16f660b1297443fa819d80d1a8a2e97';
-const authToken = 'dd77ff2594c17729b16e48ec65367f0c';
+const authToken = 'dd77ff2594c17729b16e48ec65367f0h';
 const client = require('twilio')(accountSid, authToken);
 
 module.exports.sendVerificationCode = (phoneNumber, verificationCode) => {
