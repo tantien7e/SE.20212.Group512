@@ -3,14 +3,15 @@ import {
   CUSTOMERS_PATH,
   INVENTORY_PATH,
   ORDERS_PATH,
-  STAFFS_PATH
+  STAFFS_PATH,
+  WORKSPACES_PATH,
 } from '@app/constants';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import Person from '@mui/icons-material/Person';
 import PriceCheckIcon from '@mui/icons-material/PriceCheck';
-
+import WorkspacesIcon from '@mui/icons-material/Workspaces';
 
 const navbarList = [
   // {
@@ -28,6 +29,14 @@ const navbarList = [
     badge: 0,
     subList: [],
     to: INVENTORY_PATH,
+  },
+  {
+    icon: WorkspacesIcon,
+    desc: 'Work Spaces',
+    secondDesc: '',
+    badge: 0,
+    subList: [],
+    to: WORKSPACES_PATH,
   },
   {
     icon: Person,

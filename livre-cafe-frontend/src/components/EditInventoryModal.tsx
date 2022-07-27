@@ -6,7 +6,10 @@ import {
   selectDrinksUpdateLoading,
   updateDrink,
 } from '@app/app/features/drinks/drinks-slice';
-import { updateSnack } from '@app/app/features/snacks/snacks-slice';
+import {
+  selectSnacksUpdateLoading,
+  updateSnack,
+} from '@app/app/features/snacks/snacks-slice';
 import { ErrorStateInterface } from '@app/components/AddItemModal';
 import { InventoryType, PREFIX_URL } from '@app/constants';
 import {
@@ -77,6 +80,8 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
   const dispatch = useDispatch();
   const updateDrinkLoading = useSelector(selectDrinksUpdateLoading);
   const updateBookLoading = useSelector(selectBooksUpdateLoading);
+  const updateSnackLoading = useSelector(selectSnacksUpdateLoading);
+
   const [updateSuccess, setUpdateSuccess] = useState(false);
 
   const [productState, setProductState] = useState<ProductStateInterface>({
@@ -157,9 +162,11 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
       };
     } else if (type === InventoryType.SNACK) {
       return {
+        _id,
         name: productName,
         price,
         imageUrl,
+        stock: stockQuantity,
       };
     }
     return {};
@@ -195,11 +202,17 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
   };
 
   React.useEffect(() => {
-    const updateLoading = updateDrinkLoading || updateBookLoading;
+    const updateLoading =
+      updateDrinkLoading || updateBookLoading || updateSnackLoading;
     if (updateSuccess && !updateLoading) {
       handleClose();
     }
-  }, [updateSuccess, updateDrinkLoading, updateBookLoading]);
+  }, [
+    updateSuccess,
+    updateDrinkLoading,
+    updateBookLoading,
+    updateSnackLoading,
+  ]);
 
   return (
     <div>
@@ -355,32 +368,31 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
                   />
                 </Grid>
               </Grid>
-              {type !== InventoryType.SNACK && (
-                <Grid container item alignItems="center">
-                  <Grid xs={3}>
-                    <label htmlFor="product-stock">Stock Quantity</label>
-                  </Grid>
-                  <Grid xs sx={{ maxWidth: 400 }}>
-                    <TextField
-                      variant="outlined"
-                      id="product-stock"
-                      aria-describedby="my-helper-text"
-                      fullWidth
-                      value={productState?.stockQuantity}
-                      onChange={(e) => handleChangeText(e, 'stockQuantity')}
-                      InputProps={{
-                        // inputMode: 'numeric',
-                        inputComponent: NumberFormatCustom as any,
-                      }}
-                      error={errorState.stockQuantity}
-                      helperText={
-                        errorState.stockQuantity &&
-                        'Stock must not be less than or equal to 0'
-                      }
-                    />
-                  </Grid>
+
+              <Grid container item alignItems="center">
+                <Grid xs={3}>
+                  <label htmlFor="product-stock">Stock Quantity</label>
                 </Grid>
-              )}
+                <Grid xs sx={{ maxWidth: 400 }}>
+                  <TextField
+                    variant="outlined"
+                    id="product-stock"
+                    aria-describedby="my-helper-text"
+                    fullWidth
+                    value={productState?.stockQuantity}
+                    onChange={(e) => handleChangeText(e, 'stockQuantity')}
+                    InputProps={{
+                      // inputMode: 'numeric',
+                      inputComponent: NumberFormatCustom as any,
+                    }}
+                    error={errorState.stockQuantity}
+                    helperText={
+                      errorState.stockQuantity &&
+                      'Stock must not be less than or equal to 0'
+                    }
+                  />
+                </Grid>
+              </Grid>
             </Grid>
           </Container>
 
@@ -402,7 +414,9 @@ export default function EditInventoryModal(props: EditCartModalPropsInterface) {
             <Grid>
               <LoadingButton
                 variant="contained"
-                loading={updateDrinkLoading || updateBookLoading}
+                loading={
+                  updateDrinkLoading || updateBookLoading || updateSnackLoading
+                }
                 loadingPosition="end"
                 onClick={() => handleSave()}
                 endIcon={<SaveIcon />}

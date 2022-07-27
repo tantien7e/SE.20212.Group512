@@ -1,15 +1,16 @@
 import {
   addOrder,
   selectOrdersAddLoading,
-  selectOrdersError
+  selectOrdersError,
 } from '@app/app/features/orders/orders-slice';
 import Invoice from '@app/components/Invoice';
 import { CartAction, Store } from '@app/context/Store';
+import { OrderPostData, OrderStatusType } from '@app/models/order.interface';
 import {
-  OrderPostData,
-  OrderStatusType
-} from '@app/models/order.interface';
-import { genOrderPostItems, getTotalCost } from '@app/utils';
+  generateReservationData,
+  genOrderPostItems,
+  getTotalCost,
+} from '@app/utils';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { LoadingButton } from '@mui/lab';
 import { Checkbox, Divider, FormControlLabel, Grid } from '@mui/material';
@@ -50,6 +51,7 @@ export default function PrintOrderModal(props: ModalPropsInterface) {
       status: OrderStatusType.PROCESSING,
       bookedAt: new Date(),
       totalCost: getTotalCost(state) * 1.1,
+      reservation: generateReservationData(state.reservation),
     };
     dispatch(addOrder(postOrderData));
     setIsPost(true);

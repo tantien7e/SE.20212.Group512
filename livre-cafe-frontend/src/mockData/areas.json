@@ -1,0 +1,55 @@
+[
+  {
+    "classSelector": "targets",
+    "name": "Fountain Base",
+    "width": 252,
+    "height": 252,
+    "top": 22,
+    "left": 905,
+    "rotate": 0,
+    "backgroundColor": "inherit",
+    "backgroundImage": "/src/assets/images/areas/FountainBase.png",
+    "fontColor": "black",
+    "id": "FountainBase"
+  },
+  {
+    "classSelector": "targets",
+    "name": "Croissant Space",
+    "width": 411,
+    "height": 411,
+    "top": 73,
+    "left": 247,
+    "rotate": 0,
+    "backgroundColor": "inherit",
+    "backgroundImage": "/src/assets/images/areas/CroissantSpace.png",
+    "fontColor": "black",
+    "id": "CroissantSpace"
+  },
+  {
+    "classSelector": "targets",
+    "name": "Liption Cell",
+    "width": 174,
+    "height": 174,
+    "top": 462,
+    "left": 872,
+    "rotate": 0,
+    "backgroundColor": "inherit",
+    "backgroundImage": "/src/assets/images/areas/LiptionCell.png",
+    "fontColor": "black",
+    "id": "LiptionCell"
+  },
+  {
+    "classSelector": "targets",
+    "name": "Mail Hall",
+    "width": 717,
+    "height": 494,
+    "top": 128,
+    "left": 580,
+    "rotate": 0,
+    "backgroundColor": "inherit",
+    "backgroundImage": "/src/assets/images/areas/MainHall.png",
+    "fontColor": "black",
+    "id": "MainHall",
+    "isNotClickable": true
+  }
+]

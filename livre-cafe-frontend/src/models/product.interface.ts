@@ -1,3 +1,5 @@
+import { AreaInterface } from '@app/models/area.interface';
+
 export interface DrinkInterface {
   imageUrl: string;
   stock: number;

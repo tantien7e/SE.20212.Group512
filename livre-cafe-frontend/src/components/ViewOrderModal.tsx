@@ -3,7 +3,9 @@ import { CustomerDetailsBlock } from '@app/components/NormalCheckoutModal';
 import {
   CustomerInterface,
   OrderInterface,
-  VoucherInterface
+  ProductInterface,
+  ProductType,
+  VoucherInterface,
 } from '@app/models';
 import { getBackgroundColor, getSalutation } from '@app/utils';
 import CloseIcon from '@mui/icons-material/Close';
@@ -94,7 +96,24 @@ export default function ViewOrderModal(props: ViewOrderModalProps) {
               <TableCell align="right">Total&nbsp;($)</TableCell>,
               <TableCell align="right">Additonal Requirements&nbsp;</TableCell>,
             ]}
-            rows={currentOrder.itemsOrdered}
+            rows={
+              currentOrder.reservation
+                ? [
+                    {
+                      product: {
+                        _id: currentOrder.reservation._id,
+                        name: currentOrder.reservation.area.name,
+                        price: currentOrder.reservation.area.costPerHour,
+                      } as ProductInterface,
+                      additionalRequirements:
+                        currentOrder.reservation.additionalRequirements || '',
+                      productType: ProductType.RESERVATION,
+                      quantity: currentOrder.reservation.duration,
+                    },
+                    ...currentOrder.itemsOrdered,
+                  ]
+                : [...currentOrder.itemsOrdered]
+            }
           />
           {currentOrder.vouchers && currentOrder.vouchers.length > 0 && (
             <VoucherDetailsBlock vouchers={currentOrder.vouchers} />

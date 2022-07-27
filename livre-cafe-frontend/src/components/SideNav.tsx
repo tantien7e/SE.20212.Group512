@@ -180,12 +180,13 @@ function SideNav() {
         {navList.map((key, index) => {
           const isActive = location?.pathname === key?.to;
           const { cart } = state;
-          const totalQuantity = key.badge
+          let totalQuantity = key.badge
             ? cart?.cartItems?.reduce(
                 (a, c) => Number(a) + Number(c.quantity),
                 0,
               )
             : 0;
+          if (state.reservation && key.badge) totalQuantity += 1;
           if (key.isOnlyManager && !user?.isManager) return;
           return (
             <div key={`list-item-${index}`}>

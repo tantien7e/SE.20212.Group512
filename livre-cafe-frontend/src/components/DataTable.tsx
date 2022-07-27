@@ -30,6 +30,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
+import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
 
 type DataFull =
@@ -49,6 +50,9 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   }
   if (b[orderBy] > a[orderBy]) {
     return 1;
+  }
+  if (orderBy === 'startTime') {
+    return moment(a[orderBy]).diff(moment(a[orderBy]), 'days');
   }
   return 0;
 }
@@ -312,6 +316,12 @@ export default function DataTable(props: EnhancedTableProps) {
     if (rows && handleChangeTab) {
       const tabRows = handleChangeTab(1 as any, tabIndex || 0);
       const newRows = tabRows?.filter((row: any) => {
+        return searchTarget(row)?.toLowerCase().includes(filterText);
+      });
+      setFilteredRows(newRows);
+    }
+    if (rows && !handleChangeTab) {
+      const newRows = rows?.filter((row: any) => {
         return searchTarget(row)?.toLowerCase().includes(filterText);
       });
       setFilteredRows(newRows);

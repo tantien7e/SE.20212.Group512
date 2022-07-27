@@ -318,6 +318,7 @@ export function StaffStatusBadge(props: StaffStatusBadgeProps) {
     return (
       <Box
         minWidth={100}
+        maxWidth={200}
         sx={{
           backgroundColor: themeBlock?.pending.backgroundColor,
           borderRadius: theme.spacing(1),
@@ -338,6 +339,7 @@ export function StaffStatusBadge(props: StaffStatusBadgeProps) {
     return (
       <Box
         minWidth={100}
+        maxWidth={200}
         sx={{
           backgroundColor: themeBlock?.completed.backgroundColor,
           borderRadius: theme.spacing(1),

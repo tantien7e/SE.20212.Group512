@@ -1,3 +1,7 @@
+import addAreaSaga from '@app/app/sagas/areas/addAreaSaga';
+import deleteAreaSaga from '@app/app/sagas/areas/deleteAreaSaga';
+import getListAreasSaga from '@app/app/sagas/areas/getListAreasSaga';
+import updateAreaSaga from '@app/app/sagas/areas/updateAreaSaga';
 import loginSaga from '@app/app/sagas/authentication/loginSaga';
 import signupSaga from '@app/app/sagas/authentication/signupSaga';
 import addBookSaga from '@app/app/sagas/books/addBookSaga';
@@ -16,6 +20,9 @@ import addOrderSaga from '@app/app/sagas/orders/addOrderSaga';
 import deleteOrderSaga from '@app/app/sagas/orders/deleteOrderSaga';
 import getListOrdersSaga from '@app/app/sagas/orders/getListOrdersSaga';
 import updateOrderSaga from '@app/app/sagas/orders/updateOrderSaga';
+import addReservationSaga from '@app/app/sagas/reservations/addReservationSaga';
+import getListReservationsSaga from '@app/app/sagas/reservations/getListReservationsSaga';
+import updateReservationSaga from '@app/app/sagas/reservations/updateReservationSaga';
 import addSnackSaga from '@app/app/sagas/snacks/addSnackSaga';
 import deleteSnackSaga from '@app/app/sagas/snacks/deleteSnackSaga';
 import getListSnacksSaga from '@app/app/sagas/snacks/getListSnacksSaga';
@@ -46,6 +53,10 @@ export default function* rootSaga() {
     addBookSaga(),
     updateBookSaga(),
     deleteBookSaga(),
+    getListAreasSaga(),
+    addAreaSaga(),
+    updateAreaSaga(),
+    deleteAreaSaga(),
     getListCustomersSaga(),
     addCustomerSaga(),
     updateCustomerSaga(),
@@ -60,5 +71,8 @@ export default function* rootSaga() {
     addStaffSaga(),
     updateStaffSaga(),
     deleteStaffSaga(),
+    getListReservationsSaga(),
+    updateReservationSaga(),
+    addReservationSaga(),
   ]);
 }

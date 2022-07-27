@@ -1,5 +1,6 @@
 import { selectBooksDeleteLoading } from '@app/app/features/books/books-slice';
 import { selectDrinksDeleteLoading } from '@app/app/features/drinks/drinks-slice';
+import { selectSnacksDeleteLoading } from '@app/app/features/snacks/snacks-slice';
 import { InventoryType } from '@app/constants';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { LoadingButton } from '@mui/lab';
@@ -30,12 +31,14 @@ export default function DeleteConfirmModal(props: ModalPropsInterface) {
   const theme = useTheme();
   const deleteDrinkLoading = useSelector(selectDrinksDeleteLoading);
   const deleteBookLoading = useSelector(selectBooksDeleteLoading);
+  const deleteSnackLoading = useSelector(selectSnacksDeleteLoading);
   const [confirmText, setConfirmText] = React.useState('');
   const [deleteError, setDeleteError] = React.useState(false);
   const [deleteSuccess, setDeleteSuccess] = React.useState(false);
 
   React.useEffect(() => {
-    const deleteLoading = deleteBookLoading || deleteDrinkLoading;
+    const deleteLoading =
+      deleteBookLoading || deleteDrinkLoading || deleteSnackLoading;
     if (deleteSuccess && !deleteLoading) {
       handleClose();
     }
@@ -91,7 +94,9 @@ export default function DeleteConfirmModal(props: ModalPropsInterface) {
             <Grid>
               <LoadingButton
                 variant="contained"
-                loading={deleteBookLoading || deleteDrinkLoading}
+                loading={
+                  deleteBookLoading || deleteDrinkLoading || deleteSnackLoading
+                }
                 loadingPosition="end"
                 onClick={() => {
                   handleDelete(confirmText, setDeleteError, setDeleteSuccess);

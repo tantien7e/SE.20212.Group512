@@ -1,7 +1,6 @@
 import { CustomerInterface, VoucherInterface } from '@app/models';
 import { ProductInterface } from '@app/models/product.interface';
-import { getCartTotal } from '@app/utils';
-import { toastInformSuccess } from '@app/utils/toast';
+import { ReservationPostData } from '@app/models/reservation.interface';
 import React, { createContext, useReducer } from 'react';
 
 export interface CartItemInterface extends ProductInterface {
@@ -17,6 +16,7 @@ export interface CartStateInterface {
 
   customer?: CustomerInterface;
   vouchers?: VoucherInterface[];
+  reservation?: ReservationPostData;
 }
 
 export enum CartAction {
@@ -28,6 +28,9 @@ export enum CartAction {
   REMOVE_CUSTOMER = 'REMOVE_CUSTOMER',
   ADD_VOUCHERS = 'ADD_VOUCHERS',
   REMOVE_VOUCHERS = 'REMOVE_VOUCHERS',
+  ADD_RESERVATION = 'ADD_RESERVATION',
+  REMOVE_RESERVATION = 'REMOVE_RESERVATION',
+  UPDATE_RESERVATION = 'UPDATE_RESERVATION',
 }
 
 interface CartContextActionInterface {
@@ -47,6 +50,9 @@ const initialState: CartStateInterface = {
     : null,
   vouchers: localStorage.getItem('vouchers')
     ? JSON.parse(localStorage.getItem('vouchers') || '')
+    : null,
+  reservation: localStorage.getItem('reservation')
+    ? JSON.parse(localStorage.getItem('reservation') || '')
     : null,
 };
 
@@ -127,6 +133,7 @@ function reducer(
       localStorage.removeItem('cartItems');
       localStorage.removeItem('cartCustomer');
       localStorage.removeItem('vouchers');
+      localStorage.removeItem('reservation');
 
       return {
         cart: {
@@ -168,6 +175,32 @@ function reducer(
       return {
         ...state,
         vouchers: null,
+      };
+    }
+
+    case CartAction.ADD_RESERVATION: {
+      const reservation = action.payload;
+      localStorage.setItem('reservation', JSON.stringify(reservation));
+      return {
+        ...state,
+        reservation,
+      };
+    }
+
+    case CartAction.REMOVE_RESERVATION: {
+      localStorage.removeItem('reservation');
+      return {
+        ...state,
+        reservation: undefined,
+      };
+    }
+
+    case CartAction.UPDATE_RESERVATION: {
+      const newReservation = action.payload;
+      localStorage.setItem('reservation', JSON.stringify(newReservation));
+      return {
+        ...state,
+        newReservation,
       };
     }
     default:
