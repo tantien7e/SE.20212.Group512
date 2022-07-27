@@ -97,6 +97,7 @@ const createOrder = async (req, res, next) => {
 
         const reservation = await Reservations.create(req.body.reservation);
         const area = await Areas.findById(reservation.area);
+        console.log(area);
         area.reservations.push(reservation._id);
         await area.save();
 

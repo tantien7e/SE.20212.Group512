@@ -3,7 +3,7 @@ const { checkEqualDays } = require('../../lib/utils');
 
 const getAllAreas = async (req, res, next) => {
     const areas = await Areas.find({}).populate('reservations');
-    if (req.query !== {}) {
+    if (Object.keys(req.query).length) {
         areas.forEach(area => {
             area.reservations = area.reservations.filter(reservation => checkEqualDays(reservation.startTime, new Date(req.query.date)));
         });
@@ -15,7 +15,7 @@ const getAllAreas = async (req, res, next) => {
 const getArea = async (req, res, next) => {
     const area = await Areas.findById(req.params.areaId).populate('reservations');
     if (area !== null) {
-        if (req.query !== {}) {
+        if (Object.keys(req.query).length) {
             area.reservations = area.reservations.filter(reservation => checkEqualDays(reservation.startTime, new Date(req.query.date)));
         }
 

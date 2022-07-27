@@ -65,7 +65,6 @@ const getReservation = async (req, res, next) => {
         }]
     });
 
-    console.log(reservation.startTime.getHours());
 
     if (reservation === null) {
         res.status(404).json({ message: "Reservation not found." });
