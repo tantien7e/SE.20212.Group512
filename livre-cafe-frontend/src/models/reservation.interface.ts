@@ -17,12 +17,13 @@ export enum ReservationStatusIndex {
 }
 
 export interface ReservationPostData {
-  area: AreaInterface;
+  area?: AreaInterface;
   duration: number;
   date: Date;
   time: string;
   additionalRequirements?: string;
   customer?: CustomerInterface;
+  numberOfPeople: number;
 }
 
 export interface ReservationInterface {
@@ -33,4 +34,5 @@ export interface ReservationInterface {
   status: ReservationStatus;
   order: OrderInterface;
   additionalRequirements?: string;
+  numberOfPeople: number;
 }

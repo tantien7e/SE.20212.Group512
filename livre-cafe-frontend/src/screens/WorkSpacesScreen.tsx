@@ -1,8 +1,9 @@
 import {
   fetchReservations,
   selectReservations,
-  updateReservation
+  updateReservation,
 } from '@app/app/features/reservations/reservations-slice';
+import AddReservationModal from '@app/components/AddReservationModal';
 
 import DataTable, { HeadCell } from '@app/components/DataTable';
 import Floor from '@app/components/Floor/Floor';
@@ -12,7 +13,7 @@ import {
   CustomerInterface,
   ReservationInterface,
   ReservationStatus,
-  ReservationStatusIndex
+  ReservationStatusIndex,
 } from '@app/models';
 import { TabPanel } from '@app/screens/InventoryScreen';
 import { a11yProps, stableSort } from '@app/utils';
@@ -26,7 +27,7 @@ import {
   TableRow,
   Tabs,
   Tooltip,
-  Typography
+  Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/system';
@@ -96,7 +97,9 @@ function WorkSpacesScreen() {
   const [addStaffModalOpen, setAddStaffModalOpen] = useState(false);
   const [deleteStaffModalOpen, setDeleteStaffModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [currentStaff, setCurrentStaff] = useState<ReservationInterface>();
+  const [currentReservation, setCurrentReservation] =
+    useState<ReservationInterface>();
+  const [addReservationModalOpen, setAddReservationModalOpen] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
   const [generalTabInex, setGeneralTabIndex] = useState(0);
   const reservationsSelector = useSelector(selectReservations);
@@ -110,20 +113,23 @@ function WorkSpacesScreen() {
   };
   const handleOpenModal = (type: ModalType, item?: ReservationInterface) => {
     switch (type) {
-      case ModalType.DELETE_STAFF:
-        setDeleteStaffModalOpen(true);
-        setCurrentStaff(item);
-        break;
-      case ModalType.ADD_STAFF:
-        setAddStaffModalOpen(true);
-        break;
-      case ModalType.EDIT_STAFF:
-        setEditModalOpen(true);
-        setCurrentStaff(item);
-        break;
-      case ModalType.VIEW_STAFF:
-        setViewModalOpen(true);
-        setCurrentStaff(item);
+      // case ModalType.DELETE_STAFF:
+      //   setDeleteStaffModalOpen(true);
+      //   setCurrentStaff(item);
+      //   break;
+      // case ModalType.ADD_STAFF:
+      //   setAddStaffModalOpen(true);
+      //   break;
+      // case ModalType.EDIT_STAFF:
+      //   setEditModalOpen(true);
+      //   setCurrentStaff(item);
+      //   break;
+      // case ModalType.VIEW_STAFF:
+      //   setViewModalOpen(true);
+      //   setCurrentStaff(item);
+      //   break;
+      case ModalType.ADD_RESERVATION:
+        setAddReservationModalOpen(true);
         break;
       default:
         return;
@@ -144,10 +150,13 @@ function WorkSpacesScreen() {
       case ModalType.VIEW_STAFF:
         setViewModalOpen(false);
         break;
+      case ModalType.ADD_RESERVATION:
+        setAddReservationModalOpen(false);
+        break;
       default:
         return;
     }
-    setCurrentStaff(undefined);
+    setCurrentReservation(undefined);
   };
 
   const handleUpdateReservationStatus = (
@@ -328,6 +337,12 @@ function WorkSpacesScreen() {
       sx={{ maxWidth: '100%' }}
       className="screen-container inventory-screen-container"
     >
+      {addReservationModalOpen && (
+        <AddReservationModal
+          open={addReservationModalOpen}
+          handleClose={() => handleCloseModal(ModalType.ADD_RESERVATION)}
+        />
+      )}
       <Helmet>
         <title>Work Spaces</title>
       </Helmet>
@@ -369,7 +384,7 @@ function WorkSpacesScreen() {
           isLoading={loading}
           headCells={headCells}
           dataRow={dataRow}
-          handleOpenAddModal={() => handleOpenModal(ModalType.ADD_STAFF)}
+          handleOpenAddModal={() => handleOpenModal(ModalType.ADD_RESERVATION)}
           handleChangeTab={handleChangeTab}
           searchTarget={(row: ReservationInterface) => {
             const { order, area } = row;

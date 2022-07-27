@@ -8,6 +8,7 @@ import {
 import AddReservationModal from '@app/components/AddReservationModal';
 import FloorElement, { TargetProps } from '@app/components/Floor/FloorElement';
 import ListAction from '@app/components/Floor/ListAction';
+import ViewListReservationsModal from '@app/components/ViewListReservationsModal';
 import { AreaInterface } from '@app/models';
 import { Box, Popper } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
@@ -26,6 +27,8 @@ function Floor() {
   const [open, setOpen] = React.useState(false);
   const [isMoveable, setIsMoveable] = useState(false);
   const [openAddModal, setOpenAddModal] = useState(false);
+  const [openViewReservationsModal, setOpenViewReservationsModal] =
+    useState(false);
   const dispatch = useDispatch();
   const toggleMoveable = () => {
     setIsMoveable(!isMoveable);
@@ -103,6 +106,13 @@ function Floor() {
           area={currentTarget as AreaInterface}
         />
       )}
+      {openViewReservationsModal && currentTarget && (
+        <ViewListReservationsModal
+          open={openViewReservationsModal}
+          handleClose={() => setOpenViewReservationsModal(false)}
+          item={currentTarget as AreaInterface}
+        />
+      )}
       <Popper
         open={open}
         placement="right-start"
@@ -140,6 +150,7 @@ function Floor() {
       >
         <ListAction
           handleAddReservation={() => setOpenAddModal(true)}
+          handleViewAreaReservations={() => setOpenViewReservationsModal(true)}
           handleUpdateArea={() =>
             dispatch(
               updateArea({

@@ -1,15 +1,11 @@
+import { fetchAreas, selectAreas } from '@app/app/features/areas/areas-slice';
 import {
   addCustomer,
   fetchCustomers,
   selectCustomers,
 } from '@app/app/features/customers/customers-slice';
 import { ErrorStateInterface } from '@app/components/AddCustomerModal';
-import GroupedSearchBar from '@app/components/GroupedSearchBar';
-import {
-  AddCustomerBox,
-  CustomerDetailsBlock,
-  CustomerStateInterface,
-} from '@app/components/NormalCheckoutModal';
+import { CustomerStateInterface } from '@app/components/NormalCheckoutModal';
 import PickerButton from '@app/components/PickerButton';
 import { BootstrapDialogTitle } from '@app/components/ViewOrderModal';
 import { CartAction, Store } from '@app/context/Store';
@@ -23,22 +19,20 @@ import {
 import { ReservationPostData } from '@app/models/reservation.interface';
 import { renderTimeSlots, roundupHour } from '@app/utils';
 import { toastError, toastInformSuccess } from '@app/utils/toast';
-import { Add } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { DatePicker, LoadingButton } from '@mui/lab';
+import { DatePicker } from '@mui/lab';
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   FormControl,
   Grid,
-  IconButton,
   MenuItem,
   Select,
   TextField,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -52,7 +46,7 @@ import { useDispatch, useSelector } from 'react-redux';
 interface AddReservationProps {
   open: boolean;
   handleClose: () => void;
-  area: AreaInterface;
+  area?: AreaInterface;
 }
 
 function AddReservationModal(props: AddReservationProps) {
@@ -63,14 +57,17 @@ function AddReservationModal(props: AddReservationProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerInterface>();
   const [filterText, setFilterText] = useState('');
   const [filteredCustomers, setFilteredCustomers] = useState(customers);
+  const areasSelector = useSelector(selectAreas);
+  const { areas, loading: areasLoading } = areasSelector;
 
   const [reservationState, setReservationState] = useState<ReservationPostData>(
     {
       date: new Date(),
-      duration: 120,
-      area: area,
-      additionalRequirements: '',
+      duration: 1,
+      area: area || areas?.[0],
+      additionalRequirements: 'Reservation for 1',
       time: roundupHour(moment(new Date())).format('HH:mm'),
+      numberOfPeople: 1,
     },
   );
 
@@ -199,6 +196,9 @@ function AddReservationModal(props: AddReservationProps) {
     if (addSuccess) {
       setIsAddNew(false);
     }
+    if (!areas && !areasLoading) {
+      dispatch(fetchAreas());
+    }
 
     if (addSuccess && customers && !addLoading) {
       handleChangeState('customer')(
@@ -209,7 +209,7 @@ function AddReservationModal(props: AddReservationProps) {
     }
 
     handleSearch(filterText);
-  }, [dispatch, customers, addSuccess]);
+  }, [dispatch, customers, addSuccess, areas, areasLoading]);
 
   return (
     <div>
@@ -334,14 +334,10 @@ function AddReservationModal(props: AddReservationProps) {
                     {Array(6)
                       .fill(1)
                       .map((_val, index) => {
-                        const unit = 60;
-                        const value = unit * (index + 1);
-                        const hours = (value * 1.0) / 60;
+                        const value = index + 1;
                         const text =
-                          hours > 1
-                            ? `${value / 60} hours`
-                            : `${value / 60} hour`;
-                        return <MenuItem value={hours}>{text}</MenuItem>;
+                          value > 1 ? `${value} hours` : `${value} hour`;
+                        return <MenuItem value={value}>{text}</MenuItem>;
                       })}
                   </Select>
                 </FormControl>
@@ -383,6 +379,7 @@ function AddReservationModal(props: AddReservationProps) {
                   </Select>
                 </FormControl>
               </Grid>
+
               <Grid item container direction={'column'} rowGap={1}>
                 <Typography
                   variant="body2"
@@ -391,13 +388,129 @@ function AddReservationModal(props: AddReservationProps) {
                 >
                   Area
                 </Typography>
-                <PickerButton
-                  fontColor={theme.palette.secondary.contrastText}
-                  endIcon={<KeyboardArrowDownIcon />}
-                  disabled
+                {area ? (
+                  <PickerButton
+                    fontColor={theme.palette.secondary.contrastText}
+                    endIcon={<KeyboardArrowDownIcon />}
+                    disabled
+                  >
+                    {area.name}
+                  </PickerButton>
+                ) : (
+                  <FormControl variant="outlined" fullWidth>
+                    <Select
+                      labelId="demo-customized-select-label"
+                      id="demo-customized-select"
+                      value={reservationState.area?._id}
+                      sx={{
+                        textTransform: 'none',
+                        justifyContent: 'space-between',
+                        color: theme.palette.secondary.contrastText,
+                        borderColor: 'rgba(0, 40, 100, 0.12)',
+                        fontWeight: 400,
+                      }}
+                      MenuProps={{
+                        PaperProps: {
+                          sx: {
+                            maxHeight: 256,
+                          },
+                        },
+                      }}
+                    >
+                      {areas
+                        ? areas.map((area) => {
+                            return (
+                              <MenuItem
+                                onClick={() => handleChangeState('area')(area)}
+                                value={area._id}
+                              >
+                                {area.name}
+                              </MenuItem>
+                            );
+                          })
+                        : areasLoading && (
+                            <MenuItem>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  width: '100%',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <CircularProgress />
+                              </Box>
+                            </MenuItem>
+                          )}
+                    </Select>
+                  </FormControl>
+                )}
+              </Grid>
+              <Grid item container direction={'column'} rowGap={1}>
+                <Typography
+                  variant="body2"
+                  fontWeight={500}
+                  color={theme.palette.secondary.contrastText}
                 >
-                  {area.name}
-                </PickerButton>
+                  Number of Guests
+                </Typography>
+
+                <FormControl variant="outlined" fullWidth>
+                  <Select
+                    labelId="demo-customized-select-label"
+                    id="demo-customized-select"
+                    value={reservationState.numberOfPeople}
+                    onChange={(e) =>
+                      handleChangeState('numberOfPeople')(e.target.value)
+                    }
+                    sx={{
+                      textTransform: 'none',
+                      justifyContent: 'space-between',
+                      color: theme.palette.secondary.contrastText,
+                      borderColor: 'rgba(0, 40, 100, 0.12)',
+                      fontWeight: 400,
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          maxHeight: 256,
+                        },
+                      },
+                    }}
+                  >
+                    {!reservationState.area ? (
+                      <MenuItem>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            width: '100%',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          Select an area first
+                        </Box>
+                      </MenuItem>
+                    ) : (
+                      Array(reservationState.area?.capacity || 0)
+                        .fill(1)
+                        .map((_val, index) => {
+                          if (index === 0) return;
+                          return (
+                            <MenuItem
+                              value={index}
+                              onClick={() => {
+                                handleChangeState('numberOfPeople')(index);
+                                handleChangeState('additionalRequirements')(
+                                  `Reservation for ${index}`,
+                                );
+                              }}
+                            >
+                              {index}
+                            </MenuItem>
+                          );
+                        })
+                    )}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item container direction={'column'} rowGap={1}>
                 <Typography
@@ -415,6 +528,7 @@ function AddReservationModal(props: AddReservationProps) {
                   onChange={(e) =>
                     handleChangeState('additionalRequirements')(e.target.value)
                   }
+                  value={reservationState.additionalRequirements}
                 ></TextField>
               </Grid>
             </Grid>

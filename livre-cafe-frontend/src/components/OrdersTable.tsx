@@ -331,15 +331,22 @@ export default function OrdersTable(props: EnhancedTableProps) {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-  const genderRowItems = (order: OrderInterface) => {
-    const { itemsOrdered } = order;
-    const reservationName = order.reservation?.area.name;
+  const genderRowItems = (rowOrder: OrderInterface) => {
+    if (!rowOrder) return '';
+    const { itemsOrdered, reservation } = rowOrder;
+    const reservationName = reservation?.area?.name;
+
     const itemsName = itemsOrdered.reduce(
-      (a, c) => a + (c.product.name || c.product.title),
+      (a, c) => a + (c.product?.name || c.product?.title),
       '',
     );
+    console.log(
+      reservationName + itemsName
+        ? (reservationName ? ', ' : '') + itemsName
+        : '.',
+    );
     return reservationName + itemsName
-      ? (reservationName ? ', ' : '') + itemsName
+      ? (reservationName ? `${reservationName}` : '') + itemsName
       : '.';
   };
 

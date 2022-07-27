@@ -22,13 +22,13 @@ function requireAuthentication(Component: any) {
         return;
       }
       dispatch(verify({ callback: (success) => {} }));
-    }, []);
+    }, [dispatch]);
 
     useEffect(() => {
-      if (!isVerified) {
+      if (!isVerified && !authLoading) {
         navigate(LOGIN_PATH);
       }
-    }, [isVerified]);
+    }, [isVerified, authLoading]);
 
     return (
       <div>

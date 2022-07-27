@@ -51,11 +51,11 @@ const initialState: IInitialState = {
   codeName: '',
   error: '',
   isVerified: false,
-  verifyLoading: false,
+  verifyLoading: true,
 };
 
 const authenticationSlice = createSlice({
-  name: 'books',
+  name: 'authentication',
   initialState,
   reducers: {
     submitLogin(state, action: PayloadAction<LoginBody>) {

@@ -1,9 +1,10 @@
 import reservationsApi from '@app/api/reservationsApi';
+import { fetchAreas } from '@app/app/features/areas/areas-slice';
 import {
   fetchReservations,
   updateReservation,
   updateReservationFailed,
-  updateReservationSucceeded
+  updateReservationSucceeded,
 } from '@app/app/features/reservations/reservations-slice';
 import { ReservationInterface } from '@app/models';
 import { getErrorMessage } from '@app/utils';
@@ -16,14 +17,14 @@ function* updateReservationData(action: PayloadAction<ReservationInterface>) {
   try {
     yield call(
       reservationsApi.update,
-      action.payload,
+      { ...action.payload, order: action.payload.order._id } as any,
       action.payload?._id || '',
     );
     yield put(updateReservationSucceeded());
     yield put(fetchReservations());
     // yield put(fetchCustomers());
     // yield put(fetchDrinks());
-    // yield put(fetchBooks());
+    yield put(fetchAreas());
   } catch (error) {
     const message = getErrorMessage(error as AxiosError);
     yield put(updateReservationFailed(message));

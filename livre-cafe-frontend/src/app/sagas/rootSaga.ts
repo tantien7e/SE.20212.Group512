@@ -22,7 +22,7 @@ import getListOrdersSaga from '@app/app/sagas/orders/getListOrdersSaga';
 import updateOrderSaga from '@app/app/sagas/orders/updateOrderSaga';
 import addReservationSaga from '@app/app/sagas/reservations/addReservationSaga';
 import getListReservationsSaga from '@app/app/sagas/reservations/getListReservationsSaga';
-import updateReservationSaga from '@app/app/sagas/reservations/updateOrderSaga';
+import updateReservationSaga from '@app/app/sagas/reservations/updateReservationSaga';
 import addSnackSaga from '@app/app/sagas/snacks/addSnackSaga';
 import deleteSnackSaga from '@app/app/sagas/snacks/deleteSnackSaga';
 import getListSnacksSaga from '@app/app/sagas/snacks/getListSnacksSaga';

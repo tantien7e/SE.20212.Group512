@@ -185,6 +185,7 @@ export const generateReservationData = (data?: ReservationPostData) => {
   console.log(startTime.toDateString);
   return {
     ...data,
+    area: data.area?._id,
     startTime,
   };
 };

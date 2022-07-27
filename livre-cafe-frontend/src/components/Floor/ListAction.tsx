@@ -5,14 +5,20 @@ import { LoadingButton } from '@mui/lab';
 
 interface ListActionProps {
   handleAddReservation: () => void;
+  handleViewAreaReservations: () => void;
   handleUpdateArea: () => void;
   updateLoading?: boolean;
   available?: boolean;
 }
 
 function ListAction(props: ListActionProps) {
-  const { handleAddReservation, handleUpdateArea, updateLoading, available } =
-    props;
+  const {
+    handleAddReservation,
+    handleUpdateArea,
+    updateLoading,
+    available,
+    handleViewAreaReservations,
+  } = props;
   const theme = useTheme();
   return (
     <Box
@@ -54,6 +60,15 @@ function ListAction(props: ListActionProps) {
         >
           Mark as available
         </LoadingButton>
+      )}
+      {available && (
+        <Button
+          variant="outlined"
+          sx={{ textTransform: 'none', m: 1, my: 0.5 }}
+          onClick={() => handleViewAreaReservations()}
+        >
+          View Upcoming Reservations
+        </Button>
       )}
     </Box>
   );

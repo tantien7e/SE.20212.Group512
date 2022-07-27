@@ -219,7 +219,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
       status: OrderStatusType.PROCESSING,
       bookedAt: new Date(),
       totalCost: getTotalCost(state) * 1.1,
-      reservation: generateReservationData(state.reservation),
+      reservation: generateReservationData(state.reservation) as any,
     };
     dispatch(addOrder(postOrderData));
     setIsPost(true);

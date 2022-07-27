@@ -16,10 +16,12 @@ import {
 } from '@app/models';
 import { ReservationPostData } from '@app/models/reservation.interface';
 import { renderTimeSlots } from '@app/utils';
-import { toastError, toastInformSuccess } from '@app/utils/toast';
+import { toastInformSuccess } from '@app/utils/toast';
 import { DatePicker } from '@mui/lab';
 import {
+  Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -320,14 +322,10 @@ function EditReservationModal(props: AddReservationProps) {
                     {Array(6)
                       .fill(1)
                       .map((_val, index) => {
-                        const unit = 60;
-                        const value = unit * (index + 1);
-                        const hours = (value * 1.0) / 60;
+                        const value = index + 1;
                         const text =
-                          hours > 1
-                            ? `${value / 60} hours`
-                            : `${value / 60} hour`;
-                        return <MenuItem value={hours}>{text}</MenuItem>;
+                          value > 1 ? `${value} hours` : `${value} hour`;
+                        return <MenuItem value={value}>{text}</MenuItem>;
                       })}
                   </Select>
                 </FormControl>
@@ -381,7 +379,7 @@ function EditReservationModal(props: AddReservationProps) {
                   <Select
                     labelId="demo-customized-select-label"
                     id="demo-customized-select"
-                    value={reservationState.area._id}
+                    value={reservationState.area?._id}
                     sx={{
                       textTransform: 'none',
                       justifyContent: 'space-between',
@@ -397,16 +395,85 @@ function EditReservationModal(props: AddReservationProps) {
                       },
                     }}
                   >
-                    {areas?.map((area) => {
-                      return (
-                        <MenuItem
-                          onClick={() => handleChangeState('area')(area)}
-                          value={area._id}
+                    {areas
+                      ? areas.map((area) => {
+                          return (
+                            <MenuItem
+                              onClick={() => handleChangeState('area')(area)}
+                              value={area._id}
+                            >
+                              {area.name}
+                            </MenuItem>
+                          );
+                        })
+                      : areasLoading && (
+                          <MenuItem>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                width: '100%',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <CircularProgress />
+                            </Box>
+                          </MenuItem>
+                        )}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item container direction={'column'} rowGap={1}>
+                <Typography
+                  variant="body2"
+                  fontWeight={500}
+                  color={theme.palette.secondary.contrastText}
+                >
+                  Number of Guests
+                </Typography>
+
+                <FormControl variant="outlined" fullWidth>
+                  <Select
+                    labelId="demo-customized-select-label"
+                    id="demo-customized-select"
+                    value={reservationState.numberOfPeople}
+                    onChange={(e) =>
+                      handleChangeState('numberOfPeople')(e.target.value)
+                    }
+                    sx={{
+                      textTransform: 'none',
+                      justifyContent: 'space-between',
+                      color: theme.palette.secondary.contrastText,
+                      borderColor: 'rgba(0, 40, 100, 0.12)',
+                      fontWeight: 400,
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          maxHeight: 256,
+                        },
+                      },
+                    }}
+                  >
+                    {!reservationState.area ? (
+                      <MenuItem>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            width: '100%',
+                            justifyContent: 'center',
+                          }}
                         >
-                          {area.name}
-                        </MenuItem>
-                      );
-                    })}
+                          Select an area first
+                        </Box>
+                      </MenuItem>
+                    ) : (
+                      Array(reservationState.area?.capacity || 0)
+                        .fill(1)
+                        .map((_val, index) => {
+                          if (index === 0) return;
+                          return <MenuItem value={index}>{index}</MenuItem>;
+                        })
+                    )}
                   </Select>
                 </FormControl>
               </Grid>
