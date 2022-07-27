@@ -2,12 +2,13 @@ import {
   fetchAreas,
   selectAreasData,
   selectAreasLoading,
+  selectAreasUpdateLoading,
   updateArea,
 } from '@app/app/features/areas/areas-slice';
 import AddReservationModal from '@app/components/AddReservationModal';
 import FloorElement, { TargetProps } from '@app/components/Floor/FloorElement';
 import ListAction from '@app/components/Floor/ListAction';
-import { toastError, toastInformSuccess } from '@app/utils/toast';
+import { AreaInterface } from '@app/models';
 import { Box, Popper } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -16,6 +17,7 @@ import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 function Floor() {
   const areas = useSelector(selectAreasData);
   const areaLoading = useSelector(selectAreasLoading);
+  const areaUpdateLoading = useSelector(selectAreasUpdateLoading);
   const [targets, setTargets] = useState<TargetProps[]>([]);
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null,
@@ -29,11 +31,11 @@ function Floor() {
     setIsMoveable(!isMoveable);
   };
 
-  const handleSave = () => {
-    targets.forEach((target) => {
-      dispatch(updateArea(target));
-    });
-  };
+  // const handleSave = () => {
+  //   targets.forEach((target) => {
+  //     dispatch(updateArea(target));
+  //   });
+  // };
   const handleClickElement = (
     event: React.MouseEvent<HTMLButtonElement>,
     target: TargetProps,
@@ -67,6 +69,7 @@ function Floor() {
           fontColor: 'black',
         })),
       );
+      setCurrentTarget((prev) => areas.find((area) => area._id === prev?._id));
     }
   }, [areas, areaLoading]);
 
@@ -97,7 +100,7 @@ function Floor() {
         <AddReservationModal
           open={openAddModal}
           handleClose={() => setOpenAddModal(false)}
-          area={currentTarget}
+          area={currentTarget as AreaInterface}
         />
       )}
       <Popper
@@ -135,7 +138,19 @@ function Floor() {
           // },
         ]}
       >
-        <ListAction handleAddReservation={() => setOpenAddModal(true)} />
+        <ListAction
+          handleAddReservation={() => setOpenAddModal(true)}
+          handleUpdateArea={() =>
+            dispatch(
+              updateArea({
+                ...currentTarget,
+                available: !currentTarget?.available,
+              } as AreaInterface),
+            )
+          }
+          updateLoading={areaUpdateLoading}
+          available={currentTarget?.available}
+        />
       </Popper>
       <TransformWrapper
         initialScale={1}
@@ -180,6 +195,7 @@ function Floor() {
                 }px)`,
                 background:
                   'repeating-linear-gradient(0deg, rgba(120, 120, 120, 0.2), rgba(120, 120, 120, 0.22) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 120px), repeating-linear-gradient(-90deg, rgba(120, 120, 120, 0.22), rgba(120, 120, 120, 0.22) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 120px), repeating-linear-gradient(0deg, rgba(120, 120, 120, 0.22), rgba(120, 120, 120, 0.22) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 30px), repeating-linear-gradient(-90deg, rgba(120, 120, 120, 0.22), rgba(120, 120, 120, 0.22) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 30px)',
+                backgroundColor: '#ced0d8',
               }}
             >
               <div

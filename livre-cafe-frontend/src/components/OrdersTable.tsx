@@ -331,6 +331,18 @@ export default function OrdersTable(props: EnhancedTableProps) {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
+  const genderRowItems = (order: OrderInterface) => {
+    const { itemsOrdered } = order;
+    const reservationName = order.reservation?.area.name;
+    const itemsName = itemsOrdered.reduce(
+      (a, c) => a + (c.product.name || c.product.title),
+      '',
+    );
+    return reservationName + itemsName
+      ? (reservationName ? ', ' : '') + itemsName
+      : '.';
+  };
+
   const handleSearch = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
   ) => {
@@ -339,17 +351,14 @@ export default function OrdersTable(props: EnhancedTableProps) {
     setFilterText(text);
     const newRows = rows.filter((row) => {
       const { customer, id, _id, itemsOrdered } = row;
-      const itemsName = itemsOrdered.reduce(
-        (a, c) => a + (c.product.name || c.product.title),
-        '',
-      );
+      const orderItems = genderRowItems(row);
       const idText = id || _id || '';
       const name = !customer ? 'Guest' : customer.firstName + customer.lastName;
       const hasConflict = textTokens.find(
         (token) =>
           !(
             name.toLowerCase().includes(token) ||
-            itemsName.toLowerCase().includes(token) ||
+            orderItems.toLowerCase().includes(token) ||
             String(idText).toLowerCase().includes(token)
           ),
       );
@@ -419,10 +428,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
       const textTokens = text.split(' ');
       const newRows = tabRows.filter((row) => {
         const { customer, id, _id, itemsOrdered } = row;
-        const itemsName = itemsOrdered.reduce(
-          (a, c) => a + (c.product.name || c.product.title),
-          '',
-        );
+        const orderItems = genderRowItems(row);
         const idText = id || _id || '';
         const name = !customer
           ? 'Guest'
@@ -431,7 +437,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
           (token) =>
             !(
               name.toString().toLowerCase().includes(token) ||
-              itemsName.toLowerCase().includes(token) ||
+              orderItems.toLowerCase().includes(token) ||
               String(idText).toLowerCase().includes(token)
             ),
         );
@@ -580,15 +586,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
                         </TableCell>
                         <TableCell align="left">{customerName}</TableCell>
                         <TableCell align="left">
-                          {row.itemsOrdered.reduce(
-                            (a, c, cIndex) =>
-                              a +
-                              (c.product.title || c.product.name) +
-                              (cIndex < row.itemsOrdered.length - 1
-                                ? ', '
-                                : '.'),
-                            '',
-                          )}
+                          {genderRowItems(row)}
                         </TableCell>
                         <TableCell align="left">
                           {moment(row.bookedAt).format('DD.MM.YYYY')}

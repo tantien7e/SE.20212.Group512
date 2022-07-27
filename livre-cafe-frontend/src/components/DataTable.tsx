@@ -30,6 +30,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
+import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
 
 type DataFull =
@@ -49,6 +50,9 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   }
   if (b[orderBy] > a[orderBy]) {
     return 1;
+  }
+  if (orderBy === 'startTime') {
+    return moment(a[orderBy]).diff(moment(a[orderBy]), 'days');
   }
   return 0;
 }

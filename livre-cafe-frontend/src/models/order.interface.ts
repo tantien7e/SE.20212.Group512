@@ -1,7 +1,10 @@
 import { CartItemInterface } from '@app/context/Store';
 import { CustomerInterface } from '@app/models/customer.interface';
 import { ProductInterface } from '@app/models/product.interface';
-import { ReservationPostData } from '@app/models/reservation.interface';
+import {
+  ReservationPostData,
+  ReservationInterface,
+} from '@app/models/reservation.interface';
 import { VoucherInterface } from '@app/models/voucher.interface';
 
 export enum OrderStatusType {
@@ -13,6 +16,7 @@ export enum OrderStatusType {
 export enum ProductType {
   DRINK = 'drinks',
   BOOK = 'books',
+  RESERVATION = 'reservation',
 }
 export interface OrderInterface {
   itemsOrdered: ItemOrdered[];
@@ -24,6 +28,7 @@ export interface OrderInterface {
   _id?: string;
   totalCost: number;
   createdAt?: Date;
+  reservation?: ReservationInterface;
 }
 
 export interface ItemOrdered {
@@ -34,7 +39,7 @@ export interface ItemOrdered {
 }
 
 export interface OrderPostData
-  extends Omit<OrderInterface, 'itemsOrdered' | 'customer'> {
+  extends Omit<OrderInterface, 'itemsOrdered' | 'customer' | 'reservation'> {
   itemsOrdered: {
     product: string;
     quantity: number;
@@ -42,5 +47,5 @@ export interface OrderPostData
     productType: ProductType;
   }[];
   customer?: string | null;
-  reservation?: ReservationPostData;
+  reservation?: ReservationInterface;
 }

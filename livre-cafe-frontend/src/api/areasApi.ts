@@ -1,4 +1,4 @@
-import axiosClient from '@app/api/axiosClientMock';
+import axiosClient from '@app/api/axiosClient';
 import { AREAS_URL } from '@app/constants';
 import { AreaInterface } from '@app/models';
 import { GetParams } from '@app/models/common';

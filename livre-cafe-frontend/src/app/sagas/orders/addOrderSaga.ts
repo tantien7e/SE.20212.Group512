@@ -7,6 +7,7 @@ import {
   addOrderSucceeded,
   fetchOrders,
 } from '@app/app/features/orders/orders-slice';
+import { fetchReservations } from '@app/app/features/reservations/reservations-slice';
 import { OrderInterface, OrderPostData } from '@app/models';
 import { getErrorMessage } from '@app/utils';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -21,6 +22,7 @@ function* addNewOrder(action: PayloadAction<OrderPostData>) {
     yield put(fetchOrders());
     yield put(fetchDrinks());
     yield put(fetchBooks());
+    yield put(fetchReservations());
   } catch (error) {
     const message = getErrorMessage(error as AxiosError);
     yield put(addOrderFailed(message));

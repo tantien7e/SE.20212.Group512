@@ -25,10 +25,12 @@ import {
   RankType,
 } from '@app/models/customer.interface';
 import { BookInterface, DrinkInterface } from '@app/models/product.interface';
+import { ReservationPostData } from '@app/models/reservation.interface';
 import { TabPanel } from '@app/screens/InventoryScreen';
 import {
   a11yProps,
   genAvatarImage,
+  generateReservationData,
   genOrderPostItems,
   getSalutation,
   getTotalCost,
@@ -51,6 +53,7 @@ import Box, { BoxProps } from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { CountryData } from 'react-phone-input-2';
@@ -216,7 +219,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
       status: OrderStatusType.PROCESSING,
       bookedAt: new Date(),
       totalCost: getTotalCost(state) * 1.1,
-      reservation: state.reservation,
+      reservation: generateReservationData(state.reservation),
     };
     dispatch(addOrder(postOrderData));
     setIsPost(true);

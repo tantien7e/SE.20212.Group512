@@ -133,6 +133,7 @@ function reducer(
       localStorage.removeItem('cartItems');
       localStorage.removeItem('cartCustomer');
       localStorage.removeItem('vouchers');
+      localStorage.removeItem('reservation');
 
       return {
         cart: {
@@ -187,7 +188,7 @@ function reducer(
     }
 
     case CartAction.REMOVE_RESERVATION: {
-      localStorage.removeItem('voucher');
+      localStorage.removeItem('reservation');
       return {
         ...state,
         reservation: undefined,

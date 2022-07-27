@@ -70,6 +70,7 @@ const hoursToMilliseconds = hours => {
 }
 
 const checkEqualDays = (day1, day2) => {
+    if(!day1 || !day2) return false;
     return (day1.getDate() === day2.getDate()) && (day1.getMonth() === day2.getMonth()) && (day1.getFullYear() === day2.getFullYear());
 }
 

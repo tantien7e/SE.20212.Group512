@@ -1,11 +1,17 @@
 import IMAGES from '@app/assets/images';
 import { CartItemInterface, CartStateInterface } from '@app/context/Store';
-import { OrderPostData, ProductType, VoucherInterface } from '@app/models';
+import {
+  OrderPostData,
+  ProductType,
+  ReservationInterface,
+  VoucherInterface,
+} from '@app/models';
 import { ErrorResponse } from '@app/models/common';
 import { CustomerGender, RankType } from '@app/models/customer.interface';
+import { ReservationPostData } from '@app/models/reservation.interface';
 import { MenuItem } from '@mui/material';
 import { AxiosError } from 'axios';
-import moment, { Moment } from 'moment';
+import moment, { duration, Moment } from 'moment';
 
 export function stableSort<T>(
   array: readonly T[],
@@ -33,8 +39,12 @@ export const numberWithCommas = (x: number | string): string => {
 export const numberWithCommasRound2 = (x: number): string =>
   numberWithCommas(round2(x));
 
-export const getCartTotal = (items: CartItemInterface[]) => {
-  return items.reduce((a, c) => a + Number(c.price) * c.quantity, 0);
+export const getCartTotal = (state: CartStateInterface) => {
+  return (
+    state.cart.cartItems.reduce((a, c) => a + Number(c.price) * c.quantity, 0) +
+    (state.reservation?.duration || 0) *
+      (state.reservation?.area?.costPerHour || 0)
+  );
 };
 
 export const getVouchersTotal = (items: VoucherInterface[]) => {
@@ -90,11 +100,11 @@ export const genAvatarImage = (gender: CustomerGender) => {
 };
 
 export const getTotalCost = (state: CartStateInterface) => {
-  const { cart, vouchers } = state;
+  const { cart, vouchers, reservation } = state;
   const voucherCost = vouchers ? getVouchersTotal(vouchers) : 0;
-  return getCartTotal(cart.cartItems) - voucherCost < 0
+  return getCartTotal(state) - voucherCost < 0
     ? 0
-    : getCartTotal(cart.cartItems) - voucherCost;
+    : getCartTotal(state) - voucherCost;
 };
 
 export const genOrderPostItems = (
@@ -164,4 +174,26 @@ export const renderTimeSlots = (date: Date) => {
       const value = time.add(index, 'hour').format('HH:mm');
       return value;
     });
+};
+export const generateReservationData = (data?: ReservationPostData) => {
+  if (!data) return undefined;
+  const startTime = new Date(data.date);
+  console.log(data);
+  const momentTime = moment(data.time, 'HH:mm');
+  startTime.setHours(momentTime.hours());
+  startTime.setMinutes(momentTime.minutes());
+  console.log(startTime.toDateString);
+  return {
+    ...data,
+    startTime,
+  };
+};
+
+export const getEndTime = (reservation?: ReservationInterface) => {
+  if (!reservation) return 'Invalid Reservation';
+  const endTime = moment(reservation.startTime).add(
+    reservation.duration,
+    'hours',
+  );
+  return endTime.format('hh:mm A');
 };

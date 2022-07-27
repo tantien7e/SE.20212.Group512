@@ -1,19 +1,21 @@
-import { Box, PopperPlacementType } from '@mui/material';
+import { AreaInterface, AreaStatus, ReservationStatus } from '@app/models';
+import { getEndTime } from '@app/utils';
+import { Box, PopperPlacementType, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { padding } from '@mui/system';
 import React, { CSSProperties, useEffect, useState } from 'react';
 import Moveable from 'react-moveable';
 
-export interface TargetProps {
+export interface TargetProps extends AreaInterface {
   _id: string;
-  classSelector: string;
+
   name: string;
   width: number;
   height: number;
-  top: number;
-  left: number;
+  y: number;
+  x: number;
   rotate: number;
-  backgroundColor: string;
-  fontColor: string;
+
   backgroundImage: string;
   isNotClickable?: boolean;
 }
@@ -62,17 +64,16 @@ export default function FloorElement(props: FloorElementProps) {
     if (document.getElementById(properties._id)) {
       setTarget(document.getElementById(properties._id) || undefined);
     }
-  }, [properties._id, properties.classSelector]);
+  }, [properties._id]);
 
   const generateStyleObject = (attributes: TargetProps): CSSProperties => ({
     position: `absolute`,
     width: `${attributes.width}px`,
     height: `${attributes.height}px`,
-    top: `${attributes.top}px`,
-    left: `${attributes.left}px`,
-    backgroundColor: attributes.backgroundColor,
+    top: `${attributes.y}px`,
+    left: `${attributes.x}px`,
     // transform: `rotate(${attributes.rotate}deg)`,
-    color: attributes.fontColor,
+    color: 'black',
     fontWeight: 'bold',
     boxSizing: `border-box`,
     cursor: 'pointer',
@@ -150,11 +151,30 @@ export default function FloorElement(props: FloorElementProps) {
     }
   }, [isHovered]);
 
+  const renderAreaStatusColor = (status: AreaStatus, available: boolean) => {
+    if (!available)
+      return {
+        color: 'gray',
+        backgroundColor: theme.palette.secondary.main,
+      };
+    if (status === AreaStatus.FREE) {
+      return {
+        color: theme.palette.success.contrastText,
+        backgroundColor: theme.palette.success.main,
+      };
+    }
+    if (status === AreaStatus.OCCUPIED) {
+      return {
+        color: theme.palette.error.contrastText,
+        backgroundColor: theme.palette.error.main,
+      };
+    }
+  };
+
   return (
     <React.Fragment>
       <Box
         id={properties._id}
-        className={properties.classSelector}
         style={generateStyleObject(properties) || {}}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
@@ -202,17 +222,60 @@ export default function FloorElement(props: FloorElementProps) {
             position: 'relative',
           }}
         >
-          <div
-            style={{
-              position: 'absolute',
-              top: '-20px',
-              fontFamily: 'Caveat, cursive',
-              fontWeight: 600,
-              fontSize: '1.5rem',
-            }}
-          >
-            {!properties.isNotClickable && properties.name}
-          </div>
+          {!properties.isNotClickable && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '-10px',
+                left: '-150px',
+                width: '130px',
+                ...renderAreaStatusColor(
+                  properties.status,
+                  properties.available,
+                ),
+                borderRadius: '8px',
+                padding: '4px',
+              }}
+            >
+              <Typography
+                variant="body1"
+                style={{
+                  fontFamily: 'Caveat, cursive',
+                  fontWeight: 600,
+                  fontSize: '1.5rem',
+                }}
+                color="success"
+              >
+                {!properties.isNotClickable && properties.name}{' '}
+              </Typography>
+              <Typography
+                variant="body1"
+                style={{
+                  // fontFamily: 'Caveat, cursive',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                }}
+              >
+                {!properties.isNotClickable &&
+                  `(${!properties.available ? 'blocked' : properties.status}${
+                    properties.status === AreaStatus.OCCUPIED
+                      ? ' til ' + getEndTime(properties?.reservations?.[0])
+                      : ''
+                  })`}
+              </Typography>
+              <Typography
+                variant="body1"
+                style={{
+                  // fontFamily: 'Caveat, cursive',
+                  fontWeight: 400,
+                  fontSize: '1.5rem',
+                  textAlign: 'center',
+                }}
+              >
+                {properties.capacity}
+              </Typography>
+            </div>
+          )}
         </div>
         {allowMoveable ? (
           <Moveable
@@ -273,26 +336,26 @@ export default function FloorElement(props: FloorElementProps) {
               // console.log("onDragEnd", target, isDrag, clientX, clientY);
               setPrivateProps({
                 ...privateProps,
-                left:
+                x:
                   tempProps.left !== undefined
-                    ? privateProps.left + tempProps.left
-                    : privateProps.left,
-                top:
+                    ? privateProps.x + tempProps.left
+                    : privateProps.x,
+                y:
                   tempProps.top !== undefined
-                    ? privateProps.top + tempProps.top
-                    : privateProps.top,
+                    ? privateProps.y + tempProps.top
+                    : privateProps.y,
               });
               setTempProps({});
               updateTarget({
                 ...privateProps,
-                left:
+                x:
                   tempProps.left !== undefined
-                    ? privateProps.left + tempProps.left
-                    : privateProps.left,
-                top:
+                    ? privateProps.x + tempProps.left
+                    : privateProps.x,
+                y:
                   tempProps.top !== undefined
-                    ? privateProps.top + tempProps.top
-                    : privateProps.top,
+                    ? privateProps.y + tempProps.top
+                    : privateProps.y,
               });
             }}
             onResizeStart={({ target, clientX, clientY }) => {

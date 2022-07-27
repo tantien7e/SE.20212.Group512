@@ -1,5 +1,5 @@
 import BasicTable from '@app/components/BasicTable';
-import { Store } from '@app/context/Store';
+import { CartItemInterface, Store } from '@app/context/Store';
 import { CustomerInterface, VoucherInterface } from '@app/models';
 import {
   getCartTotal,
@@ -90,14 +90,29 @@ function Invoice(props: InvoiceProps) {
                   Additonal Requirements&nbsp;
                 </TableCell>,
               ]}
-              rows={cart.cartItems}
+              rows={
+                state.reservation
+                  ? [
+                      {
+                        // _id: state.reservation._id,
+                        name: state.reservation.area.name,
+                        price: state.reservation.area.costPerHour,
+
+                        additionalRequirements:
+                          state.reservation.additionalRequirements || '',
+                        quantity: state.reservation.duration,
+                      } as CartItemInterface,
+                      ...cart.cartItems,
+                    ]
+                  : cart.cartItems
+              }
             />
           </Grid>
           <Divider sx={{ margin: `${theme.spacing(2)} 0` }} />
           <Grid item container justifyContent="space-between">
             <Typography>Subtotal: </Typography>
             <Typography>
-              ${numberWithCommasRound2(getCartTotal(cart.cartItems))}
+              ${numberWithCommasRound2(getCartTotal(state))}
             </Typography>
           </Grid>
 

@@ -1,13 +1,18 @@
 import { useTheme } from '@mui/material/styles';
 import { Box, Button } from '@mui/material';
 import React from 'react';
+import { LoadingButton } from '@mui/lab';
 
 interface ListActionProps {
   handleAddReservation: () => void;
+  handleUpdateArea: () => void;
+  updateLoading?: boolean;
+  available?: boolean;
 }
 
 function ListAction(props: ListActionProps) {
-  const { handleAddReservation } = props;
+  const { handleAddReservation, handleUpdateArea, updateLoading, available } =
+    props;
   const theme = useTheme();
   return (
     <Box
@@ -22,16 +27,34 @@ function ListAction(props: ListActionProps) {
       py={0.5}
       mx={1}
     >
-      <Button
-        variant="outlined"
-        sx={{ textTransform: 'none', m: 1, my: 0.5 }}
-        onClick={() => handleAddReservation()}
-      >
-        Add Reservation
-      </Button>
-      <Button variant="outlined" sx={{ textTransform: 'none', m: 1, my: 0.5 }}>
-        Mark as Unavailable
-      </Button>
+      {available && (
+        <Button
+          variant="outlined"
+          sx={{ textTransform: 'none', m: 1, my: 0.5 }}
+          onClick={() => handleAddReservation()}
+        >
+          Add Reservation
+        </Button>
+      )}
+      {available ? (
+        <LoadingButton
+          variant="outlined"
+          sx={{ textTransform: 'none', m: 1, my: 0.5 }}
+          onClick={() => handleUpdateArea()}
+          loading={updateLoading}
+        >
+          Mark as Unavailable
+        </LoadingButton>
+      ) : (
+        <LoadingButton
+          variant="outlined"
+          sx={{ textTransform: 'none', m: 1, my: 0.5 }}
+          onClick={() => handleUpdateArea()}
+          loading={updateLoading}
+        >
+          Mark as available
+        </LoadingButton>
+      )}
     </Box>
   );
 }

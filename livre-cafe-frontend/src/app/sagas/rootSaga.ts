@@ -20,6 +20,9 @@ import addOrderSaga from '@app/app/sagas/orders/addOrderSaga';
 import deleteOrderSaga from '@app/app/sagas/orders/deleteOrderSaga';
 import getListOrdersSaga from '@app/app/sagas/orders/getListOrdersSaga';
 import updateOrderSaga from '@app/app/sagas/orders/updateOrderSaga';
+import addReservationSaga from '@app/app/sagas/reservations/addReservationSaga';
+import getListReservationsSaga from '@app/app/sagas/reservations/getListReservationsSaga';
+import updateReservationSaga from '@app/app/sagas/reservations/updateOrderSaga';
 import addSnackSaga from '@app/app/sagas/snacks/addSnackSaga';
 import deleteSnackSaga from '@app/app/sagas/snacks/deleteSnackSaga';
 import getListSnacksSaga from '@app/app/sagas/snacks/getListSnacksSaga';
@@ -68,5 +71,8 @@ export default function* rootSaga() {
     addStaffSaga(),
     updateStaffSaga(),
     deleteStaffSaga(),
+    getListReservationsSaga(),
+    updateReservationSaga(),
+    addReservationSaga(),
   ]);
 }

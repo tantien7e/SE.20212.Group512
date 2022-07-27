@@ -1,13 +1,23 @@
+import { ReservationInterface } from '@app/models/reservation.interface';
+
+export enum AreaStatus {
+  FREE = 'free',
+  OCCUPIED = 'occupied',
+}
 export interface AreaInterface {
   // id: string;
   width: number;
   height: number;
-  top: number;
-  left: number;
+  y: number;
+  x: number;
   rotate: number;
   backgroundImage: string;
   _id: string;
   name: string;
   isNotClickable?: boolean;
-  price: number;
+  costPerHour: number;
+  status: AreaStatus;
+  available: boolean;
+  reservations?: ReservationInterface[];
+  capacity?: number;
 }

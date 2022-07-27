@@ -58,7 +58,7 @@ function CartCheckoutScreen() {
             handleClick: () => setNormalCheckoutModalOpen(true),
           },
         ]}
-        disabled={!cart.cartItems?.length}
+        disabled={!cart.cartItems?.length && !state.reservation}
       >
         Checkout
       </MenuDropdownButton>
@@ -81,7 +81,7 @@ function CartCheckoutScreen() {
             fontWeight="700"
             color={theme.palette.secondary.contrastText}
           >
-            Subtotal: ${getCartTotal(cart.cartItems)}
+            Subtotal: ${getCartTotal(state)}
           </Typography>{' '}
         </div>
       }

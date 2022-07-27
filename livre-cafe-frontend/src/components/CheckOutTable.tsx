@@ -1,5 +1,6 @@
 import EditReservationModal from '@app/components/EditReservationModal';
 import {
+  CartAction,
   CartItemInterface,
   CartStateInterface,
   Store,
@@ -40,10 +41,13 @@ export default function CheckOutTable() {
 
   const handleDelete = (params: GridRenderCellParams<any, any, any>) => {
     const toBeDeleted = params.row;
-    dispatch({
-      type: 'DELETE_ITEM',
-      payload: toBeDeleted,
-    });
+    if (toBeDeleted?.type === 'Reservation') {
+      dispatch({ type: CartAction.REMOVE_RESERVATION });
+    } else
+      dispatch({
+        type: CartAction.DELETE_ITEM,
+        payload: toBeDeleted,
+      });
   };
 
   const deleteButton = (params: GridRenderCellParams<any, any, any>) => {
@@ -124,7 +128,9 @@ export default function CheckOutTable() {
       type: 'Reservation',
       name: reservation?.area.name,
       quantity: reservation?.duration,
-      cost: reservation ? reservation?.duration * reservation?.area?.price : 0,
+      cost: reservation
+        ? reservation?.duration * reservation?.area?.costPerHour
+        : 0,
       additionalRequirements: reservation?.additionalRequirements
         ? reservation?.additionalRequirements
         : 'None',
@@ -149,7 +155,7 @@ export default function CheckOutTable() {
       };
     });
 
-    return [cartReservation, ...cartItems];
+    return reservation ? [cartReservation, ...cartItems] : cartItems;
   };
 
   useEffect(() => {

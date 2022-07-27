@@ -18,6 +18,7 @@ export const DRINKS_URL = 'drinks';
 export const SNACKS_URL = 'snacks';
 export const BOOKS_URL = 'books';
 export const AREAS_URL = 'areas';
+export const RESERVATIONS_URL = 'reservations';
 export const CUSTOMERS_URL = 'customers';
 export const ORDERS_URL = 'orders';
 export const LOGIN_URL = 'auth/login';
@@ -45,6 +46,7 @@ export enum ModalType {
   EDIT_STAFF = 'EDIT_STAFF',
   DELETE_STAFF = 'DELETE_STAFF',
   VIEW_STAFF = 'VIEW_STAFF',
+  ADD_RESERVATION = 'ADD_RESERVATION',
 }
 
 export enum InventoryType {

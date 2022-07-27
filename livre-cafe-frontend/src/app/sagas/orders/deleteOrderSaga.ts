@@ -4,6 +4,7 @@ import {
   deleteOrderFailed,
   deleteOrderSucceeded, fetchOrders
 } from '@app/app/features/orders/orders-slice';
+import { fetchReservations } from '@app/app/features/reservations/reservations-slice';
 import { getErrorMessage } from '@app/utils';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { AxiosError } from 'axios';
@@ -15,6 +16,8 @@ function* deleteOrderData(action: PayloadAction<string>) {
     yield call(ordersApi.remove, action.payload);
     yield put(deleteOrderSucceeded());
     yield put(fetchOrders());
+    yield put(fetchReservations());
+
   } catch (error) {
     const message = getErrorMessage(error as AxiosError);
     yield put(deleteOrderFailed(message));

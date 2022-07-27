@@ -202,7 +202,9 @@ function AddReservationModal(props: AddReservationProps) {
 
     if (addSuccess && customers && !addLoading) {
       handleChangeState('customer')(
-        customers.find((cus) => cus.email === customerState.email),
+        customers.find(
+          (cus: CustomerInterface) => cus.email === customerState.email,
+        ),
       );
     }
 
@@ -511,7 +513,11 @@ function AddReservationModal(props: AddReservationProps) {
           </Grid>
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'space-between', px: 3 }}>
-          <Button variant="outlined" color="error">
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => handleClose()}
+          >
             Cancel
           </Button>
           <Button

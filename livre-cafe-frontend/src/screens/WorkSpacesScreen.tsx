@@ -1,57 +1,86 @@
 import {
-    deleteStaff, selectStaffsData
-} from '@app/app/features/staffs/staffs-slice';
-import AddStaffModal from '@app/components/AddStaffModal';
-import { HeadCell } from '@app/components/DataTable';
-import DeleteConfirmModal from '@app/components/DeleteConfirmModal';
-import EditStaffModal from '@app/components/EditStaffModal';
+  fetchReservations,
+  selectReservations,
+  updateReservation
+} from '@app/app/features/reservations/reservations-slice';
+
+import DataTable, { HeadCell } from '@app/components/DataTable';
 import Floor from '@app/components/Floor/Floor';
-import ViewStaffModal from '@app/components/ViewStaffModal';
 import { ModalType } from '@app/constants';
 import requireAuthentication from '@app/hocs/requireAuthentication';
 import {
-    StaffResponse, UserRoleIndex
-} from '@app/models/user.interface';
+  CustomerInterface,
+  ReservationInterface,
+  ReservationStatus,
+  ReservationStatusIndex
+} from '@app/models';
 import { TabPanel } from '@app/screens/InventoryScreen';
-import { a11yProps } from '@app/utils';
+import { a11yProps, stableSort } from '@app/utils';
+import DoDisturbIcon from '@mui/icons-material/DoDisturb';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
+import WeekendIcon from '@mui/icons-material/Weekend';
 import {
-    Tab, Tabs
+  IconButton,
+  Tab,
+  TableCell,
+  TableRow,
+  Tabs,
+  Tooltip,
+  Typography
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/system';
-import React, { useState } from 'react';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useDispatch, useSelector } from 'react-redux';
 
-const headCells: HeadCell<StaffResponse>[] = [
+const headCells: HeadCell<
+  ReservationInterface & {
+    date: Date;
+    time: string;
+    customer: CustomerInterface;
+  }
+>[] = [
   {
-    id: 'imageUrl',
+    id: '_id',
     numeric: false,
     disablePadding: false,
-    label: 'Picture',
-    isNotOrderable: true,
-    width: 100,
+    label: 'ID',
   },
   {
-    id: 'username',
+    id: 'area',
     numeric: false,
     disablePadding: false,
-    label: 'Name',
+    label: 'Area',
   },
   {
-    id: 'passcode',
+    id: 'customer',
     numeric: false,
     disablePadding: false,
-    label: 'Phone',
+    label: 'Customer',
   },
   {
-    id: 'isManager',
+    id: 'startTime',
     numeric: false,
     disablePadding: false,
-    label: 'Role',
+    label: 'Date',
   },
   {
-    id: 'accountActivated',
+    id: 'startTime',
+    numeric: false,
+    disablePadding: false,
+    label: 'Time',
+  },
+
+  {
+    id: 'duration',
+    numeric: true,
+    disablePadding: false,
+    label: 'Duration',
+  },
+  {
+    id: 'status',
     numeric: false,
     disablePadding: false,
     label: 'Status',
@@ -61,16 +90,17 @@ const headCells: HeadCell<StaffResponse>[] = [
 function WorkSpacesScreen() {
   const theme = useTheme();
   const dispatch = useDispatch();
-  // const customersSelector = useSelector(selectStaffs);
+  // const customersSelector = useSelector(selectreservations);
   // const { customers, loading } = customersSelector;
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [addStaffModalOpen, setAddStaffModalOpen] = useState(false);
   const [deleteStaffModalOpen, setDeleteStaffModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [currentStaff, setCurrentStaff] = useState<StaffResponse>();
+  const [currentStaff, setCurrentStaff] = useState<ReservationInterface>();
   const [tabIndex, setTabIndex] = useState(0);
   const [generalTabInex, setGeneralTabIndex] = useState(0);
-  const staffs = useSelector(selectStaffsData);
+  const reservationsSelector = useSelector(selectReservations);
+  const { reservations, loading, updateLoading } = reservationsSelector;
 
   const handleChangeGeneralTab = (
     _event: React.SyntheticEvent,
@@ -78,7 +108,7 @@ function WorkSpacesScreen() {
   ) => {
     setGeneralTabIndex(newValue);
   };
-  const handleOpenModal = (type: ModalType, item?: StaffResponse) => {
+  const handleOpenModal = (type: ModalType, item?: ReservationInterface) => {
     switch (type) {
       case ModalType.DELETE_STAFF:
         setDeleteStaffModalOpen(true);
@@ -119,84 +149,167 @@ function WorkSpacesScreen() {
     }
     setCurrentStaff(undefined);
   };
+
+  const handleUpdateReservationStatus = (
+    status: ReservationStatus,
+    reservation: ReservationInterface,
+  ) => {
+    if (!reservation || reservation.status === ReservationStatus.PENDING)
+      return;
+    dispatch(
+      updateReservation({
+        ...reservation,
+        status,
+      }),
+    );
+  };
   const tabs = () => {
     return [
       <Tab label="All" {...a11yProps(0)} />,
-      <Tab label="Manager" {...a11yProps(UserRoleIndex.MANAGER)} />,
-      <Tab label="Staff" {...a11yProps(UserRoleIndex.STAFF)} />,
+      <Tab label="Pending" {...a11yProps(ReservationStatusIndex.PENDING)} />,
+      <Tab
+        label="Confirmed"
+        {...a11yProps(ReservationStatusIndex.CONFIRMED)}
+      />,
+      <Tab
+        label="COMPLETED"
+        {...a11yProps(ReservationStatusIndex.COMPLETED)}
+      />,
+      <Tab label="SEATED" {...a11yProps(ReservationStatusIndex.SEATED)} />,
+      <Tab
+        label="CANCELLED"
+        {...a11yProps(ReservationStatusIndex.CANCELLED)}
+      />,
     ];
   };
-  //   const dataRow = (row: StaffResponse, index: number) => {
-  //     const labelId = `enhanced-table-checkbox-${index}`;
-  //     return (
-  //       <TableRow
-  //         hover
-  //         // onClick={(event) =>
-  //         //   handleClick(event, row.name as string)
-  //         // }
-  //         role="checkbox"
-  //         // aria-checked={isItemSelected}
-  //         tabIndex={-1}
-  //         key={`customer${row?._id}` + index}
-  //         // selected={isItemSelected}
-  //       >
-  //         <TableCell align="left">
-  //           <Avatar
-  //             alt={row.username}
-  //             // sx={{ margin }}
-  //             variant="rounded"
-  //             src={row.imageUrl}
-  //           ></Avatar>
-  //         </TableCell>
-  //         <TableCell component="th" id={labelId} scope="row" padding="normal">
-  //           <strong>{`${row.firstName}`}</strong> {row.lastName || ''}
-  //         </TableCell>
-  //         <TableCell align="left">{row.phone}</TableCell>
-  //         <TableCell align="left">
-  //           {row.isManager ? UserRole.MANAGER : UserRole.STAFF}
-  //         </TableCell>
-
-  //         <TableCell align="left">
-  //           <StaffStatusBadge accountActivated={!!row.accountActivated} />
-  //         </TableCell>
-
-  //         <TableCell align="right" sx={{ minWidth: 200 }} width="220px">
-  //           <IconButton
-  //             color="primary"
-  //             onClick={() => handleOpenModal(ModalType.VIEW_STAFF, row)}
-  //             sx={{ marginRight: 2 }}
-  //           >
-  //             <PreviewIcon />
-  //           </IconButton>
-  //           <IconButton
-  //             onClick={() => handleOpenModal(ModalType.EDIT_STAFF, row)}
-  //             sx={{ marginRight: 2 }}
-  //             color="info"
-  //           >
-  //             <EditIcon />
-  //           </IconButton>
-  //           <IconButton
-  //             color="error"
-  //             onClick={() => handleOpenModal(ModalType.DELETE_STAFF, row)}
-  //           >
-  //             <DeleteOutlineOutlinedIcon />
-  //           </IconButton>
-  //         </TableCell>
-  //       </TableRow>
-  //     );
-  //   };
+  const dataRow = (row: ReservationInterface, index: number) => {
+    const labelId = `enhanced-table-checkbox-${index}`;
+    const { order } = row;
+    const customerName = !order?.customer
+      ? 'Guest'
+      : order?.customer.firstName + ' ' + order?.customer.lastName || '';
+    return (
+      <TableRow
+        hover
+        // onClick={(event) =>
+        //   handleClick(event, row.name as string)
+        // }
+        role="checkbox"
+        // aria-checked={isItemSelected}
+        tabIndex={-1}
+        key={`customer${row?._id}` + index}
+        // selected={isItemSelected}
+      >
+        <TableCell
+          component="th"
+          id={labelId}
+          scope="row"
+          padding="normal"
+          align="left"
+          width={100}
+        >
+          <Tooltip title={row._id || ''}>
+            <Typography
+              overflow="hidden"
+              textOverflow="ellipsis"
+              width={100}
+              whiteSpace="nowrap"
+            >{`${row._id} `}</Typography>
+          </Tooltip>
+        </TableCell>
+        <TableCell align="left">{row.area?.name}</TableCell>
+        <TableCell align="left">{customerName}</TableCell>
+        <TableCell align="left">
+          {moment(row.startTime).format('DD.MM.YYYY')}
+        </TableCell>
+        <TableCell align="left">
+          {moment(row.startTime).format('hh:mm A')}
+        </TableCell>
+        <TableCell align="right">{row.duration}</TableCell>
+        <TableCell align="left">
+          <ReservationStatusBadge status={row.status} />
+        </TableCell>
+        <TableCell align="right" sx={{ minWidth: 200 }} width="220px">
+          {row.status !== ReservationStatus.PENDING &&
+            row.status === ReservationStatus.CONFIRMED && (
+              <Tooltip title="Mark as Seated">
+                <IconButton
+                  color="info"
+                  onClick={() =>
+                    handleUpdateReservationStatus(ReservationStatus.SEATED, row)
+                  }
+                >
+                  <WeekendIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          {row.status !== ReservationStatus.CANCELLED &&
+            row.status !== ReservationStatus.COMPLETED &&
+            row.status !== ReservationStatus.PENDING && (
+              <>
+                {
+                  <Tooltip title="Mark as Completed">
+                    <IconButton
+                      color="success"
+                      onClick={() =>
+                        handleUpdateReservationStatus(
+                          ReservationStatus.COMPLETED,
+                          row,
+                        )
+                      }
+                    >
+                      <DoneAllIcon />
+                    </IconButton>
+                  </Tooltip>
+                }
+                <Tooltip title="Mark as Cancelled">
+                  <IconButton
+                    color="error"
+                    onClick={() =>
+                      handleUpdateReservationStatus(
+                        ReservationStatus.CANCELLED,
+                        row,
+                      )
+                    }
+                  >
+                    <DoDisturbIcon />
+                  </IconButton>
+                </Tooltip>
+              </>
+            )}
+        </TableCell>
+      </TableRow>
+    );
+  };
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
-    if (!staffs) return;
-    const rows = staffs || ([] as StaffResponse[]);
+    if (!reservations) return;
+    const rows = reservations || ([] as ReservationInterface[]);
     let newRows;
     switch (newValue) {
-      case UserRoleIndex.MANAGER:
-        newRows = rows.filter((row) => row.isManager);
+      case ReservationStatusIndex.PENDING:
+        newRows = rows.filter(
+          (row) => row.status === ReservationStatus.PENDING,
+        );
         break;
-      case UserRoleIndex.STAFF:
-        newRows = rows.filter((row) => !row.isManager);
+      case ReservationStatusIndex.CONFIRMED:
+        newRows = rows.filter(
+          (row) => row.status === ReservationStatus.CONFIRMED,
+        );
+        break;
+      case ReservationStatusIndex.COMPLETED:
+        newRows = rows.filter(
+          (row) => row.status === ReservationStatus.COMPLETED,
+        );
+        break;
+      case ReservationStatusIndex.SEATED:
+        newRows = rows.filter((row) => row.status === ReservationStatus.SEATED);
+        break;
+      case ReservationStatusIndex.CANCELLED:
+        newRows = rows.filter(
+          (row) => row.status === ReservationStatus.CANCELLED,
+        );
         break;
       default:
         newRows = rows.slice();
@@ -204,58 +317,17 @@ function WorkSpacesScreen() {
     return newRows;
   };
 
-  const handleDeleteStaff = (
-    confirmText: string,
-    setDeleteError: React.Dispatch<React.SetStateAction<boolean>>,
-    setDeleteSuccess: React.Dispatch<React.SetStateAction<boolean>>,
-  ) => {
-    setDeleteSuccess(false);
-    if (!currentStaff) return;
-    if (currentStaff?.username !== confirmText) {
-      setDeleteError(true);
-      return;
+  useEffect(() => {
+    if (!reservations && !loading) {
+      dispatch(fetchReservations());
     }
-    dispatch(deleteStaff(currentStaff._id || ''));
-    setDeleteSuccess(true);
-  };
-
-  //   useEffect(() => {
-  //     if (!staffs) dispatch(fetchStaffs());
-  //   }, [staffs]);
+  }, [reservations, loading]);
 
   return (
     <Box
       sx={{ maxWidth: '100%' }}
       className="screen-container inventory-screen-container"
     >
-      {deleteStaffModalOpen && currentStaff && (
-        <DeleteConfirmModal
-          open={deleteStaffModalOpen}
-          handleClose={() => handleCloseModal(ModalType.DELETE_STAFF)}
-          item={{ name: currentStaff.username }}
-          handleDelete={handleDeleteStaff}
-        />
-      )}
-      {addStaffModalOpen && (
-        <AddStaffModal
-          open={addStaffModalOpen}
-          handleClose={() => handleCloseModal(ModalType.ADD_STAFF)}
-        />
-      )}
-      {editModalOpen && currentStaff && (
-        <EditStaffModal
-          open={editModalOpen}
-          handleClose={() => handleCloseModal(ModalType.EDIT_STAFF)}
-          item={currentStaff}
-        />
-      )}
-      {viewModalOpen && currentStaff && (
-        <ViewStaffModal
-          open={viewModalOpen}
-          handleClose={() => handleCloseModal(ModalType.VIEW_STAFF)}
-          item={currentStaff}
-        />
-      )}
       <Helmet>
         <title>Work Spaces</title>
       </Helmet>
@@ -291,34 +363,149 @@ function WorkSpacesScreen() {
         </Tabs>
       </Box>
       <TabPanel value={generalTabInex} index={0}>
-        Reservations
+        <DataTable
+          rows={reservations || []}
+          stableSort={stableSort}
+          isLoading={loading}
+          headCells={headCells}
+          dataRow={dataRow}
+          handleOpenAddModal={() => handleOpenModal(ModalType.ADD_STAFF)}
+          handleChangeTab={handleChangeTab}
+          searchTarget={(row: ReservationInterface) => {
+            const { order, area } = row;
+            const firstName = order?.customer?.firstName || '';
+            const lastName = order?.customer?.lastName || '';
+            return firstName + lastName + area?.name;
+          }}
+          defaultOrderBy="startTime"
+          tabs={() => tabs()}
+          tabIndex={tabIndex}
+          name="Reservations"
+        />
       </TabPanel>
       <TabPanel value={generalTabInex} index={1}>
         <Floor />
       </TabPanel>
-      {/* <DataTable
-        rows={staffs || []}
-        stableSort={stableSort}
-        isLoading={staffLoading}
-        headCells={headCells}
-        dataRow={dataRow}
-        handleOpenAddModal={() => handleOpenModal(ModalType.ADD_STAFF)}
-        handleChangeTab={handleChangeTab}
-        searchTarget={(row: StaffResponse) => {
-          const { firstName, lastName = '', phone } = row;
-          return firstName + lastName + phone;
-        }}
-        defaultOrderBy="firstName"
-        tabs={() => tabs()}
-        tabIndex={tabIndex}
-        name="Staffs"
-      /> */}
     </Box>
   );
 }
 
-export interface StaffStatusBadgeProps {
-  accountActivated: boolean;
-}
-
 export default requireAuthentication(WorkSpacesScreen);
+
+interface ReservationStatusBadgeProps {
+  status: ReservationStatus;
+}
+export function ReservationStatusBadge(props: ReservationStatusBadgeProps) {
+  const theme = useTheme();
+  const themeBlock = theme.block;
+  const { status } = props;
+  switch (status) {
+    case ReservationStatus.PENDING:
+      return (
+        <Box
+          minWidth={100}
+          maxWidth={200}
+          sx={{
+            backgroundColor: themeBlock?.pending.backgroundColor,
+            borderRadius: theme.spacing(1),
+          }}
+          p={1}
+          textAlign="center"
+        >
+          <Typography
+            fontWeight={600}
+            color={themeBlock?.pending.fontColor}
+            textTransform="uppercase"
+          >
+            {ReservationStatus.PENDING}
+          </Typography>
+        </Box>
+      );
+    case ReservationStatus.SEATED:
+      return (
+        <Box
+          minWidth={100}
+          maxWidth={200}
+          sx={{
+            backgroundColor: themeBlock?.completed.backgroundColor,
+            borderRadius: theme.spacing(1),
+          }}
+          p={1}
+          textAlign="center"
+        >
+          <Typography
+            fontWeight={600}
+            color={themeBlock?.completed.fontColor}
+            textTransform="uppercase"
+          >
+            {ReservationStatus.SEATED}
+          </Typography>
+        </Box>
+      );
+    case ReservationStatus.CONFIRMED:
+      return (
+        <Box
+          minWidth={100}
+          maxWidth={200}
+          sx={{
+            backgroundColor: themeBlock?.completed.backgroundColor,
+            borderRadius: theme.spacing(1),
+          }}
+          p={1}
+          textAlign="center"
+        >
+          <Typography
+            fontWeight={600}
+            color={themeBlock?.completed.fontColor}
+            textTransform="uppercase"
+          >
+            {ReservationStatus.CONFIRMED}
+          </Typography>
+        </Box>
+      );
+    case ReservationStatus.COMPLETED:
+      return (
+        <Box
+          minWidth={100}
+          maxWidth={200}
+          sx={{
+            backgroundColor: themeBlock?.completed.backgroundColor,
+            borderRadius: theme.spacing(1),
+          }}
+          p={1}
+          textAlign="center"
+        >
+          <Typography
+            fontWeight={600}
+            color={themeBlock?.completed.fontColor}
+            textTransform="uppercase"
+          >
+            {ReservationStatus.COMPLETED}
+          </Typography>
+        </Box>
+      );
+    case ReservationStatus.CANCELLED:
+      return (
+        <Box
+          minWidth={100}
+          maxWidth={200}
+          sx={{
+            backgroundColor: themeBlock?.cancelled.backgroundColor,
+            borderRadius: theme.spacing(1),
+          }}
+          textAlign="center"
+          p={1}
+        >
+          <Typography
+            fontWeight={600}
+            color={themeBlock?.cancelled.fontColor}
+            textTransform="uppercase"
+          >
+            {ReservationStatus.CANCELLED}
+          </Typography>
+        </Box>
+      );
+    default:
+      return <>Invalid Status</>;
+  }
+}
