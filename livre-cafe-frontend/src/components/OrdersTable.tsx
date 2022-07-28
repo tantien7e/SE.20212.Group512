@@ -1,4 +1,7 @@
-import { updateOrder } from '@app/app/features/orders/orders-slice';
+import {
+  selectOrdersUpdateLoading,
+  updateOrder,
+} from '@app/app/features/orders/orders-slice';
 import ConfirmModal from '@app/components/ConfirmModal';
 import ViewOrderModal from '@app/components/ViewOrderModal';
 import { ModalType, OrderTabIndex } from '@app/constants';
@@ -37,7 +40,7 @@ import Typography from '@mui/material/Typography';
 import { visuallyHidden } from '@mui/utils';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 interface Data extends OrderInterface {
   totalCost: number;
@@ -63,9 +66,9 @@ function getComparator<Key extends keyof any>(
   order: Order,
   orderBy: OrderBy<Key>,
 ): (
-    a: { [key in OrderBy<Key>]: number | string },
-    b: { [key in OrderBy<Key>]: number | string },
-  ) => number {
+  a: { [key in OrderBy<Key>]: number | string },
+  b: { [key in OrderBy<Key>]: number | string },
+) => number {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
@@ -154,9 +157,9 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
   const { order, orderBy, onRequestSort, onSearchChange, filterText } = props;
   const createSortHandler =
     (property: keyof Omit<Data, 'orders'>) =>
-      (event: React.MouseEvent<unknown>) => {
-        onRequestSort(event, property);
-      };
+    (event: React.MouseEvent<unknown>) => {
+      onRequestSort(event, property);
+    };
 
   return (
     <TableHead>
@@ -186,7 +189,7 @@ function EnhancedTableHead(props: EnhancedTableHeadProps) {
           key="search-bar"
           align="right"
           padding="normal"
-        // sortDirection={orderBy === headCell.id ? order : false}
+          // sortDirection={orderBy === headCell.id ? order : false}
         >
           <Box component="form" noValidate autoComplete="off">
             <Tooltip title="Search by item's name, customer name or Order Id">
@@ -265,6 +268,8 @@ export default function OrdersTable(props: EnhancedTableProps) {
   const [tabIndex, setTabIndex] = React.useState(0);
   const dispatch = useDispatch();
 
+  const updateLoading = useSelector(selectOrdersUpdateLoading);
+
   const handleOpenModal = (type: ModalType, item?: OrderInterface) => {
     switch (type) {
       case ModalType.VIEW_ORDER:
@@ -336,18 +341,14 @@ export default function OrdersTable(props: EnhancedTableProps) {
     const { itemsOrdered, reservation } = rowOrder;
     const reservationName = reservation?.area?.name;
 
-    const itemsName = itemsOrdered?.reduce(
-      (a, c) => a + ", " + (c.product?.name || c.product?.title),
-      '',
-    );
-    console.log(
-      reservationName + itemsName
-        ? (reservationName ? ', ' : '') + itemsName
-        : '.',
-    );
-    return reservationName + itemsName
-      ? (reservationName ? `${reservationName}` : '') + itemsName
-      : '.';
+    const itemsName = itemsOrdered?.reduce((a, c, index) => {
+      return (
+        a +
+        (c.product?.name || c.product?.title) +
+        (index === itemsOrdered?.length - 1 ? '.' : ', ')
+      );
+    }, '');
+    return (reservationName || '') + itemsName;
   };
 
   const handleSearch = (
@@ -462,18 +463,22 @@ export default function OrdersTable(props: EnhancedTableProps) {
           open={confirmCompleteModalOpen}
           handleClose={() => handleCloseModal(ModalType.CONFIRM_COMPLETE_ORDER)}
           handleConfirm={handleCompleteOrder}
-          title={`Do you want to mark order #${currentOrder.id || currentOrder._id
-            } as COMPLETED`}
+          title={`Do you want to mark order #${
+            currentOrder.id || currentOrder._id
+          } as COMPLETED`}
+          loading={updateLoading}
         />
       )}
 
       {confirmCancelModalOpen && currentOrder && (
         <ConfirmModal
           open={confirmCancelModalOpen}
-          title={`Do you want to cancel order #${currentOrder.id || currentOrder._id
-            }`}
+          title={`Do you want to cancel order #${
+            currentOrder.id || currentOrder._id
+          }`}
           handleClose={() => handleCloseModal(ModalType.CONFIRM_CANCEL_ORDER)}
           handleConfirm={handleCancerOrder}
+          loading={updateLoading}
         />
       )}
 
@@ -570,7 +575,7 @@ export default function OrdersTable(props: EnhancedTableProps) {
                         // aria-checked={isItemSelected}
                         tabIndex={-1}
                         key={`customer${row?._id}` + index}
-                      // selected={isItemSelected}
+                        // selected={isItemSelected}
                       >
                         <TableCell
                           component="th"

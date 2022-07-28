@@ -11,7 +11,10 @@ import {
   selectOrdersAddLoading,
   selectOrdersError,
 } from '@app/app/features/orders/orders-slice';
-import { fetchVouchers, selectVouchers } from '@app/app/features/vouchers/vouchers-slice';
+import {
+  fetchVouchers,
+  selectVouchers,
+} from '@app/app/features/vouchers/vouchers-slice';
 import GroupedSearchBar from '@app/components/GroupedSearchBar';
 import Invoice from '@app/components/Invoice';
 import PhoneInputCustom from '@app/components/PhoneInputCustom';
@@ -152,18 +155,26 @@ export default function NormalCheckoutModal(props: AddModalProps) {
   const customersSelector = useSelector(selectCustomers);
   const { customers, loading } = customersSelector;
   const [filteredCustomers, setFilteredCustomers] = useState(customers);
-  const [vouchersSelected, setVouchersSelected] = useState<VoucherInterface[]>([]);
+  const [vouchersSelected, setVouchersSelected] = useState<VoucherInterface[]>(
+    [],
+  );
   const [isPost, setIsPost] = useState(false);
-  const [filteredVouchers, setFilteredVouchers] = useState<VoucherInterface[]>([])
+  const [filteredVouchers, setFilteredVouchers] = useState<VoucherInterface[]>(
+    [],
+  );
 
   useEffect(() => {
     if (!vouchers) dispatch(fetchVouchers());
   }, [vouchers]);
 
   useEffect(() => {
-    setFilteredVouchers(getCorrespondingVouchers(vouchers as VoucherInterface[], state.customer?.ranking as RankType));
+    setFilteredVouchers(
+      getCorrespondingVouchers(
+        vouchers as VoucherInterface[],
+        state.customer?.ranking as RankType,
+      ),
+    );
   }, [vouchers, state.customer]);
-
 
   const onSearchChange = (
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
@@ -263,12 +274,15 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     return true;
   };
 
-  const getCorrespondingVouchers = (vouchers: VoucherInterface[], rank?: RankType) => {
-
-    if (!rank)
-      return vouchers;
-    return vouchers?.filter((voucher: VoucherInterface) => { return voucher.correspondingRank === rank && voucher.available })
-  }
+  const getCorrespondingVouchers = (
+    vouchers: VoucherInterface[],
+    rank?: RankType,
+  ) => {
+    if (!rank) return vouchers;
+    return vouchers?.filter((voucher: VoucherInterface) => {
+      return voucher.correspondingRank === rank && voucher.available;
+    });
+  };
 
   useEffect(() => {
     if (!orderLoading && isPost && !orderError) {
@@ -379,15 +393,16 @@ export default function NormalCheckoutModal(props: AddModalProps) {
               >
                 Voucher Details
               </Typography>
-              <Box mb={2}>{
-                filteredVouchers && (<VoucherSelect
-                  selectedVouchers={vouchersSelected as VoucherInterface[]}
-                  setSelectedVouchers={(selected) => {
-                    console.log(selected)
-                    setVouchersSelected(selected);
-                  }}
-                  vouchers={filteredVouchers}
-                />)}
+              <Box mb={2}>
+                {
+                  <VoucherSelect
+                    selectedVouchers={vouchersSelected as VoucherInterface[]}
+                    setSelectedVouchers={(selected) => {
+                      setVouchersSelected(selected);
+                    }}
+                    vouchers={filteredVouchers || []}
+                  />
+                }
               </Box>
               {vouchersSelected && (
                 <Grid container direction="column" spacing={2}>

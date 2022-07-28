@@ -7,10 +7,12 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Chip from '@mui/material/Chip';
-import { Checkbox, Typography } from '@mui/material';
+import { Checkbox, CircularProgress, Typography } from '@mui/material';
 import { getBackgroundColor, getVoucherColor } from '@app/utils';
 import { RankIndex, RankType, VoucherInterface } from '@app/models';
 import { getRankColor } from '@app/utils';
+import { useSelector } from 'react-redux';
+import { selectVouchersLoading } from '@app/app/features/vouchers/vouchers-slice';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -62,6 +64,7 @@ export default function VoucherSelect(props: VoucherSelectProps) {
   const { vouchers, setSelectedVouchers, selectedVouchers } = props;
   const theme = useTheme();
   const [voucherName, setVoucherName] = React.useState<string[]>([]);
+  const vouchersLoading = useSelector(selectVouchersLoading);
 
   const handleChange = (event: SelectChangeEvent<typeof voucherName>) => {
     const {
@@ -109,16 +112,27 @@ export default function VoucherSelect(props: VoucherSelectProps) {
           )}
           MenuProps={MenuProps}
         >
-          {vouchers?.map((voucher) => (
-            <MenuItem
-              key={voucher.name}
-              value={voucher.name}
-              style={getStyles(voucher.name, voucherName, theme)}
-              onClick={() => handleSelect(voucher)}
-            >
-              <VoucherOption {...voucher as VoucherInterface} width="100%" />
+          {vouchers?.length > 0 ? (
+            vouchers?.map((voucher) => (
+              <MenuItem
+                key={voucher.name}
+                value={voucher.name}
+                style={getStyles(voucher.name, voucherName, theme)}
+                onClick={() => handleSelect(voucher)}
+              >
+                <VoucherOption
+                  {...(voucher as VoucherInterface)}
+                  width="100%"
+                />
+              </MenuItem>
+            ))
+          ) : vouchersLoading ? (
+            <MenuItem key="loading">
+              <CircularProgress color="inherit" size={20} />
             </MenuItem>
-          ))}
+          ) : (
+            <MenuItem key="no-option">No Option</MenuItem>
+          )}
         </Select>
       </FormControl>
     </div>
@@ -130,8 +144,11 @@ interface VoucherOptionProps extends BoxProps, VoucherInterface {
 }
 
 export function VoucherOption(props: VoucherOptionProps) {
-  const { name, pointsCost, percentageDiscount, showDetails, ...restProps } = props;
-  const color = getVoucherColor(props.correspondingRank?.toLowerCase() as RankType)
+  const { name, pointsCost, percentageDiscount, showDetails, ...restProps } =
+    props;
+  const color = getVoucherColor(
+    props.correspondingRank?.toLowerCase() as RankType,
+  );
 
   return (
     <Box
@@ -140,7 +157,9 @@ export function VoucherOption(props: VoucherOptionProps) {
       {...restProps}
     >
       <Typography color={color}>
-        <strong>{name}</strong> {showDetails && `: ${pointsCost} points for ${percentageDiscount}% (maximum ${props.maxAmount}$) saved`}
+        <strong>{name}</strong>{' '}
+        {showDetails &&
+          `: ${pointsCost} points for ${percentageDiscount}% (maximum ${props.maxAmount}$) saved`}
       </Typography>
     </Box>
   );

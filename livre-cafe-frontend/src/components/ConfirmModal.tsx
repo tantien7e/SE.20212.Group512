@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux';
 
 import CheckIcon from '@mui/icons-material/Check';
 import { selectOrdersUpdateLoading } from '@app/app/features/orders/orders-slice';
+import { useEffect, useState } from 'react';
 
 interface ModalPropsInterface {
   open: boolean;
@@ -18,12 +19,19 @@ interface ModalPropsInterface {
   //   type: InventoryType | 'CUSTOMER';
   handleConfirm: () => void;
   title: string;
+  loading?: boolean;
 }
 
 export default function ConfirmModal(props: ModalPropsInterface) {
-  const { open, handleClose, title, handleConfirm } = props;
+  const { open, handleClose, title, handleConfirm, loading } = props;
   const theme = useTheme();
-  const updateLoading = useSelector(selectOrdersUpdateLoading);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
+  useEffect(() => {
+    if (isConfirmed && !loading) {
+      handleClose();
+    }
+  }, [loading, isConfirmed]);
 
   return (
     <div>
@@ -55,11 +63,11 @@ export default function ConfirmModal(props: ModalPropsInterface) {
             <Grid>
               <LoadingButton
                 variant="contained"
-                loading={updateLoading}
+                loading={loading}
                 loadingPosition="end"
                 onClick={() => {
+                  setIsConfirmed(true);
                   handleConfirm();
-                  if (!updateLoading) handleClose();
                 }}
                 endIcon={<CheckIcon />}
               >
