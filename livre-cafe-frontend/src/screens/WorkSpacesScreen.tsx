@@ -4,6 +4,7 @@ import {
   updateReservation,
 } from '@app/app/features/reservations/reservations-slice';
 import AddReservationModal from '@app/components/AddReservationModal';
+import ConfirmModal from '@app/components/ConfirmModal';
 
 import DataTable, { HeadCell } from '@app/components/DataTable';
 import Floor from '@app/components/Floor/Floor';
@@ -16,7 +17,7 @@ import {
   ReservationStatusIndex,
 } from '@app/models';
 import { TabPanel } from '@app/screens/InventoryScreen';
-import { a11yProps, stableSort } from '@app/utils';
+import { a11yProps, getSalutation, stableSort } from '@app/utils';
 import DoDisturbIcon from '@mui/icons-material/DoDisturb';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import WeekendIcon from '@mui/icons-material/Weekend';
@@ -100,6 +101,13 @@ function WorkSpacesScreen() {
   const [currentReservation, setCurrentReservation] =
     useState<ReservationInterface>();
   const [addReservationModalOpen, setAddReservationModalOpen] = useState(false);
+  const [confirmSeatReservationOpen, setConfirmSeatReservationOpen] =
+    useState(false);
+  const [confirmCompleteReservationOpen, setConfirmCompleteReservationOpen] =
+    useState(false);
+  const [confirmCancelReservationOpen, setConfirmCancelReservationOpen] =
+    useState(false);
+
   const [tabIndex, setTabIndex] = useState(0);
   const [generalTabInex, setGeneralTabIndex] = useState(0);
   const reservationsSelector = useSelector(selectReservations);
@@ -128,6 +136,18 @@ function WorkSpacesScreen() {
       //   setViewModalOpen(true);
       //   setCurrentStaff(item);
       //   break;
+      case ModalType.CONFIRM_SEAT_RESERVATION:
+        setConfirmSeatReservationOpen(true);
+        setCurrentReservation(item);
+        break;
+      case ModalType.CONFIRM_COMPLETE_RESERVATION:
+        setConfirmCompleteReservationOpen(true);
+        setCurrentReservation(item);
+        break;
+      case ModalType.CONFIRM_CANCEL_RESERVATION:
+        setConfirmCancelReservationOpen(true);
+        setCurrentReservation(item);
+        break;
       case ModalType.ADD_RESERVATION:
         setAddReservationModalOpen(true);
         break;
@@ -138,17 +158,14 @@ function WorkSpacesScreen() {
 
   const handleCloseModal = (type: ModalType) => {
     switch (type) {
-      case ModalType.EDIT_STAFF:
-        setEditModalOpen(false);
+      case ModalType.CONFIRM_SEAT_RESERVATION:
+        setConfirmSeatReservationOpen(false);
         break;
-      case ModalType.ADD_STAFF:
-        setAddStaffModalOpen(false);
+      case ModalType.CONFIRM_COMPLETE_RESERVATION:
+        setConfirmCompleteReservationOpen(false);
         break;
-      case ModalType.DELETE_STAFF:
-        setDeleteStaffModalOpen(false);
-        break;
-      case ModalType.VIEW_STAFF:
-        setViewModalOpen(false);
+      case ModalType.CONFIRM_CANCEL_RESERVATION:
+        setConfirmCancelReservationOpen(false);
         break;
       case ModalType.ADD_RESERVATION:
         setAddReservationModalOpen(false);
@@ -245,7 +262,7 @@ function WorkSpacesScreen() {
                 <IconButton
                   color="info"
                   onClick={() =>
-                    handleUpdateReservationStatus(ReservationStatus.SEATED, row)
+                    handleOpenModal(ModalType.CONFIRM_SEAT_RESERVATION, row)
                   }
                 >
                   <WeekendIcon />
@@ -260,30 +277,32 @@ function WorkSpacesScreen() {
                   <Tooltip title="Mark as Completed">
                     <IconButton
                       color="success"
-                      onClick={() =>
-                        handleUpdateReservationStatus(
-                          ReservationStatus.COMPLETED,
+                      onClick={() => {
+                        handleOpenModal(
+                          ModalType.CONFIRM_COMPLETE_RESERVATION,
                           row,
-                        )
-                      }
+                        );
+                      }}
                     >
                       <DoneAllIcon />
                     </IconButton>
                   </Tooltip>
                 }
-                <Tooltip title="Mark as Cancelled">
-                  <IconButton
-                    color="error"
-                    onClick={() =>
-                      handleUpdateReservationStatus(
-                        ReservationStatus.CANCELLED,
-                        row,
-                      )
-                    }
-                  >
-                    <DoDisturbIcon />
-                  </IconButton>
-                </Tooltip>
+                {row.status !== ReservationStatus.SEATED && (
+                  <Tooltip title="Mark as Cancelled">
+                    <IconButton
+                      color="error"
+                      onClick={() =>
+                        handleOpenModal(
+                          ModalType.CONFIRM_CANCEL_RESERVATION,
+                          row,
+                        )
+                      }
+                    >
+                      <DoDisturbIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </>
             )}
         </TableCell>
@@ -341,6 +360,86 @@ function WorkSpacesScreen() {
         <AddReservationModal
           open={addReservationModalOpen}
           handleClose={() => handleCloseModal(ModalType.ADD_RESERVATION)}
+        />
+      )}
+      {confirmSeatReservationOpen && currentReservation && (
+        <ConfirmModal
+          handleClose={() =>
+            handleCloseModal(ModalType.CONFIRM_SEAT_RESERVATION)
+          }
+          open={confirmSeatReservationOpen}
+          title={`Confirm seated ${
+            currentReservation.order.customer?.firstName
+              ? getSalutation(currentReservation.order.customer?.gender) +
+                  ' ' +
+                  currentReservation.order.customer?.firstName +
+                  ' ' +
+                  currentReservation.order.customer?.lastName || ''
+              : 'Guest'
+          }'s ${moment(currentReservation.startTime).format(
+            'H:mm A',
+          )} reservation?`}
+          handleConfirm={() =>
+            handleUpdateReservationStatus(
+              ReservationStatus.SEATED,
+              currentReservation,
+            )
+          }
+          loading={updateLoading}
+        />
+      )}
+
+      {confirmCompleteReservationOpen && currentReservation && (
+        <ConfirmModal
+          handleClose={() =>
+            handleCloseModal(ModalType.CONFIRM_COMPLETE_RESERVATION)
+          }
+          open={confirmCompleteReservationOpen}
+          title={`Confirm completed ${
+            currentReservation.order.customer?.firstName
+              ? getSalutation(currentReservation.order.customer?.gender) +
+                  ' ' +
+                  currentReservation.order.customer?.firstName +
+                  ' ' +
+                  currentReservation.order.customer?.lastName || ''
+              : 'Guest'
+          }'s ${moment(currentReservation.startTime).format(
+            'H:mm A',
+          )} reservation?`}
+          handleConfirm={() =>
+            handleUpdateReservationStatus(
+              ReservationStatus.COMPLETED,
+              currentReservation,
+            )
+          }
+          loading={updateLoading}
+        />
+      )}
+
+      {confirmCancelReservationOpen && currentReservation && (
+        <ConfirmModal
+          handleClose={() =>
+            handleCloseModal(ModalType.CONFIRM_CANCEL_RESERVATION)
+          }
+          open={confirmCancelReservationOpen}
+          title={`Confirm cancel ${
+            currentReservation.order.customer?.firstName
+              ? getSalutation(currentReservation.order.customer?.gender) +
+                  ' ' +
+                  currentReservation.order.customer?.firstName +
+                  ' ' +
+                  currentReservation.order.customer?.lastName || ''
+              : 'Guest'
+          }'s ${moment(currentReservation.startTime).format(
+            'H:mm A',
+          )} reservation?`}
+          handleConfirm={() =>
+            handleUpdateReservationStatus(
+              ReservationStatus.CANCELLED,
+              currentReservation,
+            )
+          }
+          loading={updateLoading}
         />
       )}
       <Helmet>

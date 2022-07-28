@@ -61,7 +61,6 @@ export default function VouchersTable(props: { ranksSelected: string[] }) {
   }
 
   useEffect(() => {
-    console.log(currentDeleteVoucher)
     if (!currentDeleteVoucher) return;
     else dispatch(deleteVoucher(currentDeleteVoucher._id));
   }, [currentDeleteVoucher])
@@ -108,7 +107,6 @@ export default function VouchersTable(props: { ranksSelected: string[] }) {
   };
 
   const rankTag = (params: GridRenderCellParams<any, any, any>) => {
-    console.log(params);
     return (
       <Chip
         label={

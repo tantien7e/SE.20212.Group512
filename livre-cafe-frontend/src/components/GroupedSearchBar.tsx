@@ -2,6 +2,7 @@ import { CustomerInterface } from '@app/models';
 import { Search } from '@mui/icons-material';
 import {
   Button,
+  CircularProgress,
   ClickAwayListener,
   Grid,
   InputAdornment,
@@ -11,6 +12,8 @@ import { useTheme } from '@mui/material/styles';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { selectCustomersLoading } from '@app/app/features/customers/customers-slice';
 
 interface GroupedSearchBarProps {
   rows: CustomerInterface[];
@@ -40,7 +43,7 @@ export default function GroupedSearchBar(props: GroupedSearchBarProps) {
       ...row,
     };
   });
-
+  const customersLoading = useSelector(selectCustomersLoading);
   const [open, setOpen] = React.useState(false);
 
   const sortedOptions = options.sort(
@@ -56,6 +59,7 @@ export default function GroupedSearchBar(props: GroupedSearchBarProps) {
         getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
         clearOnBlur={false}
         open={open}
+        loading={customersLoading}
         renderOption={(optionProps, option, state) => {
           return (
             <Button
@@ -106,6 +110,14 @@ export default function GroupedSearchBar(props: GroupedSearchBarProps) {
                   <InputAdornment position="start">
                     <Search />
                   </InputAdornment>
+                ),
+                endAdornment: (
+                  <React.Fragment>
+                    {customersLoading ? (
+                      <CircularProgress color="inherit" size={20} />
+                    ) : null}
+                    {params.InputProps.endAdornment}
+                  </React.Fragment>
                 ),
               }}
             />
