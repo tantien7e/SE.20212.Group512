@@ -21,7 +21,7 @@ function requireAuthentication(Component: any) {
         navigate(LOGIN_PATH);
         return;
       }
-      dispatch(verify({ callback: (success) => {} }));
+      // dispatch(verify({ callback: (success) => {} }));
     }, [dispatch]);
 
     useEffect(() => {

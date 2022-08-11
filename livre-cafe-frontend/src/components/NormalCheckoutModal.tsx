@@ -45,7 +45,9 @@ import BorderColorIcon from '@mui/icons-material/BorderColor';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Button,
+  Checkbox,
   Divider,
+  FormControlLabel,
   Grid,
   MenuItem,
   Select,
@@ -59,10 +61,11 @@ import Modal from '@mui/material/Modal';
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import moment from 'moment';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { CountryData } from 'react-phone-input-2';
 import { useDispatch, useSelector } from 'react-redux';
+import { useReactToPrint } from 'react-to-print';
 
 const style = {
   // position: 'absolute' as 'absolute',
@@ -163,6 +166,8 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     [],
   );
 
+  const [printInvoice, setPrintInvoice] = useState(true);
+
   useEffect(() => {
     if (!vouchers) dispatch(fetchVouchers());
   }, [vouchers]);
@@ -172,6 +177,7 @@ export default function NormalCheckoutModal(props: AddModalProps) {
       getCorrespondingVouchers(
         vouchers as VoucherInterface[],
         state.customer?.ranking as RankType,
+        // state.customer?.exchangeablePoints as number,
       ),
     );
   }, [vouchers, state.customer]);
@@ -284,13 +290,10 @@ export default function NormalCheckoutModal(props: AddModalProps) {
     });
   };
 
-  useEffect(() => {
-    if (!orderLoading && isPost && !orderError) {
-      ctxDispatch({ type: CartAction.CART_CLEAR });
-      dispatch(fetchOrders());
-      handleClose();
-    }
-  }, [orderLoading, isPost, orderError]);
+  const invoiceRef = useRef(null);
+  const handlePrint = useReactToPrint({
+    content: () => invoiceRef.current,
+  });
 
   useEffect(() => {
     if (!customers) {
@@ -302,6 +305,16 @@ export default function NormalCheckoutModal(props: AddModalProps) {
   useEffect(() => {
     setSelectedCustomer(state.customer);
   }, []);
+
+  useEffect(() => {
+    if (!orderLoading && isPost && !orderError) {
+      ctxDispatch({ type: CartAction.CART_CLEAR });
+      if (printInvoice) {
+        handlePrint();
+      }
+      handleClose();
+    }
+  }, [orderLoading, isPost, orderError]);
 
   return (
     <div>
@@ -425,7 +438,21 @@ export default function NormalCheckoutModal(props: AddModalProps) {
             mt={-1}
             mb={3}
           >
-            <Invoice vouchers={state.vouchers} customer={state.customer} />
+            <div ref={invoiceRef}>
+              <Invoice vouchers={state.vouchers} customer={state.customer} />
+            </div>
+            <Grid item>
+              <FormControlLabel
+                label="Print Invoice"
+                control={
+                  <Checkbox
+                    checked={printInvoice}
+                    // indeterminate={checked[0] !== checked[1]}
+                    onChange={(e) => setPrintInvoice(e.target.checked)}
+                  />
+                }
+              />
+            </Grid>
           </TabPanel>
           <Divider />
           <Grid
